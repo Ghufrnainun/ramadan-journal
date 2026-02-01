@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import { 
   Moon, ChevronDown, Shield, 
@@ -324,6 +325,7 @@ const MockupCard = ({ type }: { type: 'count' | 'quote' | 'dhikr' }) => {
  * =====================================================================
  */
 export default function LandingPage() {
+  const navigate = useNavigate();
   const [lang, setLang] = useState<Lang>('id');
   const [mounted, setMounted] = useState(false);
   const { scrollY } = useScroll();
@@ -419,7 +421,10 @@ export default function LandingPage() {
             transition={{ delay: 0.8 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <button className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-full hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] transition-all duration-300 flex items-center gap-2">
+            <button 
+              onClick={() => navigate('/onboarding')}
+              className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-full hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] transition-all duration-300 flex items-center gap-2"
+            >
               {t('hero.cta_primary')}
               <motion.span
                 animate={{ x: [0, 4, 0] }}
@@ -717,7 +722,10 @@ export default function LandingPage() {
           <p className="font-serif text-3xl md:text-4xl text-white mb-4">{t('final.title')}</p>
           <p className="text-slate-400 mb-10">{t('final.sub')}</p>
           
-          <button className="px-10 py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-bold text-lg rounded-full hover:shadow-[0_0_40px_rgba(251,191,36,0.5)] transition-all duration-300">
+          <button 
+            onClick={() => navigate('/onboarding')}
+            className="px-10 py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-bold text-lg rounded-full hover:shadow-[0_0_40px_rgba(251,191,36,0.5)] transition-all duration-300"
+          >
             {t('final.cta')}
           </button>
           
@@ -748,7 +756,10 @@ export default function LandingPage() {
           >
             <div className="flex items-center justify-between gap-4">
               <span className="text-sm text-slate-300">{t('sticky.text')}</span>
-              <button className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-full text-sm">
+              <button 
+                onClick={() => navigate('/onboarding')}
+                className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-full text-sm"
+              >
                 {t('sticky.cta')}
               </button>
             </div>

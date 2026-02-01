@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, ChevronDown, Search, Check } from 'lucide-react';
+import { MapPin, Search, Check } from 'lucide-react';
 import { INDONESIA_CITIES, getProvinces, getCitiesByProvince, City } from '@/data/indonesia-cities';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface LocationStepProps {
   lang: 'id' | 'en';
@@ -83,20 +90,20 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 z-10" />
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder={t.searchPlaceholder}
-          className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all"
+          className="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all"
         />
       </motion.div>
 
       {/* Search Results */}
       {search && filteredCities.length > 0 && (
         <motion.div
-          className="mb-6 bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden"
+          className="mb-6 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-xl"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
         >
@@ -120,7 +127,7 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
         </motion.div>
       )}
 
-      {/* Province Selector (when not searching) */}
+      {/* Province Selector (when not searching) - Using Shadcn Select */}
       {!search && (
         <motion.div
           className="mb-6"
@@ -128,21 +135,25 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="relative">
-            <select
-              value={selectedProvince || ''}
-              onChange={e => setSelectedProvince(e.target.value || null)}
-              className="w-full appearance-none bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-4 pr-10 text-white focus:outline-none focus:border-amber-500/50 transition-all"
-            >
-              <option value="">{t.selectProvince}</option>
+          <Select
+            value={selectedProvince || ''}
+            onValueChange={(value) => setSelectedProvince(value || null)}
+          >
+            <SelectTrigger className="w-full h-14 bg-slate-800/80 border-slate-700 rounded-xl text-white focus:ring-amber-500/50 focus:border-amber-500/50">
+              <SelectValue placeholder={t.selectProvince} />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-700 text-white z-50 max-h-[300px]">
               {provinces.map(p => (
-                <option key={p} value={p}>
+                <SelectItem 
+                  key={p} 
+                  value={p}
+                  className="focus:bg-slate-700 focus:text-amber-400 cursor-pointer"
+                >
                   {p}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
-          </div>
+            </SelectContent>
+          </Select>
         </motion.div>
       )}
 
@@ -161,7 +172,7 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
               className={`px-4 py-3 rounded-xl border text-left transition-all ${
                 selectedCity?.name === city.name && selectedCity?.province === city.province
                   ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
-                  : 'bg-slate-800/30 border-slate-700 text-slate-300 hover:border-slate-600'
+                  : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-600'
               }`}
             >
               {city.name}
