@@ -1,41 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* MyRamadhanku Design System - Night Ramadan Theme
-   Colors are HSL for proper theming support
+   Uses Playfair Display (Serif) + Plus Jakarta Sans (Sans)
 */
 
 @layer base {
   :root {
-    /* Base colors - Light mode (rarely used, app is primarily dark) */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --font-serif: 'Playfair Display', serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+
+    /* Base colors - Dark theme primary */
+    --background: 222 47% 2%;
+    --foreground: 210 40% 90%;
 
     /* Card surfaces */
-    --card: 222 47% 13%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 47% 5%;
+    --card-foreground: 210 40% 90%;
 
     /* Popover/Dialog */
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 47% 4%;
+    --popover-foreground: 210 40% 90%;
 
-    /* Primary - Warm Gold */
-    --primary: 32 45% 65%;
-    --primary-foreground: 222 47% 11%;
+    /* Primary - Warm Amber/Gold */
+    --primary: 38 92% 50%;
+    --primary-foreground: 222 47% 5%;
 
-    /* Secondary - Muted Navy */
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary - Muted Slate */
+    --secondary: 217 33% 12%;
+    --secondary-foreground: 210 40% 90%;
 
     /* Muted elements */
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 20% 55%;
 
-    /* Accent - Olive/Sage */
-    --accent: 142 20% 40%;
+    /* Accent - Emerald */
+    --accent: 160 60% 40%;
     --accent-foreground: 210 40% 98%;
 
     /* Destructive */
@@ -43,73 +46,56 @@
     --destructive-foreground: 210 40% 98%;
 
     /* Borders and inputs */
-    --border: 217 33% 20%;
-    --input: 217 33% 17%;
-    --ring: 32 45% 65%;
+    --border: 217 33% 15%;
+    --input: 217 33% 12%;
+    --ring: 38 92% 50%;
 
     --radius: 0.75rem;
 
     /* Sidebar */
-    --sidebar-background: 222 47% 9%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 32 45% 65%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 32 45% 65%;
+    --sidebar-background: 222 47% 3%;
+    --sidebar-foreground: 210 40% 85%;
+    --sidebar-primary: 38 92% 50%;
+    --sidebar-primary-foreground: 222 47% 5%;
+    --sidebar-accent: 217 33% 12%;
+    --sidebar-accent-foreground: 210 40% 90%;
+    --sidebar-border: 217 33% 12%;
+    --sidebar-ring: 38 92% 50%;
 
     /* Custom Ramadan theme colors */
-    --gold: 32 45% 65%;
-    --gold-light: 35 50% 75%;
-    --gold-glow: 32 60% 50%;
-    --navy-deep: 222 47% 7%;
-    --navy: 222 47% 11%;
-    --navy-light: 222 40% 15%;
-    --charcoal: 220 30% 20%;
-    --olive: 142 20% 40%;
-    --olive-muted: 142 15% 30%;
-    --cream: 40 30% 95%;
+    --gold: 38 92% 50%;
+    --gold-light: 40 90% 65%;
+    --gold-glow: 38 80% 45%;
+    --navy-deep: 222 47% 2%;
+    --navy: 222 47% 4%;
+    --navy-light: 222 40% 8%;
+    --charcoal: 220 30% 12%;
+    --olive: 160 40% 35%;
+    --olive-muted: 160 30% 25%;
+    --cream: 40 30% 92%;
     --star: 45 90% 85%;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 47% 13%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 32 45% 65%;
-    --primary-foreground: 222 47% 11%;
-
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 142 20% 40%;
+    --background: 222 47% 2%;
+    --foreground: 210 40% 90%;
+    --card: 222 47% 5%;
+    --card-foreground: 210 40% 90%;
+    --popover: 222 47% 4%;
+    --popover-foreground: 210 40% 90%;
+    --primary: 38 92% 50%;
+    --primary-foreground: 222 47% 5%;
+    --secondary: 217 33% 12%;
+    --secondary-foreground: 210 40% 90%;
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 20% 55%;
+    --accent: 160 60% 40%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 20%;
-    --input: 217 33% 17%;
-    --ring: 32 45% 65%;
-
-    --sidebar-background: 222 47% 9%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 32 45% 65%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 32 45% 65%;
+    --border: 217 33% 15%;
+    --input: 217 33% 12%;
+    --ring: 38 92% 50%;
   }
 }
 
@@ -123,20 +109,30 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background-color: #020617;
+    color: #e2e8f0;
   }
 
-  /* Serif font for headings and quotes */
-  .font-serif {
-    font-family: 'Crimson Pro', Georgia, serif;
+  h1, h2, h3, .font-serif {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }
 
 @layer utilities {
+  /* Hide Scrollbar for Horizontal Gallery */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   /* Text gradient utility */
   .text-gradient-gold {
-    @apply bg-gradient-to-r from-primary via-gold-light to-primary bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent;
   }
 
   /* Glow effects */
@@ -163,16 +159,6 @@
 
   .animate-lantern-swing {
     animation: lantern-swing 4s ease-in-out infinite;
-    transform-origin: top center;
-  }
-
-  .animate-lantern-swing-slow {
-    animation: lantern-swing 6s ease-in-out infinite;
-    transform-origin: top center;
-  }
-
-  .animate-lantern-swing-fast {
-    animation: lantern-swing 3s ease-in-out infinite;
     transform-origin: top center;
   }
 
@@ -206,39 +192,5 @@
 
   .animate-star-twinkle {
     animation: star-twinkle 2s ease-in-out infinite;
-  }
-
-  /* Gradient drift for background */
-  @keyframes gradient-drift {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-
-  .animate-gradient-drift {
-    background-size: 200% 200%;
-    animation: gradient-drift 15s ease infinite;
-  }
-
-  /* Fade in up animation */
-  @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in-up {
-    animation: fade-in-up 0.6s ease-out forwards;
   }
 }
