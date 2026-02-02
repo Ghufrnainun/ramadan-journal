@@ -17,34 +17,41 @@ export interface PrayerTimes {
 }
 
 // Cache for prayer times
-const cachedPrayerTimes: { [key: string]: { times: PrayerTimes; date: string } } = {};
+const cachedPrayerTimes: {
+  [key: string]: { times: PrayerTimes; date: string };
+} = {};
 
 // Province mapping for common cities
-const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> = {
-  'Jakarta': { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta Pusat' },
-  'Surabaya': { provinsi: 'Jawa Timur', kabkota: 'Kota Surabaya' },
-  'Bandung': { provinsi: 'Jawa Barat', kabkota: 'Kota Bandung' },
-  'Medan': { provinsi: 'Sumatera Utara', kabkota: 'Kota Medan' },
-  'Semarang': { provinsi: 'Jawa Tengah', kabkota: 'Kota Semarang' },
-  'Makassar': { provinsi: 'Sulawesi Selatan', kabkota: 'Kota Makassar' },
-  'Palembang': { provinsi: 'Sumatera Selatan', kabkota: 'Kota Palembang' },
-  'Yogyakarta': { provinsi: 'DI Yogyakarta', kabkota: 'Kota Yogyakarta' },
-  'Denpasar': { provinsi: 'Bali', kabkota: 'Kota Denpasar' },
-  'Malang': { provinsi: 'Jawa Timur', kabkota: 'Kota Malang' },
-  'Bekasi': { provinsi: 'Jawa Barat', kabkota: 'Kota Bekasi' },
-  'Tangerang': { provinsi: 'Banten', kabkota: 'Kota Tangerang' },
-  'Depok': { provinsi: 'Jawa Barat', kabkota: 'Kota Depok' },
-  'Bogor': { provinsi: 'Jawa Barat', kabkota: 'Kota Bogor' },
-};
+const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> =
+  {
+    Jakarta: { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta Pusat' },
+    Surabaya: { provinsi: 'Jawa Timur', kabkota: 'Kota Surabaya' },
+    Bandung: { provinsi: 'Jawa Barat', kabkota: 'Kota Bandung' },
+    Medan: { provinsi: 'Sumatera Utara', kabkota: 'Kota Medan' },
+    Semarang: { provinsi: 'Jawa Tengah', kabkota: 'Kota Semarang' },
+    Makassar: { provinsi: 'Sulawesi Selatan', kabkota: 'Kota Makassar' },
+    Palembang: { provinsi: 'Sumatera Selatan', kabkota: 'Kota Palembang' },
+    Yogyakarta: { provinsi: 'DI Yogyakarta', kabkota: 'Kota Yogyakarta' },
+    Denpasar: { provinsi: 'Bali', kabkota: 'Kota Denpasar' },
+    Malang: { provinsi: 'Jawa Timur', kabkota: 'Kota Malang' },
+    Bekasi: { provinsi: 'Jawa Barat', kabkota: 'Kota Bekasi' },
+    Tangerang: { provinsi: 'Banten', kabkota: 'Kota Tangerang' },
+    Depok: { provinsi: 'Jawa Barat', kabkota: 'Kota Depok' },
+    Bogor: { provinsi: 'Jawa Barat', kabkota: 'Kota Bogor' },
+  };
 
 /**
  * Get province and city mapping
  */
-const getCityMapping = (cityName: string): { provinsi: string; kabkota: string } => {
+export const getCityMapping = (
+  cityName: string,
+): { provinsi: string; kabkota: string } => {
   // Check direct mapping
   for (const [key, value] of Object.entries(CITY_PROVINCE_MAP)) {
-    if (cityName.toLowerCase().includes(key.toLowerCase()) || 
-        key.toLowerCase().includes(cityName.toLowerCase())) {
+    if (
+      cityName.toLowerCase().includes(key.toLowerCase()) ||
+      key.toLowerCase().includes(cityName.toLowerCase())
+    ) {
       return value;
     }
   }
@@ -55,38 +62,45 @@ const getCityMapping = (cityName: string): { provinsi: string; kabkota: string }
 /**
  * Get prayer times from API
  */
-export const getPrayerTimesFromApi = async (city: string, date: Date = new Date()): Promise<PrayerTimes> => {
+export const getPrayerTimesFromApi = async (
+  city: string,
+  date: Date = new Date(),
+): Promise<PrayerTimes> => {
   const dateStr = date.toISOString().split('T')[0];
   const cacheKey = `${city}-${dateStr}`;
-  
+
   // Check cache
-  if (cachedPrayerTimes[cacheKey] && cachedPrayerTimes[cacheKey].date === dateStr) {
+  if (
+    cachedPrayerTimes[cacheKey] &&
+    cachedPrayerTimes[cacheKey].date === dateStr
+  ) {
     return cachedPrayerTimes[cacheKey].times;
   }
-  
+
   try {
     const mapping = getCityMapping(city);
     const bulan = date.getMonth() + 1;
     const tahun = date.getFullYear();
     const hari = date.getDate();
-    
+
     const jadwalList = await equranApi.getJadwalShalat(
-      mapping.provinsi, 
-      mapping.kabkota, 
-      bulan, 
-      tahun
+      mapping.provinsi,
+      mapping.kabkota,
+      bulan,
+      tahun,
     );
-    
+
     // Find today's schedule
-    const todayJadwal = jadwalList.find(j => {
-      const jadwalDate = new Date(j.tanggal);
-      return jadwalDate.getDate() === hari;
-    }) || jadwalList[0];
-    
+    const todayJadwal =
+      jadwalList.find((j) => {
+        const jadwalDate = new Date(j.tanggal);
+        return jadwalDate.getDate() === hari;
+      }) || jadwalList[0];
+
     if (!todayJadwal) {
       return getFallbackPrayerTimes();
     }
-    
+
     const times: PrayerTimes = {
       imsak: todayJadwal.imsak,
       subuh: todayJadwal.subuh,
@@ -97,10 +111,10 @@ export const getPrayerTimesFromApi = async (city: string, date: Date = new Date(
       maghrib: todayJadwal.maghrib,
       isya: todayJadwal.isya,
     };
-    
+
     // Cache the result
     cachedPrayerTimes[cacheKey] = { times, date: dateStr };
-    
+
     return times;
   } catch (error) {
     console.error('Failed to fetch prayer times:', error);
@@ -127,7 +141,10 @@ const getFallbackPrayerTimes = (): PrayerTimes => ({
  * Get prayer times (sync version with fallback)
  * For backward compatibility
  */
-export const getPrayerTimes = (city: string, date: Date = new Date()): PrayerTimes => {
+export const getPrayerTimes = (
+  city: string,
+  date: Date = new Date(),
+): PrayerTimes => {
   // This returns fallback times for sync usage
   // Components should use getPrayerTimesFromApi for real data
   return getFallbackPrayerTimes();
@@ -136,15 +153,17 @@ export const getPrayerTimes = (city: string, date: Date = new Date()): PrayerTim
 /**
  * Get current prayer and next prayer
  */
-export const getCurrentPrayer = (prayerTimes: PrayerTimes): { current: string; next: string; nextTime: string } => {
+export const getCurrentPrayer = (
+  prayerTimes: PrayerTimes,
+): { current: string; next: string; nextTime: string } => {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  
+
   const timeToMinutes = (time: string): number => {
     const [h, m] = time.split(':').map(Number);
     return h * 60 + m;
   };
-  
+
   const prayers = [
     { name: 'Subuh', time: prayerTimes.subuh },
     { name: 'Dzuhur', time: prayerTimes.dzuhur },
@@ -152,7 +171,7 @@ export const getCurrentPrayer = (prayerTimes: PrayerTimes): { current: string; n
     { name: 'Maghrib', time: prayerTimes.maghrib },
     { name: 'Isya', time: prayerTimes.isya },
   ];
-  
+
   for (let i = 0; i < prayers.length; i++) {
     if (currentMinutes < timeToMinutes(prayers[i].time)) {
       return {
@@ -162,7 +181,7 @@ export const getCurrentPrayer = (prayerTimes: PrayerTimes): { current: string; n
       };
     }
   }
-  
+
   // After Isya, next is Subuh tomorrow
   return {
     current: 'Isya',
@@ -177,19 +196,19 @@ export const getCurrentPrayer = (prayerTimes: PrayerTimes): { current: string; n
 export const getTimeUntilNext = (nextTime: string): string => {
   const now = new Date();
   const [hours, minutes] = nextTime.split(':').map(Number);
-  
+
   let targetMinutes = hours * 60 + minutes;
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  
+
   // If next prayer is tomorrow (Subuh after Isya)
   if (targetMinutes < currentMinutes) {
     targetMinutes += 24 * 60;
   }
-  
+
   const diff = targetMinutes - currentMinutes;
   const h = Math.floor(diff / 60);
   const m = diff % 60;
-  
+
   if (h > 0) {
     return `${h}j ${m}m`;
   }

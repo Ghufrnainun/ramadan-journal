@@ -5,11 +5,13 @@
 
 export interface UserProfile {
   language: 'id' | 'en';
+  displayName?: string | null;
   location: {
     city: string;
     province: string;
   } | null;
   ramadanStartDate: string | null; // ISO date string
+  ramadanEndDate?: string | null;
   focusModules: string[];
   reminders: {
     sahur: boolean;
@@ -17,6 +19,8 @@ export interface UserProfile {
     prayer: boolean;
     reflection: boolean;
   };
+  silentMode: boolean;
+  hideStreak?: boolean;
   onboardingCompleted: boolean;
 }
 
@@ -24,8 +28,10 @@ const STORAGE_KEY = 'myramadhanku_profile';
 
 const DEFAULT_PROFILE: UserProfile = {
   language: 'id',
+  displayName: null,
   location: null,
   ramadanStartDate: null,
+  ramadanEndDate: null,
   focusModules: ['prayer', 'quran', 'dhikr', 'tracker', 'reflection'],
   reminders: {
     sahur: false,
@@ -33,6 +39,8 @@ const DEFAULT_PROFILE: UserProfile = {
     prayer: false,
     reflection: false,
   },
+  silentMode: false,
+  hideStreak: false,
   onboardingCompleted: false,
 };
 

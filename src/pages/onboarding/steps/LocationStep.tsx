@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Search, Check } from 'lucide-react';
+import { MapPin, Search, Check, Loader2 } from 'lucide-react';
 import { INDONESIA_CITIES, getProvinces, getCitiesByProvince, City } from '@/data/indonesia-cities';
 import {
   Select,
@@ -45,6 +45,8 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
   const [selectedCity, setSelectedCity] = useState<City | null>(
     initialCity ? { name: initialCity.city, province: initialCity.province } : null
   );
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [detectError, setDetectError] = useState<string | null>(null);
 
   const provinces = getProvinces();
 
@@ -61,6 +63,36 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
   const handleSelect = (city: City) => {
     setSelectedCity(city);
     setSearch('');
+  };
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) return;
+    setIsDetecting(true);
+    setDetectError(null);
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await response.json();
+        const guess = data?.address?.city || data?.address?.town || data?.address?.county || '';
+        const match = INDONESIA_CITIES.find(c =>
+          c.name.toLowerCase().includes(String(guess).toLowerCase())
+        );
+        if (match) {
+          setSelectedProvince(match.province);
+          setSelectedCity(match);
+        } else {
+          setDetectError(lang === 'id' ? 'Kota tidak ditemukan, pilih manual.' : 'City not found, choose manually.');
+        }
+      } catch (e) {
+        setDetectError(lang === 'id' ? 'Gagal deteksi lokasi.' : 'Failed to detect location.');
+      } finally {
+        setIsDetecting(false);
+      }
+    }, () => {
+      setDetectError(lang === 'id' ? 'Izin lokasi ditolak.' : 'Location permission denied.');
+      setIsDetecting(false);
+    });
   };
 
   const handleContinue = () => {
@@ -84,6 +116,25 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
       </motion.div>
 
       {/* Search Input */}
+      <motion.div
+        className="mb-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
+        <button
+          onClick={handleDetectLocation}
+          className="w-full py-3 rounded-xl border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 transition-colors text-sm flex items-center justify-center gap-2"
+          disabled={isDetecting}
+        >
+          {isDetecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
+          {t.detectLocation}
+        </button>
+        {detectError && (
+          <p className="text-xs text-rose-400 mt-2">{detectError}</p>
+        )}
+      </motion.div>
+
       <motion.div
         className="relative mb-6"
         initial={{ opacity: 0, y: 10 }}

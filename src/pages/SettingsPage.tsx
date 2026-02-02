@@ -1,0 +1,303 @@
+import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Bell, Globe, MapPin, Moon, ShieldCheck, User } from 'lucide-react';
+import { getProfile, UserProfile } from '@/lib/storage';
+import { saveProfileAndSync } from '@/lib/profile-sync';
+import { useAuth } from '@/hooks/useAuth';
+import { useI18n } from '@/hooks/useI18n';
+import { getProvinces, getCitiesByProvince } from '@/data/indonesia-cities';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const SettingsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const [profile, setProfile] = useState<UserProfile>(getProfile());
+  const dict = useI18n(profile.language);
+
+  const provinces = useMemo(() => getProvinces(), []);
+  const cities = useMemo(() => {
+    if (!profile.location?.province) return [];
+    return getCitiesByProvince(profile.location.province);
+  }, [profile.location?.province]);
+
+  const updateProfile = (updates: Partial<UserProfile>) => {
+    setProfile(prev => ({ ...prev, ...updates }));
+  };
+
+  const saveChanges = async () => {
+    await saveProfileAndSync(profile, user?.id);
+    navigate('/dashboard');
+  };
+
+  const requestNotifications = async () => {
+    if (!('Notification' in window)) return;
+    await Notification.requestPermission();
+  };
+
+  const handleReset = () => {
+    const confirmed = window.confirm('Reset semua data lokal?');
+    if (!confirmed) return;
+    localStorage.clear();
+    window.location.href = '/';
+  };
+
+  return (
+    <div className="min-h-screen bg-[#020617] text-slate-200 pb-28">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        </button>
+        <div className="text-center">
+          <span className="font-serif text-lg text-white">{dict.settings.title}</span>
+          <p className="text-xs text-slate-500">{dict.settings.subtitle}</p>
+        </div>
+        <div className="w-9" />
+      </header>
+
+      <main className="px-6 py-6 space-y-6">
+        <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+              <User className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <p className="text-white font-medium">{dict.settings.profile}</p>
+              <p className="text-xs text-slate-500">{user?.email || dict.settings.guest}</p>
+            </div>
+          </div>
+          <input
+            type="text"
+            value={profile.displayName || ''}
+            onChange={(e) => updateProfile({ displayName: e.target.value })}
+            placeholder={dict.settings.displayNamePlaceholder}
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+          />
+        </section>
+
+        <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-3">
+          <p className="text-white font-medium">{dict.settings.shortcuts}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => navigate('/bookmarks')}
+              className="py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800/70 transition-colors text-sm"
+            >
+              {dict.settings.bookmarks}
+            </button>
+            <button
+              onClick={() => navigate('/reflection')}
+              className="py-3 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800/70 transition-colors text-sm"
+            >
+              {dict.settings.reflection}
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <Globe className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-white font-medium">{dict.settings.language}</p>
+              <p className="text-xs text-slate-500">ID / EN</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => updateProfile({ language: 'id' })}
+              className={`flex-1 py-3 rounded-xl text-sm font-medium border transition-all ${
+                profile.language === 'id'
+                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                  : 'bg-slate-800/50 border-slate-700 text-slate-400'
+              }`}
+            >
+              Bahasa Indonesia
+            </button>
+            <button
+              onClick={() => updateProfile({ language: 'en' })}
+              className={`flex-1 py-3 rounded-xl text-sm font-medium border transition-all ${
+                profile.language === 'en'
+                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                  : 'bg-slate-800/50 border-slate-700 text-slate-400'
+              }`}
+            >
+              English
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <MapPin className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-white font-medium">{dict.settings.location}</p>
+              <p className="text-xs text-slate-500">
+                {profile.location ? `${profile.location.city}, ${profile.location.province}` : dict.settings.locationUnset}
+              </p>
+            </div>
+          </div>
+          <Select
+            value={profile.location?.province || ''}
+            onValueChange={(value) =>
+              updateProfile({ location: value ? { city: '', province: value } : null })
+            }
+          >
+            <SelectTrigger className="w-full h-12 bg-slate-800/60 border-slate-700 text-slate-200">
+              <SelectValue placeholder={dict.settings.selectProvince} />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-700 text-white max-h-[300px]">
+              {provinces.map((province) => (
+                <SelectItem key={province} value={province}>
+                  {province}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={profile.location?.city || ''}
+            onValueChange={(value) =>
+              updateProfile({
+                location: profile.location?.province
+                  ? { city: value, province: profile.location.province }
+                  : null,
+              })
+            }
+            disabled={!profile.location?.province}
+          >
+            <SelectTrigger className="w-full h-12 bg-slate-800/60 border-slate-700 text-slate-200">
+              <SelectValue placeholder={dict.settings.selectCity} />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-700 text-white max-h-[300px]">
+              {cities.map((city) => (
+                <SelectItem key={city.name} value={city.name}>
+                  {city.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </section>
+
+        <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
+              <Moon className="w-5 h-5 text-rose-400" />
+            </div>
+            <div>
+              <p className="text-white font-medium">{dict.settings.ramadan}</p>
+              <p className="text-xs text-slate-500">{dict.settings.ramadanNote}</p>
+            </div>
+          </div>
+          <input
+            type="date"
+            value={profile.ramadanStartDate || ''}
+            onChange={(e) => updateProfile({ ramadanStartDate: e.target.value || null })}
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+          />
+          <div className="pt-3 border-t border-slate-800/70">
+            <p className="text-white font-medium text-sm">{dict.settings.ramadanEnd}</p>
+            <p className="text-xs text-slate-500 mb-3">{dict.settings.ramadanEndNote}</p>
+            <input
+              type="date"
+              value={profile.ramadanEndDate || ''}
+              onChange={(e) => updateProfile({ ramadanEndDate: e.target.value || null })}
+              className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+            />
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+              <Bell className="w-5 h-5 text-purple-400" />
+            </div>
+            <div>
+              <p className="text-white font-medium">{dict.settings.reminders}</p>
+              <p className="text-xs text-slate-500">{dict.settings.remindersNote}</p>
+            </div>
+          </div>
+
+          {(['sahur', 'iftar', 'prayer', 'reflection'] as const).map((key) => (
+            <label key={key} className="flex items-center justify-between gap-4">
+              <span className="text-sm text-slate-300 capitalize">{key}</span>
+              <Switch
+                checked={profile.reminders[key]}
+                onCheckedChange={(checked) =>
+                  updateProfile({ reminders: { ...profile.reminders, [key]: checked } })
+                }
+              />
+            </label>
+          ))}
+
+          <label className="flex items-center justify-between gap-4 pt-2 border-t border-slate-800">
+            <span className="text-sm text-slate-300">{dict.settings.silentMode}</span>
+            <Switch
+              checked={profile.silentMode}
+              onCheckedChange={(checked) => updateProfile({ silentMode: checked })}
+            />
+          </label>
+          <label className="flex items-center justify-between gap-4">
+            <span className="text-sm text-slate-300">{dict.settings.hideStreak}</span>
+            <Switch
+              checked={!!profile.hideStreak}
+              onCheckedChange={(checked) => updateProfile({ hideStreak: checked })}
+            />
+          </label>
+        </section>
+
+        <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-white font-medium">{dict.settings.notifications}</p>
+              <p className="text-xs text-slate-500">{dict.settings.notificationNote}</p>
+            </div>
+          </div>
+          <button
+            onClick={requestNotifications}
+            className="w-full py-3 rounded-xl border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 transition-colors text-sm"
+          >
+            {dict.settings.enableNotifications}
+          </button>
+        </section>
+
+        <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-3">
+          <p className="text-white font-medium">{dict.settings.data}</p>
+          <button
+            onClick={handleReset}
+            className="w-full py-3 rounded-xl border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 transition-colors text-sm"
+          >
+            {dict.settings.reset}
+          </button>
+        </section>
+
+        {user && (
+          <button
+            onClick={signOut}
+            className="w-full py-4 rounded-2xl bg-slate-800/80 text-slate-200 hover:bg-slate-700/80 transition-colors"
+          >
+            {dict.settings.logout}
+          </button>
+        )}
+      </main>
+
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent">
+        <button
+          onClick={saveChanges}
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold text-base"
+        >
+          {dict.settings.saveChanges}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default SettingsPage;

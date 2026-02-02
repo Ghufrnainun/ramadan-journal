@@ -46,9 +46,9 @@ export interface TafsirDetail {
 export interface Doa {
   id: number;
   nama: string;
-  ar: string;      // Arabic text
-  tr: string;      // Transliteration
-  idn: string;     // Indonesian translation
+  ar: string; // Arabic text
+  tr: string; // Transliteration
+  idn: string; // Indonesian translation
   grup?: string;
   tag?: string[];
   tentang?: string;
@@ -67,10 +67,13 @@ export interface JadwalShalatItem {
   isya: string;
 }
 
-export interface JadwalShalatResponse {
-  code: number;
-  message: string;
-  data: JadwalShalatItem[];
+export interface JadwalShalatData {
+  provinsi: string;
+  kabkota: string;
+  bulan: number;
+  tahun: number;
+  bulan_nama: string;
+  jadwal: JadwalShalatItem[];
 }
 
 // ============ IMSAKIYAH TYPES ============
@@ -82,14 +85,16 @@ export interface ImsakiyahItem {
   dhuha?: string;
   dzuhur?: string;
   ashar?: string;
-  maghrib: string;  // This is iftar time during Ramadan
+  maghrib: string; // This is iftar time during Ramadan
   isya?: string;
 }
 
-export interface ImsakiyahResponse {
-  code: number;
-  message: string;
-  data: ImsakiyahItem[];
+export interface ImsakiyahData {
+  provinsi: string;
+  kabkota: string;
+  hijriah: string;
+  masehi: string;
+  imsakiyah: ImsakiyahItem[];
 }
 
 interface ApiResponse<T> {
@@ -101,14 +106,16 @@ interface ApiResponse<T> {
 class EQuranApi {
   private async fetchGet<T>(endpoint: string): Promise<T> {
     try {
-      const response = await fetch(`${FUNCTION_URL}?endpoint=${encodeURIComponent(endpoint)}`);
-      
+      const response = await fetch(
+        `${FUNCTION_URL}?endpoint=${encodeURIComponent(endpoint)}`,
+      );
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
 
       const result: ApiResponse<T> = await response.json();
-      
+
       if (result.code !== 200) {
         throw new Error(result.message || 'API error');
       }
@@ -122,18 +129,21 @@ class EQuranApi {
 
   private async fetchPost<T>(endpoint: string, body: object): Promise<T> {
     try {
-      const response = await fetch(`${FUNCTION_URL}?endpoint=${encodeURIComponent(endpoint)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      
+      const response = await fetch(
+        `${FUNCTION_URL}?endpoint=${encodeURIComponent(endpoint)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      );
+
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
 
       const result: ApiResponse<T> = await response.json();
-      
+
       if (result.code !== 200) {
         throw new Error(result.message || 'API error');
       }
@@ -156,7 +166,7 @@ class EQuranApi {
 
   async getAyah(surahNumber: number, ayahNumber: number): Promise<Ayah> {
     const surah = await this.getSurah(surahNumber);
-    const ayah = surah.ayat.find(a => a.nomorAyat === ayahNumber);
+    const ayah = surah.ayat.find((a) => a.nomorAyat === ayahNumber);
     if (!ayah) throw new Error('Ayah not found');
     return ayah;
   }
@@ -192,34 +202,43 @@ class EQuranApi {
   }
 
   async getJadwalShalat(
-    provinsi: string, 
-    kabkota: string, 
-    bulan?: number, 
-    tahun?: number
+    provinsi: string,
+    kabkota: string,
+    bulan?: number,
+    tahun?: number,
   ): Promise<JadwalShalatItem[]> {
-    const body: { provinsi: string; kabkota: string; bulan?: number; tahun?: number } = {
+    const body: {
+      provinsi: string;
+      kabkota: string;
+      bulan?: number;
+      tahun?: number;
+    } = {
       provinsi,
       kabkota,
     };
     if (bulan) body.bulan = bulan;
     if (tahun) body.tahun = tahun;
-    
-    return this.fetchPost<JadwalShalatItem[]>('shalat', body);
+
+    // API returns { data: { jadwal: [...] } }
+    const data = await this.fetchPost<JadwalShalatData>('shalat', body);
+    return data.jadwal;
   }
 
   // ============ IMSAKIYAH METHODS ============
   async getJadwalImsakiyah(
-    provinsi: string, 
-    kabkota: string, 
-    tahun?: number
+    provinsi: string,
+    kabkota: string,
+    tahun?: number,
   ): Promise<ImsakiyahItem[]> {
     const body: { provinsi: string; kabkota: string; tahun?: number } = {
       provinsi,
       kabkota,
     };
     if (tahun) body.tahun = tahun;
-    
-    return this.fetchPost<ImsakiyahItem[]>('imsakiyah', body);
+
+    // API returns { data: { imsakiyah: [...] } }
+    const data = await this.fetchPost<ImsakiyahData>('imsakiyah', body);
+    return data.imsakiyah;
   }
 }
 

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline - MyRamadhanku</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        background: #020617;
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        text-align: center;
+        padding: 24px;
+      }
+      .card {
+        max-width: 420px;
+        padding: 32px;
+        border-radius: 24px;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+      }
+      h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 28px;
+        margin: 0 0 12px;
+      }
+      p {
+        margin: 0 0 20px;
+        color: #94a3b8;
+      }
+      button {
+        padding: 12px 18px;
+        border-radius: 999px;
+        border: none;
+        background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        color: #0f172a;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Kamu sedang offline</h1>
+      <p>Beberapa fitur tetap bisa dipakai, tapi konten baru butuh koneksi.</p>
+      <button onclick="window.location.reload()">Coba Lagi</button>
+    </div>
+  </body>
+</html>
