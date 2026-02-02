@@ -9,6 +9,7 @@ import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import DashboardPage from "./pages/DashboardPage";
 import DhikrPage from "./pages/DhikrPage";
+import DoaPage from "./pages/DoaPage";
 import TrackerPage from "./pages/TrackerPage";
 import QuranPage from "./pages/QuranPage";
 import NotFound from "./pages/NotFound";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dhikr" element={<DhikrPage />} />
+            <Route path="/doa" element={<DoaPage />} />
             <Route path="/tracker" element={<TrackerPage />} />
             <Route path="/quran" element={<QuranPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

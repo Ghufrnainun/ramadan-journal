@@ -1,7 +1,6 @@
-import { supabase } from '@/integrations/supabase/client';
-
 const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/equran-proxy`;
 
+// ============ SURAH & QURAN TYPES ============
 export interface Surah {
   nomor: number;
   nama: string;
@@ -43,6 +42,36 @@ export interface TafsirDetail {
   tafsir: TafsirAyah[];
 }
 
+// ============ DOA TYPES ============
+export interface Doa {
+  id: number;
+  nama: string;
+  arab: string;
+  latin: string;
+  arti: string;
+  grup?: string;
+  tag?: string[];
+}
+
+// ============ SHALAT TYPES ============
+export interface JadwalShalatItem {
+  tanggal: string;
+  imsak: string;
+  subuh: string;
+  terbit: string;
+  dhuha: string;
+  dzuhur: string;
+  ashar: string;
+  maghrib: string;
+  isya: string;
+}
+
+export interface JadwalShalatResponse {
+  code: number;
+  message: string;
+  data: JadwalShalatItem[];
+}
+
 interface ApiResponse<T> {
   code: number;
   message: string;
@@ -50,7 +79,7 @@ interface ApiResponse<T> {
 }
 
 class EQuranApi {
-  private async fetch<T>(endpoint: string): Promise<T> {
+  private async fetchGet<T>(endpoint: string): Promise<T> {
     try {
       const response = await fetch(`${FUNCTION_URL}?endpoint=${encodeURIComponent(endpoint)}`);
       
@@ -71,12 +100,38 @@ class EQuranApi {
     }
   }
 
+  private async fetchPost<T>(endpoint: string, body: object): Promise<T> {
+    try {
+      const response = await fetch(`${FUNCTION_URL}?endpoint=${encodeURIComponent(endpoint)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const result: ApiResponse<T> = await response.json();
+      
+      if (result.code !== 200) {
+        throw new Error(result.message || 'API error');
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('eQuran API error:', error);
+      throw error;
+    }
+  }
+
+  // ============ QURAN METHODS ============
   async getAllSurahs(): Promise<Surah[]> {
-    return this.fetch<Surah[]>('surat');
+    return this.fetchGet<Surah[]>('surat');
   }
 
   async getSurah(number: number): Promise<SurahDetail> {
-    return this.fetch<SurahDetail>(`surat/${number}`);
+    return this.fetchGet<SurahDetail>(`surat/${number}`);
   }
 
   async getAyah(surahNumber: number, ayahNumber: number): Promise<Ayah> {
@@ -87,7 +142,49 @@ class EQuranApi {
   }
 
   async getTafsir(surahNumber: number): Promise<TafsirDetail> {
-    return this.fetch<TafsirDetail>(`tafsir/${surahNumber}`);
+    return this.fetchGet<TafsirDetail>(`tafsir/${surahNumber}`);
+  }
+
+  // ============ DOA METHODS ============
+  async getAllDoa(): Promise<Doa[]> {
+    return this.fetchGet<Doa[]>('doa');
+  }
+
+  async getDoaById(id: number): Promise<Doa> {
+    return this.fetchGet<Doa>(`doa/${id}`);
+  }
+
+  async getDoaByGrup(grup: string): Promise<Doa[]> {
+    return this.fetchGet<Doa[]>(`doa?grup=${encodeURIComponent(grup)}`);
+  }
+
+  async getDoaByTag(tag: string): Promise<Doa[]> {
+    return this.fetchGet<Doa[]>(`doa?tag=${encodeURIComponent(tag)}`);
+  }
+
+  // ============ SHALAT METHODS ============
+  async getProvinsi(): Promise<string[]> {
+    return this.fetchGet<string[]>('shalat/provinsi');
+  }
+
+  async getKabKota(provinsi: string): Promise<string[]> {
+    return this.fetchPost<string[]>('shalat/kabkota', { provinsi });
+  }
+
+  async getJadwalShalat(
+    provinsi: string, 
+    kabkota: string, 
+    bulan?: number, 
+    tahun?: number
+  ): Promise<JadwalShalatItem[]> {
+    const body: { provinsi: string; kabkota: string; bulan?: number; tahun?: number } = {
+      provinsi,
+      kabkota,
+    };
+    if (bulan) body.bulan = bulan;
+    if (tahun) body.tahun = tahun;
+    
+    return this.fetchPost<JadwalShalatItem[]>('shalat', body);
   }
 }
 
