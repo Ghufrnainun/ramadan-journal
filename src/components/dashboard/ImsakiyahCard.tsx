@@ -80,6 +80,8 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({ lang, provinsi, kabkota }
     };
 
     loadImsakiyah();
+    // Note: 'lang' is intentionally not in deps as it only affects display text, not data fetching
+    // Year is calculated at fetch time, so location change triggers new fetch with current year
   }, [provinsi, kabkota]);
 
   if (isLoading) {
