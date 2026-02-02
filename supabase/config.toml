@@ -1,0 +1,4 @@
+project_id = "kgzixclddlelcinarkut"
+
+[functions.equran-proxy]
+verify_jwt = false
