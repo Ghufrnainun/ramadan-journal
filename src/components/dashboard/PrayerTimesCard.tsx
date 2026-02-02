@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Sun, Sunrise, Sunset, Moon as MoonIcon } from 'lucide-react';
+import { Clock, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getPrayerTimes, getCurrentPrayer, getTimeUntilNext } from '@/lib/prayer-times';
+import { 
+  PrayerTimes, 
+  getPrayerTimesFromApi, 
+  getCurrentPrayer, 
+  getTimeUntilNext, 
+  getPrayerTimes as getFallbackTimes
+} from '@/lib/prayer-times';
 
 interface PrayerTimesCardProps {
   lang: 'id' | 'en';
@@ -22,6 +28,7 @@ const content = {
     isya: 'Isya',
     next: 'Selanjutnya',
     in: 'dalam',
+    loading: 'Memuat...',
   },
   en: {
     title: 'Prayer Times',
@@ -35,37 +42,51 @@ const content = {
     isya: 'Isha',
     next: 'Next',
     in: 'in',
+    loading: 'Loading...',
   },
-};
-
-const prayerIcons: Record<string, React.ReactNode> = {
-  Subuh: <Sunrise className="w-4 h-4" />,
-  Dzuhur: <Sun className="w-4 h-4" />,
-  Ashar: <Sun className="w-4 h-4" />,
-  Maghrib: <Sunset className="w-4 h-4" />,
-  Isya: <MoonIcon className="w-4 h-4" />,
 };
 
 const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
   const t = content[lang];
-  const [times, setTimes] = useState(() => getPrayerTimes(city));
+  const [times, setTimes] = useState<PrayerTimes>(() => getFallbackTimes(city));
   const [currentPrayer, setCurrentPrayer] = useState(() => getCurrentPrayer(times));
   const [timeUntil, setTimeUntil] = useState(() => getTimeUntilNext(currentPrayer.nextTime));
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch prayer times from API
   useEffect(() => {
-    const newTimes = getPrayerTimes(city);
-    setTimes(newTimes);
-    setCurrentPrayer(getCurrentPrayer(newTimes));
+    const loadPrayerTimes = async () => {
+      setIsLoading(true);
+      try {
+        const newTimes = await getPrayerTimesFromApi(city);
+        setTimes(newTimes);
+        setCurrentPrayer(getCurrentPrayer(newTimes));
+      } catch (error) {
+        console.error('Failed to load prayer times:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPrayerTimes();
   }, [city]);
 
+  // Update countdown every minute
   useEffect(() => {
     const interval = setInterval(() => {
       const current = getCurrentPrayer(times);
       setCurrentPrayer(current);
       setTimeUntil(getTimeUntilNext(current.nextTime));
-    }, 60000); // Update every minute
+    }, 60000);
 
     return () => clearInterval(interval);
+  }, [times]);
+
+  // Update timeUntil when times change
+  useEffect(() => {
+    const current = getCurrentPrayer(times);
+    setCurrentPrayer(current);
+    setTimeUntil(getTimeUntilNext(current.nextTime));
   }, [times]);
 
   const prayers = [
@@ -90,10 +111,14 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
               <Clock className="w-4 h-4 text-amber-400" />
               {t.title}
             </CardTitle>
-            <div className="text-xs text-slate-400">
-              {t.next}: <span className="text-amber-400">{currentPrayer.next}</span>{' '}
-              <span className="text-slate-500">{t.in} {timeUntil}</span>
-            </div>
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+            ) : (
+              <div className="text-xs text-slate-400">
+                {t.next}: <span className="text-amber-400">{currentPrayer.next}</span>{' '}
+                <span className="text-slate-500">{t.in} {timeUntil}</span>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="pt-0">
