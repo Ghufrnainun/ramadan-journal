@@ -56,13 +56,14 @@ const DashboardPage: React.FC = () => {
   };
 
   // Check if we're currently in Ramadan
+  // Ramadan is typically 29-30 days, so we check for 31 days to be safe
   const isInRamadan = () => {
     if (!profile.ramadanStartDate) return false;
     
     const now = new Date();
     const ramadanStart = new Date(profile.ramadanStartDate);
     const ramadanEnd = new Date(ramadanStart);
-    ramadanEnd.setDate(ramadanEnd.getDate() + 30); // Ramadan is typically 29-30 days
+    ramadanEnd.setDate(ramadanEnd.getDate() + 31); // Allow for up to 31 days to cover variation
     
     return now >= ramadanStart && now <= ramadanEnd;
   };
@@ -120,7 +121,6 @@ const DashboardPage: React.FC = () => {
         {profile.location && isInRamadan() && (
           <ImsakiyahCard 
             lang={lang} 
-            city={profile.location.city}
             provinsi={profile.location.province}
             kabkota={profile.location.city}
           />
