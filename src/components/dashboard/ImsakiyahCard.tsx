@@ -6,7 +6,6 @@ import { equranApi, ImsakiyahItem } from '@/lib/api/equran';
 
 interface ImsakiyahCardProps {
   lang: 'id' | 'en';
-  city: string;
   provinsi: string;
   kabkota: string;
 }
@@ -32,34 +31,7 @@ const content = {
   },
 };
 
-const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> = {
-  'Jakarta': { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta Pusat' },
-  'Surabaya': { provinsi: 'Jawa Timur', kabkota: 'Kota Surabaya' },
-  'Bandung': { provinsi: 'Jawa Barat', kabkota: 'Kota Bandung' },
-  'Medan': { provinsi: 'Sumatera Utara', kabkota: 'Kota Medan' },
-  'Semarang': { provinsi: 'Jawa Tengah', kabkota: 'Kota Semarang' },
-  'Makassar': { provinsi: 'Sulawesi Selatan', kabkota: 'Kota Makassar' },
-  'Palembang': { provinsi: 'Sumatera Selatan', kabkota: 'Kota Palembang' },
-  'Yogyakarta': { provinsi: 'DI Yogyakarta', kabkota: 'Kota Yogyakarta' },
-  'Denpasar': { provinsi: 'Bali', kabkota: 'Kota Denpasar' },
-  'Malang': { provinsi: 'Jawa Timur', kabkota: 'Kota Malang' },
-  'Bekasi': { provinsi: 'Jawa Barat', kabkota: 'Kota Bekasi' },
-  'Tangerang': { provinsi: 'Banten', kabkota: 'Kota Tangerang' },
-  'Depok': { provinsi: 'Jawa Barat', kabkota: 'Kota Depok' },
-  'Bogor': { provinsi: 'Jawa Barat', kabkota: 'Kota Bogor' },
-};
-
-const getCityMapping = (cityName: string): { provinsi: string; kabkota: string } => {
-  for (const [key, value] of Object.entries(CITY_PROVINCE_MAP)) {
-    if (cityName.toLowerCase().includes(key.toLowerCase()) || 
-        key.toLowerCase().includes(cityName.toLowerCase())) {
-      return value;
-    }
-  }
-  return CITY_PROVINCE_MAP['Jakarta'];
-};
-
-const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({ lang, city }) => {
+const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({ lang, provinsi, kabkota }) => {
   const t = content[lang];
   const [todaySchedule, setTodaySchedule] = useState<ImsakiyahItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,14 +43,13 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({ lang, city }) => {
       setError(null);
       
       try {
-        const mapping = getCityMapping(city);
         const now = new Date();
         const tahun = now.getFullYear();
         
         // Fetch Ramadan schedule for the current year
         const schedule = await equranApi.getJadwalImsakiyah(
-          mapping.provinsi, 
-          mapping.kabkota, 
+          provinsi, 
+          kabkota, 
           tahun
         );
         
@@ -109,7 +80,7 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({ lang, city }) => {
     };
 
     loadImsakiyah();
-  }, [city]);
+  }, [provinsi, kabkota]);
 
   if (isLoading) {
     return (
