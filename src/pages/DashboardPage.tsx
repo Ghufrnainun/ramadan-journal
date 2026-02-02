@@ -56,14 +56,14 @@ const DashboardPage: React.FC = () => {
   };
 
   // Check if we're currently in Ramadan
-  // Ramadan is typically 29-30 days, so we check for 31 days to be safe
+  // Ramadan is typically 29-30 days based on lunar calendar
   const isInRamadan = () => {
     if (!profile.ramadanStartDate) return false;
     
     const now = new Date();
     const ramadanStart = new Date(profile.ramadanStartDate);
     const ramadanEnd = new Date(ramadanStart);
-    ramadanEnd.setDate(ramadanEnd.getDate() + 31); // Allow for up to 31 days to cover variation
+    ramadanEnd.setDate(ramadanEnd.getDate() + 30); // Ramadan duration (29-30 days)
     
     return now >= ramadanStart && now <= ramadanEnd;
   };
