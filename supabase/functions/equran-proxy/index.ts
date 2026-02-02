@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   try {
     const url = new URL(req.url);
     const endpoint = url.searchParams.get('endpoint');
-    const apiVersion = url.searchParams.get('version') || 'v2'; // Default to v2
+    const apiVersion = url.searchParams.get('version') || 'v2';
 
     if (!endpoint) {
       return new Response(
@@ -24,11 +24,13 @@ Deno.serve(async (req) => {
     }
 
     // Build the correct URL based on endpoint type
-    // - Doa uses /api/doa (no version)
+    // - Doa uses /api/doa (no version prefix)
     // - Quran uses /api/v2/surat, /api/v2/tafsir
     // - Shalat uses /api/v2/shalat
     let apiUrl: string;
-    if (endpoint.startsWith('doa')) {
+    const isDoa = endpoint.startsWith('doa');
+    
+    if (isDoa) {
       apiUrl = `${EQURAN_BASE_URL}/${endpoint}`;
     } else {
       apiUrl = `${EQURAN_BASE_URL}/${apiVersion}/${endpoint}`;
@@ -48,7 +50,7 @@ Deno.serve(async (req) => {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'User-Agent': 'MyRamadhanku/1.0',
+          'User-Agent': 'MyRamadhan/1.0',
         },
         body: JSON.stringify(body),
       });
@@ -56,7 +58,7 @@ Deno.serve(async (req) => {
       response = await fetch(apiUrl, {
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'MyRamadhanku/1.0',
+          'User-Agent': 'MyRamadhan/1.0',
         },
       });
     }
@@ -75,6 +77,15 @@ Deno.serve(async (req) => {
 
     const data = await response.json();
     console.log('eQuran API success for:', endpoint);
+
+    // DOA API returns array directly, wrap it to match our format
+    // Other APIs return { code, message, data } format
+    if (isDoa && Array.isArray(data)) {
+      return new Response(
+        JSON.stringify({ code: 200, message: 'success', data }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     return new Response(
       JSON.stringify(data),
