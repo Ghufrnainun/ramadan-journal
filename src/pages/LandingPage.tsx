@@ -422,7 +422,7 @@ export default function LandingPage() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <button 
-              onClick={() => navigate('/onboarding')}
+              onClick={() => navigate('/auth')}
               className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-full hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] transition-all duration-300 flex items-center gap-2"
             >
               {t('hero.cta_primary')}
@@ -723,7 +723,7 @@ export default function LandingPage() {
           <p className="text-slate-400 mb-10">{t('final.sub')}</p>
           
           <button 
-            onClick={() => navigate('/onboarding')}
+            onClick={() => navigate('/auth')}
             className="px-10 py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-bold text-lg rounded-full hover:shadow-[0_0_40px_rgba(251,191,36,0.5)] transition-all duration-300"
           >
             {t('final.cta')}
@@ -757,7 +757,7 @@ export default function LandingPage() {
             <div className="flex items-center justify-between gap-4">
               <span className="text-sm text-slate-300">{t('sticky.text')}</span>
               <button 
-                onClick={() => navigate('/onboarding')}
+                onClick={() => navigate('/auth')}
                 className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-full text-sm"
               >
                 {t('sticky.cta')}
