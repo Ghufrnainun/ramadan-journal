@@ -1,10 +1,10 @@
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 const EQURAN_BASE_URL = 'https://equran.id/api';
-const EQURAN_DOA_BASE_URL = 'https://equran.id/apidev';
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -19,20 +19,27 @@ Deno.serve(async (req) => {
 
     if (!endpoint) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Endpoint parameter is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          success: false,
+          error: 'Endpoint parameter is required',
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
     // Build the correct URL based on endpoint type
-    // - Doa uses /apidev/doa (no version prefix)
+    // - Doa uses /api/doa (no version prefix)
     // - Quran uses /api/v2/surat, /api/v2/tafsir
     // - Shalat uses /api/v2/shalat
     let apiUrl: string;
     const isDoa = endpoint.startsWith('doa');
-    
+
     if (isDoa) {
-      apiUrl = `${EQURAN_DOA_BASE_URL}/${endpoint}`;
+      // Doa API doesn't use version prefix
+      apiUrl = `${EQURAN_BASE_URL}/${endpoint}`;
     } else {
       apiUrl = `${EQURAN_BASE_URL}/${apiVersion}/${endpoint}`;
     }
@@ -41,15 +48,15 @@ Deno.serve(async (req) => {
 
     // Check if this is a POST request (for shalat endpoints)
     let response: Response;
-    
+
     if (req.method === 'POST') {
       const body = await req.json();
       console.log('POST body:', JSON.stringify(body));
-      
+
       response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
           'User-Agent': 'MyRamadhan/1.0',
         },
@@ -58,7 +65,7 @@ Deno.serve(async (req) => {
     } else {
       response = await fetch(apiUrl, {
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
           'User-Agent': 'MyRamadhan/1.0',
         },
       });
@@ -67,12 +74,15 @@ Deno.serve(async (req) => {
     if (!response.ok) {
       console.error('eQuran API error:', response.status, response.statusText);
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           error: `eQuran API returned ${response.status}: ${response.statusText}`,
-          url: apiUrl
+          url: apiUrl,
         }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          status: response.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
       );
     }
 
@@ -84,21 +94,23 @@ Deno.serve(async (req) => {
     if (isDoa && Array.isArray(data)) {
       return new Response(
         JSON.stringify({ code: 200, message: 'success', data }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
 
-    return new Response(
-      JSON.stringify(data),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return new Response(JSON.stringify(data), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Error proxying eQuran API:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      },
     );
   }
 });

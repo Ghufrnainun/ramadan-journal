@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { syncProfileOnLogin } from '@/lib/profile-sync';
 
 interface AuthContextType {
   user: User | null;
@@ -19,10 +20,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
+        if (event === 'SIGNED_IN' && session?.user?.id) {
+          await syncProfileOnLogin(session.user.id);
+        }
       }
     );
 

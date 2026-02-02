@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, ChevronRight, Play, Pause, Loader2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronRight, Play, Pause, Loader2, Bookmark, CheckCircle } from 'lucide-react';
 import { getProfile } from '@/lib/storage';
 import { equranApi, Surah, SurahDetail } from '@/lib/api/equran';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getReadingProgress, getReadingTarget, saveReadingProgress, saveReadingTarget } from '@/lib/reading-progress';
+import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
+import { markActiveDay } from '@/lib/streak';
 
 const content = {
   id: {
@@ -18,6 +21,11 @@ const content = {
     surah: 'Surat',
     juz: 'Juz',
     page: 'Halaman',
+    markLast: 'Tandai Terakhir',
+    saveAyah: 'Simpan Ayat',
+    lastRead: 'Terakhir dibaca',
+    target: 'Target harian',
+    pages: 'halaman',
   },
   en: {
     title: 'Quran Reading',
@@ -29,6 +37,11 @@ const content = {
     surah: 'Surah',
     juz: 'Juz',
     page: 'Page',
+    markLast: 'Mark last read',
+    saveAyah: 'Save ayah',
+    lastRead: 'Last read',
+    target: 'Daily target',
+    pages: 'pages',
   },
 };
 
@@ -43,6 +56,8 @@ const QuranPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
+  const [readingTarget, setReadingTarget] = useState(getReadingTarget().dailyTargetPages);
+  const [readingProgress, setReadingProgress] = useState(getReadingProgress());
 
   const t = content[lang];
 
@@ -88,6 +103,17 @@ const QuranPage: React.FC = () => {
     } finally {
       setIsLoadingSurah(false);
     }
+  };
+
+  const handleMarkProgress = (ayahNumber: number) => {
+    if (!selectedSurah) return;
+    const updated = saveReadingProgress({
+      surahNumber: selectedSurah.nomor,
+      ayahNumber,
+      pageNumber: undefined,
+    });
+    setReadingProgress(updated);
+    markActiveDay();
   };
 
   const handleBack = () => {
@@ -219,6 +245,37 @@ const QuranPage: React.FC = () => {
                     )}
                   </button>
                 )}
+
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    onClick={() => handleMarkProgress(ayah.nomorAyat)}
+                    className="px-3 py-2 rounded-lg text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition-colors flex items-center gap-2"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    {t.markLast}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const bookmarkId = `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`;
+                      toggleBookmark({
+                        id: bookmarkId,
+                        type: 'ayah',
+                        title: `${selectedSurah.namaLatin} : ${ayah.nomorAyat}`,
+                        subtitle: selectedSurah.arti,
+                        content: ayah.teksIndonesia,
+                        createdAt: new Date().toISOString(),
+                      });
+                    }}
+                    className={`px-3 py-2 rounded-lg text-xs border transition-colors flex items-center gap-2 ${
+                      isBookmarked('ayah', `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`)
+                        ? 'bg-amber-500/20 border-amber-500/40 text-amber-200'
+                        : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    <Bookmark className="w-4 h-4" />
+                    {t.saveAyah}
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -273,6 +330,42 @@ const QuranPage: React.FC = () => {
         </div>
         <div className="w-9" />
       </header>
+
+      {/* Reading Progress */}
+      <div className="px-6 pt-4">
+        <Card className="bg-slate-900/50 border-slate-800">
+          <CardContent className="p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-500">{t.lastRead}</p>
+                <p className="text-sm text-white">
+                  {readingProgress
+                    ? `${t.surah} ${readingProgress.surahNumber} • ${t.ayat} ${readingProgress.ayahNumber}`
+                    : '-'}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-500">{t.target}</p>
+                <div className="flex items-center gap-2 justify-end">
+                  <input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={readingTarget}
+                    onChange={(e) => {
+                      const value = Math.max(1, Math.min(30, Number(e.target.value || 1)));
+                      setReadingTarget(value);
+                      saveReadingTarget({ dailyTargetPages: value });
+                    }}
+                    className="w-16 bg-slate-800/80 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+                  />
+                  <span className="text-xs text-slate-500">{t.pages}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Surah List */}
       <ScrollArea className="h-[calc(100vh-80px)]">

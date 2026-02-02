@@ -4,13 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, RotateCcw, Check, ChevronRight } from 'lucide-react';
 import { getProfile } from '@/lib/storage';
 import { 
-  DHIKR_PRESETS, 
   DhikrPreset, 
   getDhikrSessionForPreset, 
   saveDhikrSession,
-  getDhikrSessions
+  getDhikrSessions,
+  getDhikrPresets,
+  saveCustomDhikrPreset,
+  deleteCustomDhikrPreset
 } from '@/lib/dhikr-storage';
 import { Card, CardContent } from '@/components/ui/card';
+import { markActiveDay } from '@/lib/streak';
 
 const content = {
   id: {
@@ -41,6 +44,14 @@ const DhikrPage: React.FC = () => {
   const [target, setTarget] = useState(33);
   const [showRipple, setShowRipple] = useState(false);
   const [sessions, setSessions] = useState(getDhikrSessions());
+  const [presets, setPresets] = useState<DhikrPreset[]>(getDhikrPresets());
+  const [customForm, setCustomForm] = useState({
+    arabic: '',
+    transliteration: '',
+    meaningId: '',
+    meaningEn: '',
+    target: 33,
+  });
 
   useEffect(() => {
     const profile = getProfile();
@@ -49,6 +60,7 @@ const DhikrPage: React.FC = () => {
       return;
     }
     setLang(profile.language);
+    setPresets(getDhikrPresets());
   }, [navigate]);
 
   const t = content[lang];
@@ -87,6 +99,7 @@ const DhikrPage: React.FC = () => {
       date: today,
     });
     setSessions(getDhikrSessions());
+    markActiveDay(today);
   }, [count, selectedPreset, target]);
 
   const handleReset = () => {
@@ -237,7 +250,7 @@ const DhikrPage: React.FC = () => {
           <h3 className="text-sm text-slate-500 mb-3">{t.todayProgress}</h3>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {sessions.map(session => {
-              const preset = DHIKR_PRESETS.find(p => p.id === session.presetId);
+              const preset = presets.find(p => p.id === session.presetId);
               if (!preset) return null;
               const isComplete = session.count >= session.target;
               return (
@@ -264,7 +277,7 @@ const DhikrPage: React.FC = () => {
       <div className="px-6 py-4">
         <h3 className="text-sm text-slate-500 mb-3">{t.selectDhikr}</h3>
         <div className="space-y-3">
-          {DHIKR_PRESETS.map((preset, i) => {
+          {presets.map((preset, i) => {
             const session = sessions.find(s => s.presetId === preset.id);
             const isComplete = session && session.count >= session.target;
             
@@ -301,9 +314,86 @@ const DhikrPage: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
+                {preset.isCustom && (
+                  <button
+                    onClick={() => {
+                      deleteCustomDhikrPreset(preset.id);
+                      setPresets(getDhikrPresets());
+                    }}
+                    className="mt-2 text-xs text-rose-300 hover:text-rose-200"
+                  >
+                    {lang === 'id' ? 'Hapus custom' : 'Delete custom'}
+                  </button>
+                )}
               </motion.div>
             );
           })}
+        </div>
+
+        {/* Custom Dhikr Creator */}
+        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-3">
+          <p className="text-white font-medium text-sm">
+            {lang === 'id' ? 'Tambah Dzikir Custom' : 'Add Custom Dhikr'}
+          </p>
+          <input
+            value={customForm.arabic}
+            onChange={(e) => setCustomForm({ ...customForm, arabic: e.target.value })}
+            placeholder={lang === 'id' ? 'Teks Arab' : 'Arabic text'}
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
+          />
+          <input
+            value={customForm.transliteration}
+            onChange={(e) => setCustomForm({ ...customForm, transliteration: e.target.value })}
+            placeholder={lang === 'id' ? 'Transliterasi' : 'Transliteration'}
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
+          />
+          <input
+            value={customForm.meaningId}
+            onChange={(e) => setCustomForm({ ...customForm, meaningId: e.target.value })}
+            placeholder={lang === 'id' ? 'Arti (ID)' : 'Meaning (ID)'}
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
+          />
+          <input
+            value={customForm.meaningEn}
+            onChange={(e) => setCustomForm({ ...customForm, meaningEn: e.target.value })}
+            placeholder={lang === 'id' ? 'Arti (EN)' : 'Meaning (EN)'}
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
+          />
+          <input
+            type="number"
+            min={1}
+            value={customForm.target}
+            onChange={(e) => setCustomForm({ ...customForm, target: Number(e.target.value || 1) })}
+            placeholder={lang === 'id' ? 'Target' : 'Target'}
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
+          />
+          <button
+            onClick={() => {
+              if (!customForm.transliteration.trim()) return;
+              saveCustomDhikrPreset({
+                id: `custom-${Date.now()}`,
+                arabic: customForm.arabic || customForm.transliteration,
+                transliteration: customForm.transliteration,
+                meaning: {
+                  id: customForm.meaningId || customForm.transliteration,
+                  en: customForm.meaningEn || customForm.transliteration,
+                },
+                defaultTarget: customForm.target || 33,
+                isCustom: true,
+              });
+              setCustomForm({
+                arabic: '',
+                transliteration: '',
+                meaningId: '',
+                meaningEn: '',
+                target: 33,
+              });
+              setPresets(getDhikrPresets());
+            }}
+            className="w-full py-3 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-sm font-medium hover:bg-amber-500/30"
+          >
+            {lang === 'id' ? 'Simpan Dzikir' : 'Save Dhikr'}
+          </button>
         </div>
       </div>
     </div>

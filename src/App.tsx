@@ -12,6 +12,9 @@ import DhikrPage from "./pages/DhikrPage";
 import DoaPage from "./pages/DoaPage";
 import TrackerPage from "./pages/TrackerPage";
 import QuranPage from "./pages/QuranPage";
+import SettingsPage from "./pages/SettingsPage";
+import ReflectionPage from "./pages/ReflectionPage";
+import BookmarksPage from "./pages/BookmarksPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +35,9 @@ const App = () => (
             <Route path="/doa" element={<DoaPage />} />
             <Route path="/tracker" element={<TrackerPage />} />
             <Route path="/quran" element={<QuranPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/reflection" element={<ReflectionPage />} />
+            <Route path="/bookmarks" element={<BookmarksPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

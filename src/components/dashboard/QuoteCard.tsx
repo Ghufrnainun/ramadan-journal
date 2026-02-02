@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Quote as QuoteIcon, Bookmark } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Quote } from '@/data/daily-quotes';
+import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
 
 interface QuoteCardProps {
   lang: 'id' | 'en';
@@ -11,6 +12,8 @@ interface QuoteCardProps {
 
 const QuoteCard: React.FC<QuoteCardProps> = ({ lang, quote }) => {
   const text = lang === 'id' ? quote.textId : quote.textEn;
+  const bookmarkId = useMemo(() => `quote-${quote.id}`, [quote.id]);
+  const [saved, setSaved] = useState(() => isBookmarked('quote', bookmarkId));
 
   return (
     <motion.div
@@ -32,8 +35,22 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ lang, quote }) => {
                 — {quote.source}
               </p>
             </div>
-            <button className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors flex-shrink-0">
-              <Bookmark className="w-4 h-4 text-slate-500 hover:text-amber-400" />
+            <button
+              onClick={() => {
+                const next = toggleBookmark({
+                  id: bookmarkId,
+                  type: 'quote',
+                  title: text.slice(0, 60),
+                  subtitle: quote.source,
+                  content: text,
+                  source: quote.source,
+                  createdAt: new Date().toISOString(),
+                });
+                setSaved(next);
+              }}
+              className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors flex-shrink-0"
+            >
+              <Bookmark className={`w-4 h-4 ${saved ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400'}`} />
             </button>
           </div>
         </CardContent>

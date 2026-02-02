@@ -6,7 +6,9 @@ import LocationStep from './onboarding/steps/LocationStep';
 import CalendarStep from './onboarding/steps/CalendarStep';
 import FocusStep from './onboarding/steps/FocusStep';
 import RemindersStep from './onboarding/steps/RemindersStep';
-import { getProfile, saveProfile, UserProfile } from '@/lib/storage';
+import { getProfile, UserProfile } from '@/lib/storage';
+import { saveProfileAndSync } from '@/lib/profile-sync';
+import { useAuth } from '@/hooks/useAuth';
 
 const TOTAL_STEPS = 5;
 
@@ -14,6 +16,7 @@ const OnboardingPage: React.FC = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const stored = getProfile();
@@ -37,7 +40,7 @@ const OnboardingPage: React.FC = () => {
       reminders,
       onboardingCompleted: true,
     };
-    saveProfile(finalProfile);
+    void saveProfileAndSync(finalProfile, user?.id);
     navigate('/dashboard');
   };
 
@@ -58,7 +61,7 @@ const OnboardingPage: React.FC = () => {
           initialCity={profile.location}
           onNext={(location) => {
             updateProfile({ location });
-            saveProfile({ location });
+            void saveProfileAndSync({ location }, user?.id);
             setStep(2);
           }}
           onBack={() => setStep(0)}
@@ -71,7 +74,7 @@ const OnboardingPage: React.FC = () => {
           initialDate={profile.ramadanStartDate}
           onNext={(date) => {
             updateProfile({ ramadanStartDate: date });
-            saveProfile({ ramadanStartDate: date });
+            void saveProfileAndSync({ ramadanStartDate: date }, user?.id);
             setStep(3);
           }}
           onBack={() => setStep(1)}
@@ -84,7 +87,7 @@ const OnboardingPage: React.FC = () => {
           initialModules={profile.focusModules}
           onNext={(modules) => {
             updateProfile({ focusModules: modules });
-            saveProfile({ focusModules: modules });
+            void saveProfileAndSync({ focusModules: modules }, user?.id);
             setStep(4);
           }}
           onBack={() => setStep(2)}
