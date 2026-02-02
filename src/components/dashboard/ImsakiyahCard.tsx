@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Sunrise, Moon, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { equranApi, ImsakiyahItem } from '@/lib/api/equran';
+import { getCityMapping } from '@/lib/prayer-times';
 
 interface ImsakiyahCardProps {
   lang: 'id' | 'en';
@@ -31,9 +32,15 @@ const content = {
   },
 };
 
-const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({ lang, provinsi, kabkota }) => {
+const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
+  lang,
+  provinsi,
+  kabkota,
+}) => {
   const t = content[lang];
-  const [todaySchedule, setTodaySchedule] = useState<ImsakiyahItem | null>(null);
+  const [todaySchedule, setTodaySchedule] = useState<ImsakiyahItem | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,30 +48,33 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({ lang, provinsi, kabkota }
     const loadImsakiyah = async () => {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         const now = new Date();
         const tahun = now.getFullYear();
-        
+
+        // Use mapping to ensure correct city name for API
+        const mapping = getCityMapping(kabkota);
+
         // Fetch Ramadan schedule for the current year
         const schedule = await equranApi.getJadwalImsakiyah(
-          provinsi, 
-          kabkota, 
-          tahun
+          mapping.provinsi,
+          mapping.kabkota,
+          tahun,
         );
-        
+
         if (!schedule || schedule.length === 0) {
           setError('noData');
           return;
         }
-        
+
         // Find today's schedule
         const today = now.toISOString().split('T')[0];
-        const todayData = schedule.find(item => {
+        const todayData = schedule.find((item) => {
           const itemDate = new Date(item.tanggal).toISOString().split('T')[0];
           return itemDate === today;
         });
-        
+
         if (todayData) {
           setTodaySchedule(todayData);
         } else {
@@ -172,16 +182,19 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({ lang, provinsi, kabkota }
               </p>
             </div>
           </div>
-          
+
           {/* Date display */}
           <div className="mt-3 text-center">
             <p className="text-xs text-slate-400">
-              {new Date(todaySchedule.tanggal).toLocaleDateString(lang === 'id' ? 'id-ID' : 'en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+              {new Date(todaySchedule.tanggal).toLocaleDateString(
+                lang === 'id' ? 'id-ID' : 'en-US',
+                {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                },
+              )}
             </p>
           </div>
         </CardContent>
