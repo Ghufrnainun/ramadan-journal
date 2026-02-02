@@ -17,7 +17,7 @@ export interface PrayerTimes {
 }
 
 // Cache for prayer times
-let cachedPrayerTimes: { [key: string]: { times: PrayerTimes; date: string } } = {};
+const cachedPrayerTimes: { [key: string]: { times: PrayerTimes; date: string } } = {};
 
 // Province mapping for common cities
 const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> = {
@@ -179,7 +179,7 @@ export const getTimeUntilNext = (nextTime: string): string => {
   const [hours, minutes] = nextTime.split(':').map(Number);
   
   let targetMinutes = hours * 60 + minutes;
-  let currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
   
   // If next prayer is tomorrow (Subuh after Isya)
   if (targetMinutes < currentMinutes) {
