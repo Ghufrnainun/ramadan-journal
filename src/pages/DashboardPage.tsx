@@ -7,6 +7,7 @@ import { getTodayQuote } from '@/data/daily-quotes';
 import CountdownCard from '@/components/dashboard/CountdownCard';
 import QuoteCard from '@/components/dashboard/QuoteCard';
 import PrayerTimesCard from '@/components/dashboard/PrayerTimesCard';
+import ImsakiyahCard from '@/components/dashboard/ImsakiyahCard';
 import QuickActions from '@/components/dashboard/QuickActions';
 
 const DashboardPage: React.FC = () => {
@@ -52,6 +53,18 @@ const DashboardPage: React.FC = () => {
       reflection: '/dashboard',
     };
     navigate(routes[module] || '/dashboard');
+  };
+
+  // Check if we're currently in Ramadan
+  const isInRamadan = () => {
+    if (!profile.ramadanStartDate) return false;
+    
+    const now = new Date();
+    const ramadanStart = new Date(profile.ramadanStartDate);
+    const ramadanEnd = new Date(ramadanStart);
+    ramadanEnd.setDate(ramadanEnd.getDate() + 30); // Ramadan is typically 29-30 days
+    
+    return now >= ramadanStart && now <= ramadanEnd;
   };
 
   return (
@@ -102,6 +115,16 @@ const DashboardPage: React.FC = () => {
           lang={lang} 
           ramadanStartDate={profile.ramadanStartDate} 
         />
+
+        {/* Imsakiyah Card - Show only during Ramadan */}
+        {profile.location && isInRamadan() && (
+          <ImsakiyahCard 
+            lang={lang} 
+            city={profile.location.city}
+            provinsi={profile.location.province}
+            kabkota={profile.location.city}
+          />
+        )}
 
         {/* Prayer Times Card */}
         {profile.location && (
