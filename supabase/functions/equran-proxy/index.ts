@@ -4,6 +4,7 @@ const corsHeaders = {
 };
 
 const EQURAN_BASE_URL = 'https://equran.id/api';
+const EQURAN_DOA_BASE_URL = 'https://equran.id/apidev';
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -24,14 +25,14 @@ Deno.serve(async (req) => {
     }
 
     // Build the correct URL based on endpoint type
-    // - Doa uses /api/doa (no version prefix)
+    // - Doa uses /apidev/doa (no version prefix)
     // - Quran uses /api/v2/surat, /api/v2/tafsir
     // - Shalat uses /api/v2/shalat
     let apiUrl: string;
     const isDoa = endpoint.startsWith('doa');
     
     if (isDoa) {
-      apiUrl = `${EQURAN_BASE_URL}/${endpoint}`;
+      apiUrl = `${EQURAN_DOA_BASE_URL}/${endpoint}`;
     } else {
       apiUrl = `${EQURAN_BASE_URL}/${apiVersion}/${endpoint}`;
     }
