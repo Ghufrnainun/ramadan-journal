@@ -47,6 +47,7 @@ const DashboardPage: React.FC = () => {
     const routes: Record<string, string> = {
       quran: '/quran',
       dhikr: '/dhikr',
+      doa: '/doa',
       tracker: '/tracker',
       reflection: '/dashboard', // TODO: Create reflection page
     };

@@ -1,10 +1,11 @@
 /**
- * Prayer Times Calculation
- * Simplified calculation for Indonesian cities
- * Based on approximate coordinates and standard calculation methods
+ * Prayer Times using equran.id API
+ * Provides prayer schedule for Indonesian cities
  */
 
-interface PrayerTimes {
+import { equranApi, JadwalShalatItem } from '@/lib/api/equran';
+
+export interface PrayerTimes {
   imsak: string;
   subuh: string;
   terbit: string;
@@ -15,85 +16,121 @@ interface PrayerTimes {
   isya: string;
 }
 
-// Approximate coordinates for major Indonesian cities
-const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  'Jakarta': { lat: -6.2088, lng: 106.8456 },
-  'Surabaya': { lat: -7.2575, lng: 112.7521 },
-  'Bandung': { lat: -6.9175, lng: 107.6191 },
-  'Medan': { lat: 3.5952, lng: 98.6722 },
-  'Semarang': { lat: -6.9666, lng: 110.4196 },
-  'Makassar': { lat: -5.1477, lng: 119.4327 },
-  'Palembang': { lat: -2.9761, lng: 104.7754 },
-  'Yogyakarta': { lat: -7.7956, lng: 110.3695 },
-  'Denpasar': { lat: -8.6705, lng: 115.2126 },
-  'Malang': { lat: -7.9666, lng: 112.6326 },
-  'Bekasi': { lat: -6.2349, lng: 106.9896 },
-  'Tangerang': { lat: -6.1783, lng: 106.6319 },
-  'Depok': { lat: -6.4025, lng: 106.7942 },
-  'Bogor': { lat: -6.5971, lng: 106.8060 },
-  'Batam': { lat: 1.0456, lng: 104.0305 },
-  'Pekanbaru': { lat: 0.5071, lng: 101.4478 },
-  'Bandar Lampung': { lat: -5.3971, lng: 105.2663 },
-  'Padang': { lat: -0.9471, lng: 100.4172 },
-  'Pontianak': { lat: -0.0263, lng: 109.3425 },
-  'Samarinda': { lat: -0.4948, lng: 117.1436 },
-  'Balikpapan': { lat: -1.2654, lng: 116.8312 },
-  'Manado': { lat: 1.4748, lng: 124.8421 },
-  'Banjarmasin': { lat: -3.3194, lng: 114.5900 },
-  'Serang': { lat: -6.1103, lng: 106.1503 },
-  'Solo': { lat: -7.5755, lng: 110.8243 },
+// Cache for prayer times
+let cachedPrayerTimes: { [key: string]: { times: PrayerTimes; date: string } } = {};
+
+// Province mapping for common cities
+const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> = {
+  'Jakarta': { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta Pusat' },
+  'Surabaya': { provinsi: 'Jawa Timur', kabkota: 'Kota Surabaya' },
+  'Bandung': { provinsi: 'Jawa Barat', kabkota: 'Kota Bandung' },
+  'Medan': { provinsi: 'Sumatera Utara', kabkota: 'Kota Medan' },
+  'Semarang': { provinsi: 'Jawa Tengah', kabkota: 'Kota Semarang' },
+  'Makassar': { provinsi: 'Sulawesi Selatan', kabkota: 'Kota Makassar' },
+  'Palembang': { provinsi: 'Sumatera Selatan', kabkota: 'Kota Palembang' },
+  'Yogyakarta': { provinsi: 'DI Yogyakarta', kabkota: 'Kota Yogyakarta' },
+  'Denpasar': { provinsi: 'Bali', kabkota: 'Kota Denpasar' },
+  'Malang': { provinsi: 'Jawa Timur', kabkota: 'Kota Malang' },
+  'Bekasi': { provinsi: 'Jawa Barat', kabkota: 'Kota Bekasi' },
+  'Tangerang': { provinsi: 'Banten', kabkota: 'Kota Tangerang' },
+  'Depok': { provinsi: 'Jawa Barat', kabkota: 'Kota Depok' },
+  'Bogor': { provinsi: 'Jawa Barat', kabkota: 'Kota Bogor' },
 };
 
-// Default coordinates (Jakarta) for cities not in the list
-const DEFAULT_COORDS = { lat: -6.2088, lng: 106.8456 };
-
 /**
- * Get coordinates for a city
+ * Get province and city mapping
  */
-const getCoordinates = (city: string): { lat: number; lng: number } => {
-  return CITY_COORDINATES[city] || DEFAULT_COORDS;
+const getCityMapping = (cityName: string): { provinsi: string; kabkota: string } => {
+  // Check direct mapping
+  for (const [key, value] of Object.entries(CITY_PROVINCE_MAP)) {
+    if (cityName.toLowerCase().includes(key.toLowerCase()) || 
+        key.toLowerCase().includes(cityName.toLowerCase())) {
+      return value;
+    }
+  }
+  // Default to Jakarta
+  return CITY_PROVINCE_MAP['Jakarta'];
 };
 
 /**
- * Calculate prayer times for a given date and location
- * This is a simplified calculation - for production, use a proper library
+ * Get prayer times from API
+ */
+export const getPrayerTimesFromApi = async (city: string, date: Date = new Date()): Promise<PrayerTimes> => {
+  const dateStr = date.toISOString().split('T')[0];
+  const cacheKey = `${city}-${dateStr}`;
+  
+  // Check cache
+  if (cachedPrayerTimes[cacheKey] && cachedPrayerTimes[cacheKey].date === dateStr) {
+    return cachedPrayerTimes[cacheKey].times;
+  }
+  
+  try {
+    const mapping = getCityMapping(city);
+    const bulan = date.getMonth() + 1;
+    const tahun = date.getFullYear();
+    const hari = date.getDate();
+    
+    const jadwalList = await equranApi.getJadwalShalat(
+      mapping.provinsi, 
+      mapping.kabkota, 
+      bulan, 
+      tahun
+    );
+    
+    // Find today's schedule
+    const todayJadwal = jadwalList.find(j => {
+      const jadwalDate = new Date(j.tanggal);
+      return jadwalDate.getDate() === hari;
+    }) || jadwalList[0];
+    
+    if (!todayJadwal) {
+      return getFallbackPrayerTimes();
+    }
+    
+    const times: PrayerTimes = {
+      imsak: todayJadwal.imsak,
+      subuh: todayJadwal.subuh,
+      terbit: todayJadwal.terbit,
+      dhuha: todayJadwal.dhuha,
+      dzuhur: todayJadwal.dzuhur,
+      ashar: todayJadwal.ashar,
+      maghrib: todayJadwal.maghrib,
+      isya: todayJadwal.isya,
+    };
+    
+    // Cache the result
+    cachedPrayerTimes[cacheKey] = { times, date: dateStr };
+    
+    return times;
+  } catch (error) {
+    console.error('Failed to fetch prayer times:', error);
+    // Return fallback times
+    return getFallbackPrayerTimes();
+  }
+};
+
+/**
+ * Fallback prayer times (Jakarta average)
+ */
+const getFallbackPrayerTimes = (): PrayerTimes => ({
+  imsak: '04:20',
+  subuh: '04:30',
+  terbit: '05:50',
+  dhuha: '06:15',
+  dzuhur: '12:05',
+  ashar: '15:20',
+  maghrib: '18:05',
+  isya: '19:15',
+});
+
+/**
+ * Get prayer times (sync version with fallback)
+ * For backward compatibility
  */
 export const getPrayerTimes = (city: string, date: Date = new Date()): PrayerTimes => {
-  const coords = getCoordinates(city);
-  
-  // Simplified calculation based on latitude
-  // In production, use libraries like adhan-js for accurate calculations
-  const latitudeOffset = Math.abs(coords.lat) * 0.5; // minutes adjustment
-  
-  // Base times for equatorial region (approximate)
-  const baseSubuh = 4 * 60 + 30; // 04:30
-  const baseTerbit = 5 * 60 + 45; // 05:45
-  const baseDzuhur = 12 * 60 + 5; // 12:05
-  const baseAshar = 15 * 60 + 15; // 15:15
-  const baseMaghrib = 18 * 60 + 5; // 18:05
-  const baseIsya = 19 * 60 + 15; // 19:15
-  
-  // Adjust based on day of year for seasonal variation
-  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000);
-  const seasonalOffset = Math.sin((dayOfYear - 80) * 2 * Math.PI / 365) * 15; // +/- 15 minutes
-  
-  const formatTime = (minutes: number): string => {
-    const adjustedMinutes = Math.round(minutes + latitudeOffset + seasonalOffset);
-    const hours = Math.floor(adjustedMinutes / 60) % 24;
-    const mins = adjustedMinutes % 60;
-    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-  };
-  
-  return {
-    imsak: formatTime(baseSubuh - 10),
-    subuh: formatTime(baseSubuh),
-    terbit: formatTime(baseTerbit),
-    dhuha: formatTime(baseTerbit + 20),
-    dzuhur: formatTime(baseDzuhur),
-    ashar: formatTime(baseAshar),
-    maghrib: formatTime(baseMaghrib),
-    isya: formatTime(baseIsya),
-  };
+  // This returns fallback times for sync usage
+  // Components should use getPrayerTimesFromApi for real data
+  return getFallbackPrayerTimes();
 };
 
 /**

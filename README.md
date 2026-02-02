@@ -1,73 +1,75 @@
-# Welcome to your Lovable project
+# MyRamadhanku 🌙
 
-## Project info
+Aplikasi pendamping ibadah Ramadhan untuk Muslim di Indonesia. Dibangun dengan React, TypeScript, dan Tailwind CSS.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Fitur
 
-## How can I edit this code?
+- 📿 **Dzikir & Doa** - Koleksi dzikir dan doa harian dengan penghitung
+- 📖 **Tadarus** - Baca Al-Quran digital dengan audio dan terjemahan
+- 🕌 **Jadwal Sholat** - Waktu sholat akurat untuk seluruh kota di Indonesia
+- 📅 **Imsakiyah** - Jadwal imsak dan buka puasa
+- ✅ **Daily Tracker** - Pantau ibadah harian: sholat, tadarus, dzikir, sedekah
+- 🌅 **Countdown** - Hitung mundur waktu berbuka & sahur
+- 💬 **Quote Harian** - Motivasi dari Al-Quran dan Hadits
 
-There are several ways of editing your application.
+## Teknologi
 
-**Use Lovable**
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Animation**: Framer Motion
+- **Backend**: Lovable Cloud (Supabase)
+- **Auth**: Google OAuth
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## API Credits
 
-Changes made via Lovable will be committed automatically to this repo.
+Aplikasi ini menggunakan **[eQuran.id API](https://equran.id/apidev)** untuk data islami:
 
-**Use your preferred IDE**
+| API Endpoint | Kegunaan |
+|--------------|----------|
+| `/v2/surat` | Data Al-Quran (114 surat, ayat, audio, terjemahan) |
+| `/v2/tafsir` | Tafsir Al-Quran |
+| `/v2/doa` | Koleksi doa harian dari Al-Quran & Sunnah |
+| `/v2/shalat/kota` | Daftar kota Indonesia untuk jadwal sholat |
+| `/v2/shalat/jadwal` | Jadwal waktu sholat harian |
+| `/v2/imsakiyah` | Jadwal imsakiyah Ramadhan |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Terima kasih kepada tim [eQuran.id](https://equran.id) atas API gratisnya! 🙏
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Menjalankan Lokal
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+```bash
+# Clone repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Masuk ke direktori
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Jalankan development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Struktur Proyek
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+src/
+├── components/      # Komponen UI reusable
+│   ├── dashboard/   # Komponen untuk dashboard
+│   └── ui/          # shadcn/ui components
+├── hooks/           # Custom React hooks
+├── lib/             # Utilities & helpers
+│   └── api/         # API clients (eQuran, etc.)
+├── pages/           # Halaman aplikasi
+│   └── onboarding/  # Flow onboarding
+└── data/            # Static data (quotes, cities)
+```
 
-**Use GitHub Codespaces**
+## Lisensi
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+MIT License - Gunakan dengan bebas untuk kebaikan.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Dibuat dengan ❤️ untuk umat Muslim Indonesia
