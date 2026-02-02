@@ -46,11 +46,12 @@ export interface TafsirDetail {
 export interface Doa {
   id: number;
   nama: string;
-  arab: string;
-  latin: string;
-  arti: string;
+  ar: string;      // Arabic text
+  tr: string;      // Transliteration
+  idn: string;     // Indonesian translation
   grup?: string;
   tag?: string[];
+  tentang?: string;
 }
 
 // ============ SHALAT TYPES ============
