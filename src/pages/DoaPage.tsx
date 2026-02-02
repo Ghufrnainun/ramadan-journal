@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, RotateCcw, Check, ChevronRight, Loader2, BookOpen } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Check, ChevronRight, Loader2, BookOpen, Bookmark } from 'lucide-react';
 import { getProfile } from '@/lib/storage';
 import { equranApi, Doa } from '@/lib/api/equran';
 import { getDoaSessions, saveDoaSession, getDoaSessionById, DoaSession } from '@/lib/doa-storage';
+import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
+import { markActiveDay } from '@/lib/streak';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -53,6 +55,7 @@ const DoaPage: React.FC = () => {
   const [showRipple, setShowRipple] = useState(false);
   const [sessions, setSessions] = useState<DoaSession[]>(getDoaSessions());
   const [mode, setMode] = useState<'read' | 'counter'>('read');
+  const [isBookmarkedDoa, setIsBookmarkedDoa] = useState(false);
 
   const t = content[lang];
 
@@ -82,6 +85,7 @@ const DoaPage: React.FC = () => {
 
   const handleSelectDoa = (doa: Doa) => {
     setSelectedDoa(doa);
+    setIsBookmarkedDoa(isBookmarked('doa', `doa-${doa.id}`));
     const existing = getDoaSessionById(doa.id);
     if (existing) {
       setCount(existing.count);
@@ -112,6 +116,7 @@ const DoaPage: React.FC = () => {
       date: today,
     });
     setSessions(getDoaSessions());
+    markActiveDay(today);
   }, [count, selectedDoa, target, mode]);
 
   const handleReset = () => {
@@ -145,15 +150,32 @@ const DoaPage: React.FC = () => {
           <span className="font-medium text-white text-sm truncate max-w-[200px]">
             {selectedDoa.nama}
           </span>
-          {mode === 'counter' && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={handleReset}
-              className="p-2 -mr-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+              onClick={() => {
+                const next = toggleBookmark({
+                  id: `doa-${selectedDoa.id}`,
+                  type: 'doa',
+                  title: selectedDoa.nama,
+                  subtitle: selectedDoa.tentang || selectedDoa.grup || 'Doa',
+                  content: selectedDoa.idn,
+                  createdAt: new Date().toISOString(),
+                });
+                setIsBookmarkedDoa(next);
+              }}
+              className="p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
             >
-              <RotateCcw className="w-5 h-5 text-slate-400" />
+              <Bookmark className={`w-5 h-5 ${isBookmarkedDoa ? 'text-amber-400' : 'text-slate-400'}`} />
             </button>
-          )}
-          {mode === 'read' && <div className="w-9" />}
+            {mode === 'counter' && (
+              <button
+                onClick={handleReset}
+                className="p-2 -mr-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+              >
+                <RotateCcw className="w-5 h-5 text-slate-400" />
+              </button>
+            )}
+          </div>
         </header>
 
         {/* Mode Toggle */}

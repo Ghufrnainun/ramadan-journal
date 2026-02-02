@@ -7,6 +7,19 @@ A calm, premium Ramadan companion PWA with a cinematic marketing landing page, b
 
 ---
 
+## Implementation Notes (Current)
+Status as of now (codebase is implemented through Phase 8):
+- eQuran API integration via Supabase edge proxy (equran.id/api/v2 + equran.id/apidev)
+- Quran (surah/ayah/tafsir), Doa, Shalat, and Imsakiyah live in app
+- Dashboard includes countdown, imsakiyah, prayer times, daily intention/mood, quote, and quick actions
+- Reflection page with prompts, autosave, share card generator, and gentle streak
+- Bookmarks (quote/ayah/doa/reflection) with local storage
+- Settings page: language, location, Ramadan/Eid dates, reminders, silent mode, hide streak, notifications
+- Guest mode local storage + optional Supabase profile sync
+- PWA manifest, service worker, offline fallback
+
+---
+
 ## Phase 1: Cinematic Landing Page + Foundation
 **The premium "night Ramadan journal" landing experience**
 
@@ -51,6 +64,7 @@ A calm, premium Ramadan companion PWA with a cinematic marketing landing page, b
 - Connect your Supabase project
 - Auth with email/password
 - Clean auth pages matching the calm design
+ - eQuran API proxy via Supabase Edge Function (equran-proxy)
 
 ### Database Schema
 **Tables:**
@@ -101,8 +115,8 @@ Saves to profile (logged in) or localStorage (guest)
 - **Mood tracker** — Simple 😌 😐 😫 selector
 
 ### Prayer Times
-- Fetch from lightweight API (cached in DB or localStorage)
-- Location-based for Indonesian cities
+- Fetch from eQuran API (shalat endpoint)
+- Location-based for Indonesian cities (province/city selection)
 - Graceful fallback with retry on failure
 
 ### Daily Tracker (Checklist)
@@ -119,7 +133,7 @@ Saves to profile (logged in) or localStorage (guest)
 - Works offline, syncs when connected
 
 ### Quran/Tadarus Progress
-- Static JSON dataset (Arabic + translation)
+- eQuran API (surah/ayah/tafsir, audio)
 - Lazy-loaded reader component
 - Track: last surah/ayah/page
 - Daily target (default 1 juz)

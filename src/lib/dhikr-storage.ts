@@ -9,6 +9,7 @@ export interface DhikrPreset {
   transliteration: string;
   meaning: { id: string; en: string };
   defaultTarget: number;
+  isCustom?: boolean;
 }
 
 export interface DhikrSession {
@@ -64,6 +65,7 @@ export const DHIKR_PRESETS: DhikrPreset[] = [
 ];
 
 const STORAGE_KEY = 'myramadhanku_dhikr';
+const PRESETS_KEY = 'myramadhanku_dhikr_presets';
 
 const getTodayDate = (): string => {
   return new Date().toISOString().split('T')[0];
@@ -82,6 +84,42 @@ export const getDhikrSessions = (): DhikrSession[] => {
     console.error('Error reading dhikr sessions:', e);
   }
   return [];
+};
+
+export const getCustomDhikrPresets = (): DhikrPreset[] => {
+  try {
+    const stored = localStorage.getItem(PRESETS_KEY);
+    if (stored) {
+      const presets = JSON.parse(stored) as DhikrPreset[];
+      return Array.isArray(presets) ? presets : [];
+    }
+  } catch (e) {
+    console.error('Error reading dhikr presets:', e);
+  }
+  return [];
+};
+
+export const saveCustomDhikrPreset = (preset: DhikrPreset): void => {
+  try {
+    const current = getCustomDhikrPresets();
+    const updated = [{ ...preset, isCustom: true }, ...current];
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.error('Error saving dhikr preset:', e);
+  }
+};
+
+export const deleteCustomDhikrPreset = (presetId: string): void => {
+  try {
+    const current = getCustomDhikrPresets().filter(p => p.id !== presetId);
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(current));
+  } catch (e) {
+    console.error('Error deleting dhikr preset:', e);
+  }
+};
+
+export const getDhikrPresets = (): DhikrPreset[] => {
+  return [...DHIKR_PRESETS, ...getCustomDhikrPresets()];
 };
 
 export const saveDhikrSession = (session: DhikrSession): void => {

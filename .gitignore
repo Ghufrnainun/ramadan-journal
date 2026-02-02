@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+.agent
+.agents
+.codex
+.github
+.claude
+.cursor
+.gemini

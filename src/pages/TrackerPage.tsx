@@ -7,10 +7,12 @@ import {
   DEFAULT_TRACKER_ITEMS, 
   getTodayProgress, 
   toggleItem,
+  updateNote,
   getCompletedCount,
   getTotalItems 
 } from '@/lib/tracker-storage';
 import { Card, CardContent } from '@/components/ui/card';
+import { markActiveDay } from '@/lib/streak';
 
 const content = {
   id: {
@@ -20,6 +22,7 @@ const content = {
     encouragement: 'MasyaAllah! Kamu luar biasa! 🌟',
     keepGoing: 'Terus semangat! 💪',
     startDay: 'Yuk mulai hari ini! ✨',
+    notePlaceholder: 'Catatan singkat...',
   },
   en: {
     title: 'Daily Tracker',
@@ -28,6 +31,7 @@ const content = {
     encouragement: 'MashaAllah! You are amazing! 🌟',
     keepGoing: 'Keep going! 💪',
     startDay: "Let's start today! ✨",
+    notePlaceholder: 'Quick note...',
   },
 };
 
@@ -62,6 +66,7 @@ const TrackerPage: React.FC = () => {
     const updated = toggleItem(itemId);
     setProgress(updated);
     setCompletedCount(Object.values(updated.items).filter(Boolean).length);
+    markActiveDay(updated.date);
   };
 
   const getMessage = () => {
@@ -177,6 +182,17 @@ const TrackerPage: React.FC = () => {
                   </motion.span>
                 )}
               </button>
+              <div className="mt-2">
+                <textarea
+                  value={progress.notes[item.id] || ''}
+                  onChange={(e) => {
+                    const updated = updateNote(item.id, e.target.value);
+                    setProgress(updated);
+                  }}
+                  placeholder={t.notePlaceholder}
+                  className="w-full bg-slate-800/40 border border-slate-700/70 rounded-xl px-3 py-2 text-xs text-slate-300 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                />
+              </div>
             </motion.div>
           );
         })}

@@ -4,11 +4,14 @@ import { motion } from 'framer-motion';
 import { Moon, Settings, MapPin } from 'lucide-react';
 import { getProfile, UserProfile } from '@/lib/storage';
 import { getTodayQuote } from '@/data/daily-quotes';
+import { getRamadanInfo, getRamadanGreeting } from '@/lib/ramadan-dates';
 import CountdownCard from '@/components/dashboard/CountdownCard';
 import QuoteCard from '@/components/dashboard/QuoteCard';
 import PrayerTimesCard from '@/components/dashboard/PrayerTimesCard';
 import ImsakiyahCard from '@/components/dashboard/ImsakiyahCard';
 import QuickActions from '@/components/dashboard/QuickActions';
+import RemindersBanner from '@/components/dashboard/RemindersBanner';
+import DailyStatusCard from '@/components/dashboard/DailyStatusCard';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,33 +19,26 @@ const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     const stored = getProfile();
-    
+
     // If not completed onboarding, redirect
     if (!stored.onboardingCompleted) {
       navigate('/onboarding');
       return;
     }
-    
+
     setProfile(stored);
   }, [navigate]);
 
   if (!profile) return null;
 
   const lang = profile.language;
-  const quote = getTodayQuote(profile.ramadanStartDate ? new Date(profile.ramadanStartDate) : null);
+  const quote = getTodayQuote(
+    profile.ramadanStartDate ? new Date(profile.ramadanStartDate) : null,
+  );
 
-  const content = {
-    id: {
-      greeting: 'Marhaban ya Ramadan',
-      subtitle: 'Selamat menjalankan ibadah',
-    },
-    en: {
-      greeting: 'Welcome to Ramadan',
-      subtitle: 'May your worship be accepted',
-    },
-  };
-
-  const t = content[lang];
+  // Get dynamic greeting based on Ramadan status
+  const ramadanInfo = getRamadanInfo();
+  const greeting = getRamadanGreeting(lang, ramadanInfo.status);
 
   const handleNavigate = (module: string) => {
     const routes: Record<string, string> = {
@@ -50,22 +46,9 @@ const DashboardPage: React.FC = () => {
       dhikr: '/dhikr',
       doa: '/doa',
       tracker: '/tracker',
-      reflection: '/dashboard',
+      reflection: '/reflection',
     };
     navigate(routes[module] || '/dashboard');
-  };
-
-  // Check if we're currently in Ramadan
-  // Ramadan is typically 29-30 days based on lunar calendar
-  const isInRamadan = () => {
-    if (!profile.ramadanStartDate) return false;
-    
-    const now = new Date();
-    const ramadanStart = new Date(profile.ramadanStartDate);
-    const ramadanEnd = new Date(ramadanStart);
-    ramadanEnd.setDate(ramadanEnd.getDate() + 30); // Ramadan duration (29-30 days)
-    
-    return now >= ramadanStart && now <= ramadanEnd;
   };
 
   return (
@@ -92,8 +75,10 @@ const DashboardPage: React.FC = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="font-serif text-2xl text-white mb-1">{t.greeting}</h1>
-          <p className="text-slate-400 text-sm">{t.subtitle}</p>
+          <h1 className="font-serif text-2xl text-white mb-1">
+            {greeting.greeting}
+          </h1>
+          <p className="text-slate-400 text-sm">{greeting.subtitle}</p>
         </motion.div>
 
         {/* Location Badge */}
@@ -111,16 +96,25 @@ const DashboardPage: React.FC = () => {
           </motion.div>
         )}
 
+        {/* Reminders Banner */}
+        {profile.location && (
+          <RemindersBanner
+            lang={lang}
+            location={profile.location}
+            ramadanStartDate={profile.ramadanStartDate}
+            ramadanEndDate={profile.ramadanEndDate || null}
+            reminders={profile.reminders}
+            silentMode={profile.silentMode}
+          />
+        )}
+
         {/* Countdown Card */}
-        <CountdownCard 
-          lang={lang} 
-          ramadanStartDate={profile.ramadanStartDate} 
-        />
+        <CountdownCard lang={lang} />
 
         {/* Imsakiyah Card - Show only during Ramadan */}
-        {profile.location && isInRamadan() && (
-          <ImsakiyahCard 
-            lang={lang} 
+        {profile.location && ramadanInfo.status === 'during' && (
+          <ImsakiyahCard
+            lang={lang}
             provinsi={profile.location.province}
             kabkota={profile.location.city}
           />
@@ -128,18 +122,18 @@ const DashboardPage: React.FC = () => {
 
         {/* Prayer Times Card */}
         {profile.location && (
-          <PrayerTimesCard 
-            lang={lang} 
-            city={profile.location.city} 
-          />
+          <PrayerTimesCard lang={lang} city={profile.location.city} />
         )}
 
         {/* Quote of the Day */}
         <QuoteCard lang={lang} quote={quote} />
 
+        {/* Daily Intention & Mood */}
+        <DailyStatusCard lang={lang} />
+
         {/* Quick Actions */}
-        <QuickActions 
-          lang={lang} 
+        <QuickActions
+          lang={lang}
           focusModules={profile.focusModules}
           onNavigate={handleNavigate}
         />
@@ -152,38 +146,77 @@ const DashboardPage: React.FC = () => {
             <Moon className="w-5 h-5" />
             <span className="text-xs">Home</span>
           </button>
-          <button 
+          <button
             onClick={() => navigate('/quran')}
             className="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-400 transition-colors"
           >
             <motion.div whileTap={{ scale: 0.9 }}>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
               </svg>
             </motion.div>
             <span className="text-xs">Quran</span>
           </button>
-          <button 
+          <button
             onClick={() => navigate('/dhikr')}
             className="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-400 transition-colors"
           >
             <motion.div whileTap={{ scale: 0.9 }}>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
               </svg>
             </motion.div>
             <span className="text-xs">Dzikir</span>
           </button>
-          <button 
+          <button
             onClick={() => navigate('/tracker')}
             className="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-400 transition-colors"
           >
             <motion.div whileTap={{ scale: 0.9 }}>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                />
               </svg>
             </motion.div>
             <span className="text-xs">Tracker</span>
+          </button>
+          <button
+            onClick={() => navigate('/settings')}
+            className="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-400 transition-colors"
+          >
+            <motion.div whileTap={{ scale: 0.9 }}>
+              <Settings className="w-5 h-5" />
+            </motion.div>
+            <span className="text-xs">More</span>
           </button>
         </div>
       </nav>
