@@ -73,6 +73,25 @@ export interface JadwalShalatResponse {
   data: JadwalShalatItem[];
 }
 
+// ============ IMSAKIYAH TYPES ============
+export interface ImsakiyahItem {
+  tanggal: string;
+  imsak: string;
+  subuh: string;
+  terbit?: string;
+  dhuha?: string;
+  dzuhur?: string;
+  ashar?: string;
+  maghrib: string;  // This is iftar time during Ramadan
+  isya?: string;
+}
+
+export interface ImsakiyahResponse {
+  code: number;
+  message: string;
+  data: ImsakiyahItem[];
+}
+
 interface ApiResponse<T> {
   code: number;
   message: string;
@@ -186,6 +205,21 @@ class EQuranApi {
     if (tahun) body.tahun = tahun;
     
     return this.fetchPost<JadwalShalatItem[]>('shalat', body);
+  }
+
+  // ============ IMSAKIYAH METHODS ============
+  async getJadwalImsakiyah(
+    provinsi: string, 
+    kabkota: string, 
+    tahun?: number
+  ): Promise<ImsakiyahItem[]> {
+    const body: { provinsi: string; kabkota: string; tahun?: number } = {
+      provinsi,
+      kabkota,
+    };
+    if (tahun) body.tahun = tahun;
+    
+    return this.fetchPost<ImsakiyahItem[]>('imsakiyah', body);
   }
 }
 
