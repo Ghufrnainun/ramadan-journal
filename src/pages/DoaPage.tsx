@@ -192,21 +192,21 @@ const DoaPage: React.FC = () => {
                   dir="rtl"
                   style={{ fontFamily: 'serif', lineHeight: 2.2 }}
                 >
-                  {selectedDoa.arab}
+                  {selectedDoa.ar}
                 </p>
               </div>
 
               {/* Latin */}
               <div className="bg-slate-800/30 rounded-xl p-4">
                 <p className="text-slate-400 text-sm italic leading-relaxed">
-                  {selectedDoa.latin}
+                  {selectedDoa.tr}
                 </p>
               </div>
 
               {/* Translation */}
               <div className="bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/20">
                 <p className="text-slate-200 leading-relaxed">
-                  {selectedDoa.arti}
+                  {selectedDoa.idn}
                 </p>
               </div>
             </div>
@@ -222,7 +222,7 @@ const DoaPage: React.FC = () => {
               dir="rtl"
               style={{ fontFamily: 'serif', lineHeight: 1.8 }}
             >
-              {selectedDoa.arab.slice(0, 100)}{selectedDoa.arab.length > 100 ? '...' : ''}
+              {selectedDoa.ar.slice(0, 100)}{selectedDoa.ar.length > 100 ? '...' : ''}
             </motion.p>
             
             <p className="text-slate-400 text-sm mb-8 text-center max-w-xs">
@@ -404,7 +404,7 @@ const DoaPage: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-medium truncate">{doa.nama}</p>
-                      <p className="text-slate-500 text-sm truncate">{doa.arti.slice(0, 50)}...</p>
+                      <p className="text-slate-500 text-sm truncate">{doa.idn.slice(0, 50)}...</p>
                     </div>
                     <div className="flex items-center gap-2">
                       {session && (

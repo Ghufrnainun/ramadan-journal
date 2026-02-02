@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, HandHeart, CheckSquare, PenLine } from 'lucide-react';
+import { BookOpen, HandHeart, CheckSquare, PenLine, BookHeart } from 'lucide-react';
 
 interface QuickActionsProps {
   lang: 'id' | 'en';
@@ -12,12 +12,14 @@ const content = {
   id: {
     quran: 'Tadarus',
     dhikr: 'Dzikir',
+    doa: 'Doa',
     tracker: 'Tracker',
     reflection: 'Refleksi',
   },
   en: {
     quran: 'Quran',
     dhikr: 'Dhikr',
+    doa: 'Dua',
     tracker: 'Tracker',
     reflection: 'Reflection',
   },
@@ -26,6 +28,7 @@ const content = {
 const moduleIcons: Record<string, React.ReactNode> = {
   quran: <BookOpen className="w-6 h-6" />,
   dhikr: <HandHeart className="w-6 h-6" />,
+  doa: <BookHeart className="w-6 h-6" />,
   tracker: <CheckSquare className="w-6 h-6" />,
   reflection: <PenLine className="w-6 h-6" />,
 };
@@ -33,6 +36,7 @@ const moduleIcons: Record<string, React.ReactNode> = {
 const moduleColors: Record<string, string> = {
   quran: 'from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 text-emerald-400',
   dhikr: 'from-amber-500/20 to-amber-600/10 border-amber-500/30 text-amber-400',
+  doa: 'from-rose-500/20 to-rose-600/10 border-rose-500/30 text-rose-400',
   tracker: 'from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-400',
   reflection: 'from-purple-500/20 to-purple-600/10 border-purple-500/30 text-purple-400',
 };
@@ -40,9 +44,12 @@ const moduleColors: Record<string, string> = {
 const QuickActions: React.FC<QuickActionsProps> = ({ lang, focusModules, onNavigate }) => {
   const t = content[lang];
   
-  const visibleModules = ['quran', 'dhikr', 'tracker', 'reflection'].filter(
-    (m) => focusModules.includes(m)
-  );
+  // Always show doa alongside dhikr if dhikr is selected
+  const allModules = ['quran', 'dhikr', 'doa', 'tracker', 'reflection'];
+  const visibleModules = allModules.filter((m) => {
+    if (m === 'doa') return focusModules.includes('dhikr'); // Show doa if dhikr is selected
+    return focusModules.includes(m);
+  });
 
   return (
     <motion.div

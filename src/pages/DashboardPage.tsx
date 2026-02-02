@@ -49,7 +49,7 @@ const DashboardPage: React.FC = () => {
       dhikr: '/dhikr',
       doa: '/doa',
       tracker: '/tracker',
-      reflection: '/dashboard', // TODO: Create reflection page
+      reflection: '/dashboard',
     };
     navigate(routes[module] || '/dashboard');
   };
@@ -60,7 +60,7 @@ const DashboardPage: React.FC = () => {
       <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
         <div className="flex items-center gap-2">
           <Moon className="w-5 h-5 text-amber-400" />
-          <span className="font-serif text-lg text-white">MyRamadhanKu</span>
+          <span className="font-serif text-lg text-white">MyRamadhan</span>
         </div>
         <button
           onClick={() => navigate('/settings')}

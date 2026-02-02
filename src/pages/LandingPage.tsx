@@ -30,7 +30,7 @@ const CONTENT = {
       note: "Berdasarkan penetapan Sidang Isbat nanti."
     },
     problem: {
-      title: "Kenapa MyRamadhanKu?",
+      title: "Kenapa MyRamadhan?",
       points: [
         { t: "Bingung", d: "Terlalu banyak fitur, hilang fokus ibadah." },
         { t: "Berat", d: "Aplikasi lain penuh iklan & notifikasi bising." },
@@ -115,7 +115,7 @@ const CONTENT = {
       note: "Subject to official sighting (Sidang Isbat)."
     },
     problem: {
-      title: "Why MyRamadhanKu?",
+      title: "Why MyRamadhan?",
       points: [
         { t: "Confusing", d: "Too many features, losing spiritual focus." },
         { t: "Heavy", d: "Other apps are full of ads & loud notifications." },
@@ -342,7 +342,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     setMounted(true);
-    document.title = `MyRamadhanKu | ${lang === 'id' ? 'Ramadan, Tenang.' : 'Ramadan, Calm.'}`;
+    document.title = `MyRamadhan | ${lang === 'id' ? 'Ramadan, Tenang.' : 'Ramadan, Calm.'}`;
     
     return scrollY.on("change", (latest) => {
       setShowSticky(latest > 500);
@@ -364,7 +364,7 @@ export default function LandingPage() {
       {/* --- NAVIGATION --- */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent backdrop-blur-sm">
         <span className="font-serif text-xl font-semibold text-amber-100/90 tracking-wide">
-          MyRamadhanKu.
+          MyRamadhan.
         </span>
         <div className="flex items-center gap-4">
           <button

@@ -1,4 +1,4 @@
-# MyRamadhanku 🌙
+# MyRamadhan 🌙
 
 Aplikasi pendamping ibadah Ramadhan untuk Muslim di Indonesia. Dibangun dengan React, TypeScript, dan Tailwind CSS.
 
@@ -26,12 +26,11 @@ Aplikasi ini menggunakan **[eQuran.id API](https://equran.id/apidev)** untuk dat
 
 | API Endpoint | Kegunaan |
 |--------------|----------|
-| `/v2/surat` | Data Al-Quran (114 surat, ayat, audio, terjemahan) |
-| `/v2/tafsir` | Tafsir Al-Quran |
-| `/v2/doa` | Koleksi doa harian dari Al-Quran & Sunnah |
-| `/v2/shalat/kota` | Daftar kota Indonesia untuk jadwal sholat |
-| `/v2/shalat/jadwal` | Jadwal waktu sholat harian |
-| `/v2/imsakiyah` | Jadwal imsakiyah Ramadhan |
+| `/api/v2/surat` | Data Al-Quran (114 surat, ayat, audio, terjemahan) |
+| `/api/v2/tafsir` | Tafsir Al-Quran |
+| `/api/doa` | Koleksi 228 doa harian dari Al-Quran & Sunnah |
+| `/api/v2/shalat` | Jadwal waktu sholat untuk kota-kota Indonesia |
+| `/api/v2/imsakiyah` | Jadwal imsakiyah Ramadhan |
 
 Terima kasih kepada tim [eQuran.id](https://equran.id) atas API gratisnya! 🙏
 
