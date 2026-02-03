@@ -66,9 +66,11 @@ Deno.serve(async (req) => {
           body: isPost ? JSON.stringify(body) : undefined,
         });
 
-        // If not found on this base URL, try the next one.
+        // If not found on this base URL, consume body and try the next one.
         if (response.status === 404) {
           console.warn('eQuran API 404, trying next base URL:', apiUrl);
+          await response.text(); // Consume body to prevent resource leak
+          response = null;
           continue;
         }
 
@@ -82,9 +84,10 @@ Deno.serve(async (req) => {
       }
     }
 
+    // If all URLs returned 404, return a proper error
     if (!response) {
       const errorMessage =
-        lastErr instanceof Error ? lastErr.message : 'Failed to fetch';
+        lastErr instanceof Error ? lastErr.message : 'All API endpoints returned 404 or failed';
       return new Response(
         JSON.stringify({
           success: false,
@@ -92,11 +95,14 @@ Deno.serve(async (req) => {
           url: apiUrlTried,
         }),
         {
-          status: 502,
+          status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         },
       );
     }
+
+    // Non-OK response handling (4xx/5xx other than 404 which was handled above)
+
 
     if (!response.ok) {
       console.error('eQuran API error:', response.status, response.statusText);
