@@ -84,17 +84,14 @@ export type Database = {
           display_name: string | null
           focus_modules: string[] | null
           id: string
-          hide_streak: boolean | null
           language: string | null
           onboarding_completed: boolean | null
           province: string | null
-          ramadan_end_date: string | null
           ramadan_start_date: string | null
           reminders_iftar: boolean | null
           reminders_prayer: boolean | null
           reminders_reflection: boolean | null
           reminders_sahur: boolean | null
-          silent_mode: boolean | null
           updated_at: string
           user_id: string
         }
@@ -104,17 +101,14 @@ export type Database = {
           display_name?: string | null
           focus_modules?: string[] | null
           id?: string
-          hide_streak?: boolean | null
           language?: string | null
           onboarding_completed?: boolean | null
           province?: string | null
-          ramadan_end_date?: string | null
           ramadan_start_date?: string | null
           reminders_iftar?: boolean | null
           reminders_prayer?: boolean | null
           reminders_reflection?: boolean | null
           reminders_sahur?: boolean | null
-          silent_mode?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -124,17 +118,14 @@ export type Database = {
           display_name?: string | null
           focus_modules?: string[] | null
           id?: string
-          hide_streak?: boolean | null
           language?: string | null
           onboarding_completed?: boolean | null
           province?: string | null
-          ramadan_end_date?: string | null
           ramadan_start_date?: string | null
           reminders_iftar?: boolean | null
           reminders_prayer?: boolean | null
           reminders_reflection?: boolean | null
           reminders_sahur?: boolean | null
-          silent_mode?: boolean | null
           updated_at?: string
           user_id?: string
         }
