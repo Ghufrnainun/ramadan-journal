@@ -4,7 +4,18 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const EQURAN_BASE_URL = 'https://equran.id/api';
+// API base URL (docs live under /apidev, but JSON API is served under /api)
+const EQURAN_BASE_URLS = ['https://equran.id/api'];
+
+function buildApiUrl(baseUrl: string, endpoint: string, apiVersion: string) {
+  const isDoa = endpoint.startsWith('doa');
+  // - Doa uses /doa (no version prefix)
+  // - Quran uses /v2/surat, /v2/tafsir, ...
+  // - Shalat uses /v2/shalat
+  return isDoa
+    ? `${baseUrl}/${endpoint}`
+    : `${baseUrl}/${apiVersion}/${endpoint}`;
+}
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -30,45 +41,61 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Build the correct URL based on endpoint type
-    // - Doa uses /api/doa (no version prefix)
-    // - Quran uses /api/v2/surat, /api/v2/tafsir
-    // - Shalat uses /api/v2/shalat
-    let apiUrl: string;
-    const isDoa = endpoint.startsWith('doa');
+    const isPost = req.method === 'POST';
+    const body = isPost ? await req.json() : null;
+    if (body) console.log('POST body:', JSON.stringify(body));
 
-    if (isDoa) {
-      // Doa API doesn't use version prefix
-      apiUrl = `${EQURAN_BASE_URL}/${endpoint}`;
-    } else {
-      apiUrl = `${EQURAN_BASE_URL}/${apiVersion}/${endpoint}`;
+    // Try base URLs in order until one works
+    let response: Response | null = null;
+    let apiUrlTried: string | null = null;
+    let lastErr: unknown = null;
+
+    for (const baseUrl of EQURAN_BASE_URLS) {
+      const apiUrl = buildApiUrl(baseUrl, endpoint, apiVersion);
+      apiUrlTried = apiUrl;
+      console.log('Fetching from eQuran API:', apiUrl);
+
+      try {
+        response = await fetch(apiUrl, {
+          method: isPost ? 'POST' : 'GET',
+          headers: {
+            Accept: 'application/json',
+            ...(isPost ? { 'Content-Type': 'application/json' } : {}),
+            'User-Agent': 'MyRamadhan/1.0',
+          },
+          body: isPost ? JSON.stringify(body) : undefined,
+        });
+
+        // If not found on this base URL, try the next one.
+        if (response.status === 404) {
+          console.warn('eQuran API 404, trying next base URL:', apiUrl);
+          continue;
+        }
+
+        // For any other status (200/4xx/5xx), stop here and handle below.
+        break;
+      } catch (err) {
+        lastErr = err;
+        console.error('Fetch failed, trying next base URL:', apiUrl, err);
+        response = null;
+        continue;
+      }
     }
 
-    console.log('Fetching from eQuran API:', apiUrl);
-
-    // Check if this is a POST request (for shalat endpoints)
-    let response: Response;
-
-    if (req.method === 'POST') {
-      const body = await req.json();
-      console.log('POST body:', JSON.stringify(body));
-
-      response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'User-Agent': 'MyRamadhan/1.0',
+    if (!response) {
+      const errorMessage =
+        lastErr instanceof Error ? lastErr.message : 'Failed to fetch';
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: errorMessage,
+          url: apiUrlTried,
+        }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         },
-        body: JSON.stringify(body),
-      });
-    } else {
-      response = await fetch(apiUrl, {
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': 'MyRamadhan/1.0',
-        },
-      });
+      );
     }
 
     if (!response.ok) {
@@ -77,7 +104,7 @@ Deno.serve(async (req) => {
         JSON.stringify({
           success: false,
           error: `eQuran API returned ${response.status}: ${response.statusText}`,
-          url: apiUrl,
+          url: apiUrlTried,
         }),
         {
           status: response.status,
@@ -86,8 +113,34 @@ Deno.serve(async (req) => {
       );
     }
 
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error('Non-JSON response from eQuran API:', {
+        url: apiUrlTried,
+        status: response.status,
+        contentType,
+        preview: text.slice(0, 200),
+      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Upstream returned non-JSON response',
+          url: apiUrlTried,
+          status: response.status,
+          contentType,
+        }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      );
+    }
+
     const data = await response.json();
     console.log('eQuran API success for:', endpoint);
+
+    const isDoa = endpoint.startsWith('doa');
 
     // DOA API returns array directly, wrap it to match our format
     // Other APIs return { code, message, data } format
