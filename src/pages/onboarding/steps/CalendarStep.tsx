@@ -23,8 +23,8 @@ const content = {
     title: 'Tanggal 1 Ramadan',
     subtitle: 'Sesuaikan dengan hasil Sidang Isbat nanti.',
     note: 'Bisa diubah kapan saja di pengaturan.',
-    defaultLabel: 'Perkiraan 2025',
-    defaultDate: '2025-02-28',
+    defaultLabel: 'Perkiraan 2026',
+    defaultDate: '2026-02-18',
     manualLabel: 'Atau pilih manual:',
     pickDate: 'Pilih tanggal...',
     next: 'Lanjut',
@@ -34,8 +34,8 @@ const content = {
     title: 'Ramadan Start Date',
     subtitle: 'Adjust based on official moon sighting.',
     note: 'Can be changed anytime in settings.',
-    defaultLabel: 'Estimated 2025',
-    defaultDate: '2025-02-28',
+    defaultLabel: 'Estimated 2026',
+    defaultDate: '2026-02-18',
     manualLabel: 'Or select manually:',
     pickDate: 'Pick a date...',
     next: 'Continue',
@@ -43,20 +43,27 @@ const content = {
   },
 };
 
-const CalendarStep: React.FC<CalendarStepProps> = ({ lang, initialDate, onNext, onBack }) => {
+const CalendarStep: React.FC<CalendarStepProps> = ({
+  lang,
+  initialDate,
+  onNext,
+  onBack,
+}) => {
   const t = content[lang];
   const defaultDateObj = new Date(t.defaultDate);
-  
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    initialDate ? new Date(initialDate) : defaultDateObj
+    initialDate ? new Date(initialDate) : defaultDateObj,
   );
-  const [useDefault, setUseDefault] = useState(!initialDate || initialDate === t.defaultDate);
+  const [useDefault, setUseDefault] = useState(
+    !initialDate || initialDate === t.defaultDate,
+  );
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const locale = lang === 'id' ? idLocale : enUS;
 
   const formatDateDisplay = (date: Date) => {
-    return format(date, "EEEE, d MMMM yyyy", { locale });
+    return format(date, 'EEEE, d MMMM yyyy', { locale });
   };
 
   const handleContinue = () => {
@@ -101,11 +108,15 @@ const CalendarStep: React.FC<CalendarStepProps> = ({ lang, initialDate, onNext, 
               useDefault ? 'border-amber-400 bg-amber-400' : 'border-slate-500'
             }`}
           >
-            {useDefault && <div className="w-2 h-2 rounded-full bg-slate-900" />}
+            {useDefault && (
+              <div className="w-2 h-2 rounded-full bg-slate-900" />
+            )}
           </div>
           <div>
             <p className="text-xs text-amber-400/70 mb-1">{t.defaultLabel}</p>
-            <p className="text-white font-medium">{formatDateDisplay(defaultDateObj)}</p>
+            <p className="text-white font-medium">
+              {formatDateDisplay(defaultDateObj)}
+            </p>
           </div>
         </div>
       </motion.button>
@@ -117,7 +128,7 @@ const CalendarStep: React.FC<CalendarStepProps> = ({ lang, initialDate, onNext, 
         transition={{ delay: 0.2 }}
       >
         <p className="text-slate-500 text-sm mb-3">{t.manualLabel}</p>
-        
+
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
             <button
@@ -131,25 +142,36 @@ const CalendarStep: React.FC<CalendarStepProps> = ({ lang, initialDate, onNext, 
               <div className="flex items-start gap-4">
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                    !useDefault ? 'border-amber-400 bg-amber-400' : 'border-slate-500'
+                    !useDefault
+                      ? 'border-amber-400 bg-amber-400'
+                      : 'border-slate-500'
                   }`}
                 >
-                  {!useDefault && <div className="w-2 h-2 rounded-full bg-slate-900" />}
+                  {!useDefault && (
+                    <div className="w-2 h-2 rounded-full bg-slate-900" />
+                  )}
                 </div>
                 <div className="flex-1 flex items-center gap-3">
-                  <CalendarDays className={`w-5 h-5 ${!useDefault ? 'text-amber-400' : 'text-slate-500'}`} />
-                  <span className={!useDefault && selectedDate ? 'text-white' : 'text-slate-400'}>
-                    {!useDefault && selectedDate 
-                      ? formatDateDisplay(selectedDate)
-                      : t.pickDate
+                  <CalendarDays
+                    className={`w-5 h-5 ${!useDefault ? 'text-amber-400' : 'text-slate-500'}`}
+                  />
+                  <span
+                    className={
+                      !useDefault && selectedDate
+                        ? 'text-white'
+                        : 'text-slate-400'
                     }
+                  >
+                    {!useDefault && selectedDate
+                      ? formatDateDisplay(selectedDate)
+                      : t.pickDate}
                   </span>
                 </div>
               </div>
             </button>
           </PopoverTrigger>
-          <PopoverContent 
-            className="w-auto p-0 bg-slate-800 border-slate-700 z-50" 
+          <PopoverContent
+            className="w-auto p-0 bg-slate-800 border-slate-700 z-50"
             align="center"
             sideOffset={8}
           >
@@ -165,29 +187,37 @@ const CalendarStep: React.FC<CalendarStepProps> = ({ lang, initialDate, onNext, 
               }}
               defaultMonth={selectedDate || defaultDateObj}
               initialFocus
-              className={cn("p-3 pointer-events-auto bg-slate-800 text-white rounded-lg")}
+              className={cn(
+                'p-3 pointer-events-auto bg-slate-800 text-white rounded-lg',
+              )}
               classNames={{
-                months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-                month: "space-y-4",
-                caption: "flex justify-center pt-1 relative items-center text-white",
-                caption_label: "text-sm font-medium",
-                nav: "space-x-1 flex items-center",
-                nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-white hover:bg-slate-700 rounded",
-                nav_button_previous: "absolute left-1",
-                nav_button_next: "absolute right-1",
-                table: "w-full border-collapse space-y-1",
-                head_row: "flex",
-                head_cell: "text-slate-400 rounded-md w-9 font-normal text-[0.8rem]",
-                row: "flex w-full mt-2",
-                cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
-                day: "h-9 w-9 p-0 font-normal text-slate-200 hover:bg-slate-700 rounded-md transition-colors",
-                day_range_end: "day-range-end",
-                day_selected: "bg-amber-500 text-slate-900 hover:bg-amber-500 hover:text-slate-900 focus:bg-amber-500 focus:text-slate-900 font-semibold",
-                day_today: "bg-slate-700 text-amber-400",
-                day_outside: "text-slate-600 opacity-50",
-                day_disabled: "text-slate-600 opacity-50",
-                day_range_middle: "aria-selected:bg-slate-700 aria-selected:text-white",
-                day_hidden: "invisible",
+                months:
+                  'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+                month: 'space-y-4',
+                caption:
+                  'flex justify-center pt-1 relative items-center text-white',
+                caption_label: 'text-sm font-medium',
+                nav: 'space-x-1 flex items-center',
+                nav_button:
+                  'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-white hover:bg-slate-700 rounded',
+                nav_button_previous: 'absolute left-1',
+                nav_button_next: 'absolute right-1',
+                table: 'w-full border-collapse space-y-1',
+                head_row: 'flex',
+                head_cell:
+                  'text-slate-400 rounded-md w-9 font-normal text-[0.8rem]',
+                row: 'flex w-full mt-2',
+                cell: 'h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20',
+                day: 'h-9 w-9 p-0 font-normal text-slate-200 hover:bg-slate-700 rounded-md transition-colors',
+                day_range_end: 'day-range-end',
+                day_selected:
+                  'bg-amber-500 text-slate-900 hover:bg-amber-500 hover:text-slate-900 focus:bg-amber-500 focus:text-slate-900 font-semibold',
+                day_today: 'bg-slate-700 text-amber-400',
+                day_outside: 'text-slate-600 opacity-50',
+                day_disabled: 'text-slate-600 opacity-50',
+                day_range_middle:
+                  'aria-selected:bg-slate-700 aria-selected:text-white',
+                day_hidden: 'invisible',
               }}
             />
           </PopoverContent>

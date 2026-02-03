@@ -5,6 +5,7 @@ import { Moon, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
 import { toast } from '@/hooks/use-toast';
+import MobileContainer from '@/components/layout/MobileContainer';
 
 const content = {
   id: {
@@ -32,7 +33,9 @@ const AuthPage: React.FC = () => {
   useEffect(() => {
     // Check if already logged in
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         navigate('/dashboard');
       }
@@ -40,7 +43,9 @@ const AuthPage: React.FC = () => {
     checkAuth();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/onboarding');
       }
@@ -80,7 +85,7 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 flex flex-col items-center justify-center px-6">
+    <MobileContainer className="flex flex-col items-center justify-center px-6 text-slate-200">
       {/* Logo */}
       <motion.div
         className="mb-8"
@@ -90,7 +95,9 @@ const AuthPage: React.FC = () => {
         <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
           <Moon className="w-10 h-10 text-amber-400" />
         </div>
-        <h1 className="font-serif text-2xl text-white text-center">{t.title}</h1>
+        <h1 className="font-serif text-2xl text-white text-center">
+          {t.title}
+        </h1>
         <p className="text-slate-400 text-sm text-center mt-2">{t.subtitle}</p>
       </motion.div>
 
@@ -150,7 +157,7 @@ const AuthPage: React.FC = () => {
         </button>
         <p className="text-center text-slate-500 text-xs">{t.guestNote}</p>
       </motion.div>
-    </div>
+    </MobileContainer>
   );
 };
 

@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Moon, Sparkles, CalendarDays } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { getRamadanInfo, RamadanInfo } from '@/lib/ramadan-dates';
+import {
+  getRamadanInfo,
+  getRamadanGreeting,
+  RamadanInfo,
+} from '@/lib/ramadan-dates';
 
 interface CountdownCardProps {
   lang: 'id' | 'en';
@@ -48,20 +52,25 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
 
   // Eid Mubarak state (within 7 days after Ramadan)
   if (ramadanInfo.status === 'after-eid') {
+    const eidGreeting = getRamadanGreeting(lang, 'after-eid');
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Card className="bg-gradient-to-br from-amber-500/20 to-amber-600/10 border-amber-500/30 overflow-hidden">
-          <CardContent className="p-6 text-center">
-            <Sparkles className="w-12 h-12 text-amber-400 mx-auto mb-3" />
-            <h2 className="font-serif text-2xl text-white">{t.afterEid}</h2>
-            <p className="text-amber-400/80 text-sm mt-1">
-              {t.afterEidSubtitle}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 p-6 text-center">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="relative z-10">
+            <Sparkles className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
+            <h2 className="font-serif text-3xl text-white mb-2">
+              {eidGreeting.greeting}
+            </h2>
+            <p className="text-emerald-400/80 text-sm font-medium">
+              {eidGreeting.subtitle}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
     );
   }
@@ -73,28 +82,38 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Card className="bg-gradient-to-br from-amber-500/20 to-amber-600/5 border-amber-500/30 overflow-hidden relative">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/20 p-6">
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
-          <CardContent className="p-6 relative">
+
+          <div className="relative">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-amber-400/80 text-sm mb-1">{t.during}</p>
-                <h2 className="font-serif text-5xl text-white">
-                  {ramadanInfo.currentDay}
-                </h2>
+                <p className="text-amber-500 text-xs font-semibold tracking-wider uppercase mb-1">
+                  {t.during}
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <h2 className="font-serif text-6xl text-white leading-none">
+                    {ramadanInfo.currentDay}
+                  </h2>
+                  <span className="font-serif text-2xl text-amber-500/50 italic">
+                    Ramadan
+                  </span>
+                </div>
+
                 {ramadanInfo.daysRemaining !== undefined &&
                   ramadanInfo.daysRemaining > 0 && (
-                    <p className="text-slate-400 text-xs mt-2">
+                    <p className="text-slate-400 text-xs mt-3 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                       {ramadanInfo.daysRemaining} {t.daysRemaining}
                     </p>
                   )}
               </div>
-              <div className="w-20 h-20 rounded-full bg-amber-500/10 flex items-center justify-center">
-                <Moon className="w-10 h-10 text-amber-400" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-900/20 opacity-90">
+                <Moon className="w-8 h-8 text-white fill-white/20" />
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
     );
   }
@@ -108,50 +127,99 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 overflow-hidden">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <CalendarDays className="w-5 h-5 text-amber-400" />
-              <span className="text-slate-400 text-sm">{t.before}</span>
+        <div className="relative overflow-hidden rounded-2xl bg-[#0F172A] border border-slate-800 p-6">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-1.5 rounded bg-amber-500/10 border border-amber-500/20">
+                <CalendarDays className="w-4 h-4 text-amber-400" />
+              </div>
+              <span className="text-slate-300 text-sm font-medium tracking-wide">
+                {t.before}
+              </span>
             </div>
 
-            <div className="grid grid-cols-4 gap-3 text-center">
-              <div className="bg-slate-800/50 rounded-xl p-3">
-                <div className="font-serif text-3xl text-white">{days}</div>
-                <div className="text-xs text-slate-500 mt-1">{t.days}</div>
+            <div className="grid grid-cols-4 gap-4 text-center">
+              {[
+                { value: days, label: t.days },
+                { value: hours, label: t.hours },
+                { value: minutes, label: t.minutes },
+                { value: seconds, label: t.seconds },
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="relative">
+                    <span className="font-serif text-3xl md:text-4xl text-white font-medium tabular-nums">
+                      {item.value}
+                    </span>
+                    {i !== 3 && (
+                      <span className="absolute -right-4 top-1 text-slate-700 text-2xl hidden md:block">
+                        :
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Date Info */}
+            <div className="mt-8 flex items-center justify-between border-t border-slate-800 pt-4 text-xs">
+              <div className="text-left">
+                <p className="text-slate-500 mb-0.5">
+                  {lang === 'id' ? 'Hari Ini' : 'Today'}
+                </p>
+                <p className="text-slate-300 font-medium">
+                  {new Date().toLocaleDateString(
+                    lang === 'id' ? 'id-ID' : 'en-US',
+                    {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    },
+                  )}
+                </p>
               </div>
-              <div className="bg-slate-800/50 rounded-xl p-3">
-                <div className="font-serif text-3xl text-white">{hours}</div>
-                <div className="text-xs text-slate-500 mt-1">{t.hours}</div>
-              </div>
-              <div className="bg-slate-800/50 rounded-xl p-3">
-                <div className="font-serif text-3xl text-white">{minutes}</div>
-                <div className="text-xs text-slate-500 mt-1">{t.minutes}</div>
-              </div>
-              <div className="bg-slate-800/50 rounded-xl p-3">
-                <div className="font-serif text-3xl text-white">{seconds}</div>
-                <div className="text-xs text-slate-500 mt-1">{t.seconds}</div>
+              <div className="text-right">
+                <p className="text-slate-500 mb-0.5">
+                  {lang === 'id' ? 'Mulai Puasa' : 'Ramadan Begins'}
+                </p>
+                <p className="text-amber-400 font-medium">
+                  {ramadanInfo.nextRamadan?.start.toLocaleDateString(
+                    lang === 'id' ? 'id-ID' : 'en-US',
+                    {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    },
+                  ) || '-'}
+                </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </motion.div>
     );
   }
 
-  // Normal state - show simple card with next Ramadan info
+  // Normal state
+  const normalGreeting = getRamadanGreeting(lang, 'normal');
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700/50 overflow-hidden">
-        <CardContent className="p-6 text-center">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 p-6 text-center">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-slate-700/10 rounded-full blur-3xl" />
+        <div className="relative z-10">
           <Moon className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-          <p className="text-slate-400 text-sm">
-            {lang === 'id'
-              ? 'Selamat beribadah'
-              : 'May your worship be blessed'}
-          </p>
-        </CardContent>
-      </Card>
+          <h2 className="font-serif text-2xl text-slate-200 mb-1">
+            {normalGreeting.greeting}
+          </h2>
+          <p className="text-slate-400 text-sm">{normalGreeting.subtitle}</p>
+        </div>
+      </div>
     </motion.div>
   );
 };

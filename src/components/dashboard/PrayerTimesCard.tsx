@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Loader2 } from 'lucide-react';
+import { Clock, Loader2, Volume2, Square } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  PrayerTimes, 
-  getPrayerTimesFromApi, 
-  getCurrentPrayer, 
-  getTimeUntilNext, 
-  getPrayerTimes as getFallbackTimes
+import {
+  PrayerTimes,
+  getPrayerTimesFromApi,
+  getCurrentPrayer,
+  getTimeUntilNext,
+  getPrayerTimes as getFallbackTimes,
 } from '@/lib/prayer-times';
 
 interface PrayerTimesCardProps {
@@ -49,9 +49,46 @@ const content = {
 const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
   const t = content[lang];
   const [times, setTimes] = useState<PrayerTimes>(() => getFallbackTimes(city));
-  const [currentPrayer, setCurrentPrayer] = useState(() => getCurrentPrayer(times));
-  const [timeUntil, setTimeUntil] = useState(() => getTimeUntilNext(currentPrayer.nextTime));
+  const [currentPrayer, setCurrentPrayer] = useState(() =>
+    getCurrentPrayer(times),
+  );
+  const [timeUntil, setTimeUntil] = useState(() =>
+    getTimeUntilNext(currentPrayer.nextTime),
+  );
   const [isLoading, setIsLoading] = useState(true);
+
+  // Adhan Audio State
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = React.useRef<HTMLAudioElement>(null);
+
+  const toggleAdhan = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+    } else {
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((error) => {
+            console.error('Error playing audio:', error);
+            setIsPlaying(false);
+          });
+      }
+    }
+  };
+
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+    }
+  };
 
   // Fetch prayer times from API
   useEffect(() => {
@@ -91,11 +128,36 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
 
   const prayers = [
     { key: 'imsak', name: t.imsak, time: times.imsak, highlight: false },
-    { key: 'subuh', name: t.subuh, time: times.subuh, highlight: currentPrayer.next === 'Subuh' },
-    { key: 'dzuhur', name: t.dzuhur, time: times.dzuhur, highlight: currentPrayer.next === 'Dzuhur' },
-    { key: 'ashar', name: t.ashar, time: times.ashar, highlight: currentPrayer.next === 'Ashar' },
-    { key: 'maghrib', name: t.maghrib, time: times.maghrib, highlight: currentPrayer.next === 'Maghrib' },
-    { key: 'isya', name: t.isya, time: times.isya, highlight: currentPrayer.next === 'Isya' },
+    {
+      key: 'subuh',
+      name: t.subuh,
+      time: times.subuh,
+      highlight: currentPrayer.next === 'Subuh',
+    },
+    {
+      key: 'dzuhur',
+      name: t.dzuhur,
+      time: times.dzuhur,
+      highlight: currentPrayer.next === 'Dzuhur',
+    },
+    {
+      key: 'ashar',
+      name: t.ashar,
+      time: times.ashar,
+      highlight: currentPrayer.next === 'Ashar',
+    },
+    {
+      key: 'maghrib',
+      name: t.maghrib,
+      time: times.maghrib,
+      highlight: currentPrayer.next === 'Maghrib',
+    },
+    {
+      key: 'isya',
+      name: t.isya,
+      time: times.isya,
+      highlight: currentPrayer.next === 'Isya',
+    },
   ];
 
   return (
@@ -104,45 +166,77 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <Card className="bg-slate-800/50 border-slate-700/50">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium text-white flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-400" />
-              {t.title}
-            </CardTitle>
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+      <div className="flex items-center justify-between px-1 mb-3">
+        <h3 className="text-white font-medium flex items-center gap-2">
+          <Clock className="w-4 h-4 text-amber-400" />
+          {t.title}
+
+          <button
+            onClick={toggleAdhan}
+            className={`ml-2 p-1.5 rounded-full transition-colors ${isPlaying ? 'bg-amber-500 text-slate-900 animate-pulse' : 'bg-slate-800 text-slate-400 hover:text-amber-400'}`}
+            title="Play Adhan"
+          >
+            {isPlaying ? (
+              <Square className="w-3 h-3 fill-current" />
             ) : (
-              <div className="text-xs text-slate-400">
-                {t.next}: <span className="text-amber-400">{currentPrayer.next}</span>{' '}
-                <span className="text-slate-500">{t.in} {timeUntil}</span>
-              </div>
+              <Volume2 className="w-3 h-3" />
             )}
+          </button>
+        </h3>
+        {!isLoading && (
+          <div className="text-xs text-slate-400 bg-slate-800/50 px-2 py-1 rounded-full border border-slate-700/50">
+            {t.next}{' '}
+            <span className="text-amber-400 font-medium">
+              {currentPrayer.next}
+            </span>{' '}
+            <span className="text-slate-500 mx-1">•</span> {timeUntil}
           </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-3 gap-2">
-            {prayers.map((prayer) => (
-              <div
-                key={prayer.key}
-                className={`rounded-xl p-3 text-center transition-all ${
-                  prayer.highlight
-                    ? 'bg-amber-500/20 border border-amber-500/30'
-                    : 'bg-slate-800/50'
-                }`}
-              >
-                <p className={`text-xs ${prayer.highlight ? 'text-amber-400' : 'text-slate-400'}`}>
-                  {prayer.name}
-                </p>
-                <p className={`text-lg font-medium mt-1 ${prayer.highlight ? 'text-white' : 'text-slate-200'}`}>
-                  {prayer.time}
-                </p>
-              </div>
-            ))}
+        )}
+      </div>
+
+      <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 scrollbar-hide">
+        {prayers.map((prayer) => (
+          <div
+            key={prayer.key}
+            className={`flex-shrink-0 min-w-[100px] p-4 rounded-2xl border transition-all relative overflow-hidden group ${
+              prayer.highlight
+                ? 'bg-gradient-to-br from-amber-500 from-10% to-amber-600 border-amber-400 shadow-lg shadow-amber-900/40'
+                : 'bg-slate-900/40 border-slate-800 hover:bg-slate-800/60'
+            }`}
+          >
+            {prayer.highlight && (
+              <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+            )}
+
+            <p
+              className={`text-xs font-medium uppercase tracking-wider mb-1 ${
+                prayer.highlight
+                  ? 'text-amber-100'
+                  : 'text-slate-500 group-hover:text-slate-400'
+              }`}
+            >
+              {prayer.name}
+            </p>
+            <p
+              className={`font-serif text-xl ${
+                prayer.highlight
+                  ? 'text-white'
+                  : 'text-slate-300 group-hover:text-amber-200'
+              }`}
+            >
+              {prayer.time}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
+
+      {/* Hidden Audio Element */}
+      <audio
+        ref={audioRef}
+        src="https://raw.githubusercontent.com/abodehq/Athan-MP3/master/Sounds/Athan%20Makkah.mp3"
+        onEnded={handleAudioEnded}
+        className="hidden"
+      />
     </motion.div>
   );
 };

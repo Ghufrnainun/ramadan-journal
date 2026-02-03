@@ -50,7 +50,7 @@
     --input: 217 33% 12%;
     --ring: 38 92% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Sidebar */
     --sidebar-background: 222 47% 3%;
@@ -115,7 +115,10 @@
     color: #e2e8f0;
   }
 
-  h1, h2, h3, .font-serif {
+  h1,
+  h2,
+  h3,
+  .font-serif {
     font-family: 'Playfair Display', Georgia, serif;
   }
 }
@@ -137,19 +140,22 @@
 
   /* Glow effects */
   .glow-gold {
-    box-shadow: 0 0 20px hsl(var(--gold) / 0.3),
-                0 0 40px hsl(var(--gold) / 0.2),
-                0 0 60px hsl(var(--gold) / 0.1);
+    box-shadow:
+      0 0 20px hsl(var(--gold) / 0.3),
+      0 0 40px hsl(var(--gold) / 0.2),
+      0 0 60px hsl(var(--gold) / 0.1);
   }
 
   .glow-gold-sm {
-    box-shadow: 0 0 10px hsl(var(--gold) / 0.3),
-                0 0 20px hsl(var(--gold) / 0.15);
+    box-shadow:
+      0 0 10px hsl(var(--gold) / 0.3),
+      0 0 20px hsl(var(--gold) / 0.15);
   }
 
   /* Lantern swing animation */
   @keyframes lantern-swing {
-    0%, 100% {
+    0%,
+    100% {
       transform: rotate(-3deg);
     }
     50% {
@@ -164,7 +170,8 @@
 
   /* Glow pulse for lanterns */
   @keyframes glow-pulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.6;
       filter: blur(8px);
     }
@@ -180,7 +187,8 @@
 
   /* Star twinkle */
   @keyframes star-twinkle {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.3;
       transform: scale(1);
     }

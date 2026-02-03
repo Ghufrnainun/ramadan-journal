@@ -1,14 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, ChevronRight, Play, Pause, Loader2, Bookmark, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ArrowLeft,
+  BookOpen,
+  ChevronRight,
+  Play,
+  Pause,
+  Loader2,
+  Bookmark,
+  CheckCircle,
+  Search,
+  X,
+} from 'lucide-react';
 import { getProfile } from '@/lib/storage';
 import { equranApi, Surah, SurahDetail } from '@/lib/api/equran';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { getReadingProgress, getReadingTarget, saveReadingProgress, saveReadingTarget } from '@/lib/reading-progress';
+import {
+  getReadingProgress,
+  getReadingTarget,
+  saveReadingProgress,
+  saveReadingTarget,
+} from '@/lib/reading-progress';
 import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
 import { markActiveDay } from '@/lib/streak';
+import MobileContainer from '@/components/layout/MobileContainer';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const content = {
   id: {
@@ -19,13 +36,13 @@ const content = {
     retry: 'Coba Lagi',
     ayat: 'ayat',
     surah: 'Surat',
-    juz: 'Juz',
-    page: 'Halaman',
+    searchPlaceholder: 'Cari surat...',
     markLast: 'Tandai Terakhir',
-    saveAyah: 'Simpan Ayat',
-    lastRead: 'Terakhir dibaca',
-    target: 'Target harian',
+    continueReading: 'Lanjutkan Membaca',
+    lastRead: 'Terakhir Dibaca',
+    target: 'Target Harian',
     pages: 'halaman',
+    noResults: 'Surat tidak ditemukan',
   },
   en: {
     title: 'Quran Reading',
@@ -35,13 +52,13 @@ const content = {
     retry: 'Try Again',
     ayat: 'verses',
     surah: 'Surah',
-    juz: 'Juz',
-    page: 'Page',
+    searchPlaceholder: 'Search surah...',
     markLast: 'Mark last read',
-    saveAyah: 'Save ayah',
-    lastRead: 'Last read',
-    target: 'Daily target',
+    continueReading: 'Continue Reading',
+    lastRead: 'Last Read',
+    target: 'Daily Target',
     pages: 'pages',
+    noResults: 'Surah not found',
   },
 };
 
@@ -50,13 +67,18 @@ const QuranPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [lang, setLang] = useState<'id' | 'en'>('id');
   const [surahs, setSurahs] = useState<Surah[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedSurah, setSelectedSurah] = useState<SurahDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSurah, setIsLoadingSurah] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
+  const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(
+    null,
+  );
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
-  const [readingTarget, setReadingTarget] = useState(getReadingTarget().dailyTargetPages);
+  const [readingTarget, setReadingTarget] = useState(
+    getReadingTarget().dailyTargetPages,
+  );
   const [readingProgress, setReadingProgress] = useState(getReadingProgress());
 
   const t = content[lang];
@@ -130,6 +152,7 @@ const QuranPage: React.FC = () => {
     stopAudio();
     const audio = new Audio(audioUrl);
     audio.onended = () => {
+      // Auto-play next ayah logic could go here
       setPlayingAudio(null);
       setPlayingAyah(null);
     };
@@ -147,12 +170,54 @@ const QuranPage: React.FC = () => {
     }
   };
 
-  // Surah Detail View
+  const filteredSurahs = useMemo(() => {
+    if (!searchQuery) return surahs;
+    const lowerQuery = searchQuery.toLowerCase();
+    return surahs.filter(
+      (s) =>
+        s.namaLatin.toLowerCase().includes(lowerQuery) ||
+        s.arti.toLowerCase().includes(lowerQuery) ||
+        s.nomor.toString().includes(lowerQuery),
+    );
+  }, [surahs, searchQuery]);
+
+  // Loading State
+  if (isLoading) {
+    return (
+      <MobileContainer className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-400 mx-auto mb-4" />
+          <p className="text-slate-400">{t.loading}</p>
+        </div>
+      </MobileContainer>
+    );
+  }
+
+  // Error State
+  if (error) {
+    return (
+      <MobileContainer className="flex items-center justify-center min-h-screen">
+        <div className="text-center p-6">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button
+            onClick={loadSurahs}
+            className="px-6 py-3 bg-amber-500 text-slate-900 rounded-xl font-medium hover:bg-amber-400 transition-colors"
+          >
+            {t.retry}
+          </button>
+        </div>
+      </MobileContainer>
+    );
+  }
+
+  /* =========================================================================
+     SURAH DETAIL VIEW
+     ========================================================================= */
   if (selectedSurah) {
     return (
-      <div className="min-h-screen bg-[#020617] text-slate-200">
-        {/* Header */}
-        <header className="sticky top-0 z-10 bg-[#020617]/95 backdrop-blur border-b border-slate-800/50">
+      <MobileContainer className="pb-32">
+        {/* Sticky Header */}
+        <header className="sticky top-0 z-20 bg-[#020617]/95 backdrop-blur border-b border-slate-800/50">
           <div className="flex items-center justify-between px-6 py-4">
             <button
               onClick={handleBack}
@@ -161,257 +226,325 @@ const QuranPage: React.FC = () => {
               <ArrowLeft className="w-5 h-5 text-slate-400" />
             </button>
             <div className="text-center">
-              <span className="font-serif text-lg text-white">{selectedSurah.namaLatin}</span>
-              <p className="text-xs text-slate-500">{selectedSurah.arti}</p>
+              <span className="font-serif text-lg text-white block leading-tight">
+                {selectedSurah.namaLatin}
+              </span>
+              <span className="text-xs text-slate-500">
+                {selectedSurah.arti}
+              </span>
             </div>
             <div className="w-9" />
           </div>
         </header>
 
-        {/* Surah Info Card */}
-        <div className="px-6 py-4">
-          <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
-            <CardContent className="p-6 text-center">
-              <p className="text-4xl text-amber-400 font-serif mb-2">{selectedSurah.nama}</p>
-              <p className="text-slate-400 text-sm">
-                {selectedSurah.tempatTurun} • {selectedSurah.jumlahAyat} {t.ayat}
+        {/* Hero Card */}
+        <div className="px-6 py-6">
+          <div className="rounded-3xl bg-gradient-to-br from-emerald-600/20 to-emerald-900/10 border border-emerald-500/20 p-8 text-center relative overflow-hidden shadow-2xl shadow-emerald-900/10">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative z-10">
+              <p className="text-6xl text-emerald-400 font-serif mb-3 leading-tight">
+                {selectedSurah.nama}
               </p>
-            </CardContent>
-          </Card>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300/80 text-xs font-medium tracking-wide">
+                <span>{selectedSurah.tempatTurun.toUpperCase()}</span>
+                <span>•</span>
+                <span>
+                  {selectedSurah.jumlahAyat} {t.ayat.toUpperCase()}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Bismillah */}
         {selectedSurah.nomor !== 1 && selectedSurah.nomor !== 9 && (
-          <div className="px-6 py-4">
-            <p className="text-3xl text-center text-amber-400 font-serif">
+          <div className="px-6 py-4 mb-2 text-center">
+            <p className="text-3xl text-emerald-400 font-serif leading-relaxed opacity-90">
               بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
             </p>
           </div>
         )}
 
-        {/* Ayahs */}
-        <ScrollArea className="h-[calc(100vh-280px)]">
-          <div className="px-6 pb-24 space-y-6">
-            {selectedSurah.ayat.map((ayah) => (
+        {/* Ayahs List */}
+        <div className="px-5 space-y-6">
+          {selectedSurah.ayat.map((ayah) => {
+            const isActive = playingAyah === ayah.nomorAyat;
+            return (
               <motion.div
                 key={ayah.nomorAyat}
-                className="border-b border-slate-800/30 pb-6"
+                id={`ayah-${ayah.nomorAyat}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
+                className={cn(
+                  'rounded-2xl p-5 border transition-all duration-300',
+                  isActive
+                    ? 'bg-emerald-900/10 border-emerald-500/30 shadow-lg shadow-emerald-900/10'
+                    : 'bg-slate-900/30 border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/50',
+                )}
               >
-                {/* Arabic Text */}
-                <div className="flex justify-between items-start mb-4">
-                  <p 
-                    className="text-2xl text-right leading-loose flex-1 text-white font-serif" 
+                {/* Header (Number + Actions) */}
+                <div className="flex items-center justify-between mb-6 bg-slate-950/30 rounded-xl p-2">
+                  <span className="inline-flex items-center justify-center w-8 h-8 text-sm font-bold bg-slate-800 text-emerald-400 rounded-lg border border-slate-700/50 font-serif">
+                    {ayah.nomorAyat}
+                  </span>
+
+                  <div className="flex items-center gap-1">
+                    {ayah.audio && Object.keys(ayah.audio).length > 0 && (
+                      <button
+                        onClick={() => {
+                          const audioUrl = Object.values(ayah.audio)[0];
+                          if (isActive) {
+                            stopAudio();
+                          } else {
+                            playAyahAudio(audioUrl, ayah.nomorAyat);
+                          }
+                        }}
+                        className={cn(
+                          'p-2 rounded-lg transition-colors',
+                          isActive
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'hover:bg-slate-800 text-slate-400',
+                        )}
+                      >
+                        {isActive ? (
+                          <Pause className="w-4 h-4 fill-current" />
+                        ) : (
+                          <Play className="w-4 h-4 fill-current" />
+                        )}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleMarkProgress(ayah.nomorAyat)}
+                      className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors"
+                      title={t.markLast}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const bookmarkId = `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`;
+                        toggleBookmark({
+                          id: bookmarkId,
+                          type: 'ayah',
+                          title: `${selectedSurah.namaLatin} : ${ayah.nomorAyat}`,
+                          subtitle: selectedSurah.arti,
+                          content: ayah.teksIndonesia,
+                          createdAt: new Date().toISOString(),
+                        });
+                      }}
+                      className={cn(
+                        'p-2 rounded-lg hover:bg-slate-800 transition-colors',
+                        isBookmarked(
+                          'ayah',
+                          `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`,
+                        )
+                          ? 'text-amber-400'
+                          : 'text-slate-400 hover:text-amber-400',
+                      )}
+                    >
+                      <Bookmark className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="space-y-6">
+                  {/* Arabic */}
+                  <p
+                    className="text-3xl sm:text-4xl text-right leading-[2.2] text-slate-100 font-serif"
                     dir="rtl"
-                    style={{ fontFamily: 'serif', lineHeight: 2.2 }}
                   >
                     {ayah.teksArab}
-                    <span className="inline-flex items-center justify-center w-8 h-8 ml-2 text-sm bg-amber-500/20 text-amber-400 rounded-full">
-                      {ayah.nomorAyat}
+                  </p>
+
+                  {/* Translations */}
+                  <div className="space-y-3 pt-2 border-t border-slate-800/30">
+                    <p className="text-emerald-400/90 text-sm font-medium italic">
+                      {ayah.teksLatin}
+                    </p>
+                    <p className="text-slate-300 text-base leading-relaxed">
+                      {ayah.teksIndonesia}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Sticky Player (Only when playing) */}
+        <AnimatePresence>
+          {playingAudio && (
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[440px] px-4 z-50"
+            >
+              <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/50 rounded-2xl p-4 shadow-xl flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-0.5">
+                    Now Playing
+                  </p>
+                  <p className="text-white text-sm font-medium truncate">
+                    Ayat {playingAyah}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {/* Simplified controls for now */}
+                  <button
+                    onClick={stopAudio}
+                    className="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center transition-colors shadow-lg shadow-emerald-500/20"
+                  >
+                    <Pause className="w-4 h-4 fill-current" />
+                  </button>
+                  <button
+                    onClick={stopAudio}
+                    className="p-2 text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </MobileContainer>
+    );
+  }
+
+  /* =========================================================================
+     SURAH LIST VIEW
+     ========================================================================= */
+  const handleContinueReading = () => {
+    if (readingProgress) {
+      loadSurah(readingProgress.surahNumber);
+      // Could also scroll to ayah here in the future
+    }
+  };
+
+  return (
+    <MobileContainer className="pb-24">
+      {/* Header */}
+      <header className="px-6 py-4 sticky top-0 bg-[#020617]/80 backdrop-blur z-20 space-y-4 border-b border-slate-800/50">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-slate-400" />
+          </button>
+          <span className="font-serif text-lg text-white">{t.title}</span>
+          <div className="w-9" />
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input
+            type="text"
+            placeholder={t.searchPlaceholder}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full bg-slate-800 text-slate-400 hover:text-white"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+      </header>
+
+      <ScrollArea className="h-[calc(100vh-140px)]">
+        <div className="px-6 py-4 space-y-6 pb-32">
+          {/* Last Read Card - Only show if no search query */}
+          {!searchQuery && readingProgress && (
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/10 border border-indigo-500/20 p-6">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl" />
+
+              <div className="relative z-10 flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="w-4 h-4 text-indigo-400" />
+                    <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">
+                      {t.lastRead}
                     </span>
+                  </div>
+                  <p className="text-xl font-serif text-white mb-1">
+                    {t.surah} {readingProgress.surahNumber}
+                  </p>
+                  <p className="text-slate-400 text-sm">
+                    {t.ayat} {readingProgress.ayahNumber}
                   </p>
                 </div>
 
-                {/* Latin Transliteration */}
-                <p className="text-slate-400 text-sm italic mb-2">{ayah.teksLatin}</p>
-
-                {/* Indonesian Translation */}
-                <p className="text-slate-300 text-sm">{ayah.teksIndonesia}</p>
-
-                {/* Audio Button */}
-                {ayah.audio && Object.keys(ayah.audio).length > 0 && (
-                  <button
-                    onClick={() => {
-                      const audioUrl = Object.values(ayah.audio)[0];
-                      if (playingAyah === ayah.nomorAyat) {
-                        stopAudio();
-                      } else {
-                        playAyahAudio(audioUrl, ayah.nomorAyat);
-                      }
-                    }}
-                    className="mt-3 flex items-center gap-2 text-emerald-400 text-sm hover:text-emerald-300 transition-colors"
-                  >
-                    {playingAyah === ayah.nomorAyat ? (
-                      <>
-                        <Pause className="w-4 h-4" />
-                        <span>Pause</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4" />
-                        <span>Play Audio</span>
-                      </>
-                    )}
-                  </button>
-                )}
-
-                <div className="mt-4 flex items-center gap-3">
-                  <button
-                    onClick={() => handleMarkProgress(ayah.nomorAyat)}
-                    className="px-3 py-2 rounded-lg text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition-colors flex items-center gap-2"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    {t.markLast}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const bookmarkId = `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`;
-                      toggleBookmark({
-                        id: bookmarkId,
-                        type: 'ayah',
-                        title: `${selectedSurah.namaLatin} : ${ayah.nomorAyat}`,
-                        subtitle: selectedSurah.arti,
-                        content: ayah.teksIndonesia,
-                        createdAt: new Date().toISOString(),
-                      });
-                    }}
-                    className={`px-3 py-2 rounded-lg text-xs border transition-colors flex items-center gap-2 ${
-                      isBookmarked('ayah', `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`)
-                        ? 'bg-amber-500/20 border-amber-500/40 text-amber-200'
-                        : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <Bookmark className="w-4 h-4" />
-                    {t.saveAyah}
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
-    );
-  }
-
-  // Loading State
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#020617] text-slate-200 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-amber-400 mx-auto mb-4" />
-          <p className="text-slate-400">{t.loading}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error State
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#020617] text-slate-200 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
-          <button
-            onClick={loadSurahs}
-            className="px-6 py-3 bg-amber-500 text-slate-900 rounded-xl font-medium"
-          >
-            {t.retry}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Surah List View
-  return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 pb-24">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 text-slate-400" />
-        </button>
-        <div className="text-center">
-          <span className="font-serif text-lg text-white">{t.title}</span>
-          <p className="text-xs text-slate-500">{t.subtitle}</p>
-        </div>
-        <div className="w-9" />
-      </header>
-
-      {/* Reading Progress */}
-      <div className="px-6 pt-4">
-        <Card className="bg-slate-900/50 border-slate-800">
-          <CardContent className="p-5 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-500">{t.lastRead}</p>
-                <p className="text-sm text-white">
-                  {readingProgress
-                    ? `${t.surah} ${readingProgress.surahNumber} • ${t.ayat} ${readingProgress.ayahNumber}`
-                    : '-'}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-slate-500">{t.target}</p>
-                <div className="flex items-center gap-2 justify-end">
-                  <input
-                    type="number"
-                    min={1}
-                    max={30}
-                    value={readingTarget}
-                    onChange={(e) => {
-                      const value = Math.max(1, Math.min(30, Number(e.target.value || 1)));
-                      setReadingTarget(value);
-                      saveReadingTarget({ dailyTargetPages: value });
-                    }}
-                    className="w-16 bg-slate-800/80 border border-slate-700 rounded-lg px-2 py-1 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-                  />
-                  <span className="text-xs text-slate-500">{t.pages}</span>
-                </div>
+                <button
+                  onClick={handleContinueReading}
+                  className="shrink-0 w-12 h-12 rounded-full bg-indigo-500 hover:bg-indigo-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 transition-all active:scale-95"
+                >
+                  <Play className="w-5 h-5 fill-current ml-0.5" />
+                </button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
 
-      {/* Surah List */}
-      <ScrollArea className="h-[calc(100vh-80px)]">
-        <div className="px-6 py-4 space-y-2">
-          {surahs.map((surah, i) => (
-            <motion.button
-              key={surah.nomor}
-              onClick={() => loadSurah(surah.nomor)}
-              disabled={isLoadingSurah}
-              className="w-full p-4 rounded-xl border border-slate-800 bg-slate-800/30 hover:border-emerald-500/50 transition-all flex items-center gap-4 text-left disabled:opacity-50"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(i * 0.02, 0.5) }}
-            >
-              {/* Number */}
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-medium text-sm">
-                {surah.nomor}
+          {/* Surah List */}
+          <div className="space-y-3">
+            {filteredSurahs.length > 0 ? (
+              filteredSurahs.map((surah, i) => (
+                <motion.button
+                  key={surah.nomor}
+                  onClick={() => loadSurah(surah.nomor)}
+                  disabled={isLoadingSurah}
+                  className="w-full p-4 rounded-2xl border border-slate-800/60 bg-slate-900/20 hover:bg-slate-800/50 hover:border-emerald-500/20 transition-all flex items-center gap-4 text-left group disabled:opacity-50"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(i * 0.03, 0.5) }}
+                >
+                  {/* Number */}
+                  <div className="w-10 h-10 shrink-0 rounded-xl bg-slate-800/50 group-hover:bg-emerald-500/10 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 font-bold text-sm transition-colors border border-slate-700/50 group-hover:border-emerald-500/10 font-serif">
+                    {surah.nomor}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between">
+                      <p className="text-white font-medium group-hover:text-emerald-200 transition-colors truncate pr-2">
+                        {surah.namaLatin}
+                      </p>
+                      <span className="text-xl text-slate-700 group-hover:text-emerald-500/20 font-serif transition-colors shrink-0">
+                        {surah.nama}
+                      </span>
+                    </div>
+                    <p className="text-slate-500 text-xs mt-0.5 truncate">
+                      {surah.arti} • {surah.jumlahAyat} {t.ayat}
+                    </p>
+                  </div>
+                </motion.button>
+              ))
+            ) : (
+              <div className="text-center py-12 text-slate-500">
+                <p>{t.noResults}</p>
               </div>
-
-              {/* Info */}
-              <div className="flex-1">
-                <p className="text-white font-medium">{surah.namaLatin}</p>
-                <p className="text-slate-500 text-sm">
-                  {surah.arti} • {surah.jumlahAyat} {t.ayat}
-                </p>
-              </div>
-
-              {/* Arabic Name */}
-              <p className="text-xl text-amber-400 font-serif">{surah.nama}</p>
-
-              <ChevronRight className="w-5 h-5 text-slate-600" />
-            </motion.button>
-          ))}
+            )}
+          </div>
         </div>
       </ScrollArea>
 
       {/* Loading Overlay */}
       {isLoadingSurah && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-900 rounded-2xl p-6 flex items-center gap-4">
-            <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
-            <span className="text-white">{t.loading}</span>
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-900 rounded-2xl p-6 flex items-center gap-4 border border-slate-800 shadow-2xl">
+            <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+            <span className="text-slate-200 font-medium">{t.loading}</span>
           </div>
         </div>
       )}
-    </div>
+    </MobileContainer>
   );
 };
 

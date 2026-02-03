@@ -124,7 +124,7 @@ export const getRamadanGreeting = (
       },
       'after-eid': {
         greeting: 'Selamat Idul Fitri',
-        subtitle: 'Mohon maaf lahir dan batin',
+        subtitle: 'Taqabbalallahu minna wa minkum',
       },
       normal: { greeting: "Assalamu'alaikum", subtitle: 'Selamat beribadah' },
     },
@@ -139,7 +139,7 @@ export const getRamadanGreeting = (
       },
       'after-eid': {
         greeting: 'Eid Mubarak',
-        subtitle: 'Blessed celebration to you',
+        subtitle: 'May Allah accept from us and from you',
       },
       normal: {
         greeting: 'Peace be upon you',

@@ -1,13 +1,28 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, Globe, MapPin, Moon, ShieldCheck, User } from 'lucide-react';
+import {
+  ArrowLeft,
+  Bell,
+  Globe,
+  MapPin,
+  Moon,
+  ShieldCheck,
+  User,
+} from 'lucide-react';
 import { getProfile, UserProfile } from '@/lib/storage';
 import { saveProfileAndSync } from '@/lib/profile-sync';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/hooks/useI18n';
 import { getProvinces, getCitiesByProvince } from '@/data/indonesia-cities';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import MobileContainer from '@/components/layout/MobileContainer';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +37,7 @@ const SettingsPage: React.FC = () => {
   }, [profile.location?.province]);
 
   const updateProfile = (updates: Partial<UserProfile>) => {
-    setProfile(prev => ({ ...prev, ...updates }));
+    setProfile((prev) => ({ ...prev, ...updates }));
   };
 
   const saveChanges = async () => {
@@ -43,8 +58,8 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 pb-28">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
+    <MobileContainer className="pb-0">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 backdrop-blur z-10">
         <button
           onClick={() => navigate('/dashboard')}
           className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
@@ -52,13 +67,15 @@ const SettingsPage: React.FC = () => {
           <ArrowLeft className="w-5 h-5 text-slate-400" />
         </button>
         <div className="text-center">
-          <span className="font-serif text-lg text-white">{dict.settings.title}</span>
+          <span className="font-serif text-lg text-white">
+            {dict.settings.title}
+          </span>
           <p className="text-xs text-slate-500">{dict.settings.subtitle}</p>
         </div>
         <div className="w-9" />
       </header>
 
-      <main className="px-6 py-6 space-y-6">
+      <main className="px-6 py-6 space-y-6 pb-32">
         <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -66,7 +83,9 @@ const SettingsPage: React.FC = () => {
             </div>
             <div>
               <p className="text-white font-medium">{dict.settings.profile}</p>
-              <p className="text-xs text-slate-500">{user?.email || dict.settings.guest}</p>
+              <p className="text-xs text-slate-500">
+                {user?.email || dict.settings.guest}
+              </p>
             </div>
           </div>
           <input
@@ -138,14 +157,18 @@ const SettingsPage: React.FC = () => {
             <div>
               <p className="text-white font-medium">{dict.settings.location}</p>
               <p className="text-xs text-slate-500">
-                {profile.location ? `${profile.location.city}, ${profile.location.province}` : dict.settings.locationUnset}
+                {profile.location
+                  ? `${profile.location.city}, ${profile.location.province}`
+                  : dict.settings.locationUnset}
               </p>
             </div>
           </div>
           <Select
             value={profile.location?.province || ''}
             onValueChange={(value) =>
-              updateProfile({ location: value ? { city: '', province: value } : null })
+              updateProfile({
+                location: value ? { city: '', province: value } : null,
+              })
             }
           >
             <SelectTrigger className="w-full h-12 bg-slate-800/60 border-slate-700 text-slate-200">
@@ -190,22 +213,32 @@ const SettingsPage: React.FC = () => {
             </div>
             <div>
               <p className="text-white font-medium">{dict.settings.ramadan}</p>
-              <p className="text-xs text-slate-500">{dict.settings.ramadanNote}</p>
+              <p className="text-xs text-slate-500">
+                {dict.settings.ramadanNote}
+              </p>
             </div>
           </div>
           <input
             type="date"
             value={profile.ramadanStartDate || ''}
-            onChange={(e) => updateProfile({ ramadanStartDate: e.target.value || null })}
+            onChange={(e) =>
+              updateProfile({ ramadanStartDate: e.target.value || null })
+            }
             className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
           />
           <div className="pt-3 border-t border-slate-800/70">
-            <p className="text-white font-medium text-sm">{dict.settings.ramadanEnd}</p>
-            <p className="text-xs text-slate-500 mb-3">{dict.settings.ramadanEndNote}</p>
+            <p className="text-white font-medium text-sm">
+              {dict.settings.ramadanEnd}
+            </p>
+            <p className="text-xs text-slate-500 mb-3">
+              {dict.settings.ramadanEndNote}
+            </p>
             <input
               type="date"
               value={profile.ramadanEndDate || ''}
-              onChange={(e) => updateProfile({ ramadanEndDate: e.target.value || null })}
+              onChange={(e) =>
+                updateProfile({ ramadanEndDate: e.target.value || null })
+              }
               className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
             />
           </div>
@@ -217,35 +250,52 @@ const SettingsPage: React.FC = () => {
               <Bell className="w-5 h-5 text-purple-400" />
             </div>
             <div>
-              <p className="text-white font-medium">{dict.settings.reminders}</p>
-              <p className="text-xs text-slate-500">{dict.settings.remindersNote}</p>
+              <p className="text-white font-medium">
+                {dict.settings.reminders}
+              </p>
+              <p className="text-xs text-slate-500">
+                {dict.settings.remindersNote}
+              </p>
             </div>
           </div>
 
           {(['sahur', 'iftar', 'prayer', 'reflection'] as const).map((key) => (
-            <label key={key} className="flex items-center justify-between gap-4">
+            <label
+              key={key}
+              className="flex items-center justify-between gap-4"
+            >
               <span className="text-sm text-slate-300 capitalize">{key}</span>
               <Switch
                 checked={profile.reminders[key]}
                 onCheckedChange={(checked) =>
-                  updateProfile({ reminders: { ...profile.reminders, [key]: checked } })
+                  updateProfile({
+                    reminders: { ...profile.reminders, [key]: checked },
+                  })
                 }
               />
             </label>
           ))}
 
           <label className="flex items-center justify-between gap-4 pt-2 border-t border-slate-800">
-            <span className="text-sm text-slate-300">{dict.settings.silentMode}</span>
+            <span className="text-sm text-slate-300">
+              {dict.settings.silentMode}
+            </span>
             <Switch
               checked={profile.silentMode}
-              onCheckedChange={(checked) => updateProfile({ silentMode: checked })}
+              onCheckedChange={(checked) =>
+                updateProfile({ silentMode: checked })
+              }
             />
           </label>
           <label className="flex items-center justify-between gap-4">
-            <span className="text-sm text-slate-300">{dict.settings.hideStreak}</span>
+            <span className="text-sm text-slate-300">
+              {dict.settings.hideStreak}
+            </span>
             <Switch
               checked={!!profile.hideStreak}
-              onCheckedChange={(checked) => updateProfile({ hideStreak: checked })}
+              onCheckedChange={(checked) =>
+                updateProfile({ hideStreak: checked })
+              }
             />
           </label>
         </section>
@@ -256,8 +306,12 @@ const SettingsPage: React.FC = () => {
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <p className="text-white font-medium">{dict.settings.notifications}</p>
-              <p className="text-xs text-slate-500">{dict.settings.notificationNote}</p>
+              <p className="text-white font-medium">
+                {dict.settings.notifications}
+              </p>
+              <p className="text-xs text-slate-500">
+                {dict.settings.notificationNote}
+              </p>
             </div>
           </div>
           <button
@@ -288,15 +342,16 @@ const SettingsPage: React.FC = () => {
         )}
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent">
+      {/* Fixed bottom button constrained to max width */}
+      <div className="fixed bottom-0 w-full max-w-[480px] left-1/2 -translate-x-1/2 p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-20">
         <button
           onClick={saveChanges}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold text-base"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold text-base shadow-lg shadow-amber-900/20"
         >
           {dict.settings.saveChanges}
         </button>
       </div>
-    </div>
+    </MobileContainer>
   );
 };
 
