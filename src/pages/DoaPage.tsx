@@ -129,7 +129,6 @@ const DoaPage: React.FC = () => {
       count: newCount,
       target,
       date: today,
-      time: new Date().toLocaleTimeString(),
     });
     setSessions(getDoaSessions());
     markActiveDay(today);
