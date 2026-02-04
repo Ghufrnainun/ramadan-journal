@@ -1,5 +1,6 @@
-const STATIC_CACHE_NAME = 'myramadhanku-static-v2';
-const RUNTIME_CACHE_NAME = 'myramadhanku-runtime-v2';
+// Bump cache version to ensure clients pick up the latest frontend bundle.
+const STATIC_CACHE_NAME = 'myramadhanku-static-v3';
+const RUNTIME_CACHE_NAME = 'myramadhanku-runtime-v3';
 const OFFLINE_URL = '/offline.html';
 const MAX_RUNTIME_ENTRIES = 40;
 
