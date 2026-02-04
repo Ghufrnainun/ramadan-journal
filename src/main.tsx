@@ -28,6 +28,32 @@ const BootError = ({ message }: { message: string }) => (
   </div>
 );
 
+async function fetchJsonSafely<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, options);
+  const contentType = res.headers.get('content-type') || '';
+
+  if (!contentType.includes('application/json')) {
+    const text = await res.text();
+    const preview = text.slice(0, 200);
+    console.error('[boot] Expected JSON, got:', contentType, 'status:', res.status);
+    console.error('[boot] Response preview:', preview);
+
+    if (preview.trim().startsWith('<') || preview.includes('<html')) {
+      throw new Error(
+        `Endpoint mengembalikan HTML (bukan JSON). Biasanya karena routing hosting belum mengarah ke backend. (HTTP ${res.status})`,
+      );
+    }
+
+    throw new Error(`Format respons tidak dikenali (${contentType || 'no content-type'}).`);
+  }
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  return (await res.json()) as T;
+}
+
 async function ensurePublicConfig() {
   const url = import.meta.env.VITE_SUPABASE_URL;
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -35,16 +61,34 @@ async function ensurePublicConfig() {
   // If env is present, nothing to do.
   if (url && key) return;
 
-  // Fallback: fetch public config from backend function.
+  // Fallback #1: static public config file (works on any hosting).
   try {
-    const res = await fetch('/functions/v1/public-config', {
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = (await res.json()) as {
+    const data = await fetchJsonSafely<{
       supabaseUrl?: string;
       supabaseAnonKey?: string;
-    };
+    }>('/app-public-config.json', {
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store',
+    });
+
+    if (data?.supabaseUrl && data?.supabaseAnonKey) {
+      window.__APP_PUBLIC_CONFIG__ = data;
+      return;
+    }
+  } catch (e) {
+    // continue to next fallback
+    console.warn('[boot] static public config failed:', e);
+  }
+
+  // Fallback #2: fetch public config from backend function.
+  try {
+    const data = await fetchJsonSafely<{
+      supabaseUrl?: string;
+      supabaseAnonKey?: string;
+    }>('/functions/v1/public-config', {
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store',
+    });
     window.__APP_PUBLIC_CONFIG__ = data;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
