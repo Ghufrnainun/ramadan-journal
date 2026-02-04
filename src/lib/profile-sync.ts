@@ -26,7 +26,7 @@ const mapProfileToDb = (profile: UserProfile) => ({
 });
 
 const mapDbToProfile = (row: ProfileRow): Partial<UserProfile> => ({
-  language: row.language || "id",
+  language: (row.language === "en" ? "en" : "id") as "en" | "id",
   location:
     row.city && row.province
       ? { city: row.city, province: row.province }
