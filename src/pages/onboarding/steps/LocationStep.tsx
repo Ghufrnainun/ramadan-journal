@@ -147,7 +147,7 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder={t.searchPlaceholder}
-          className="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all"
+          className="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-4 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-colors"
         />
       </motion.div>
 
@@ -220,7 +220,7 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
             <button
               key={`${city.province}-${city.name}`}
               onClick={() => handleSelect(city)}
-              className={`px-4 py-3 rounded-xl border text-left transition-all ${
+              className={`px-4 py-3 rounded-xl border text-left transition-colors ${
                 selectedCity?.name === city.name && selectedCity?.province === city.province
                   ? 'bg-amber-500/20 border-amber-500/50 text-amber-400'
                   : 'bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-600'
@@ -248,20 +248,20 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
       )}
 
       {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent">
+      <div className="fixed bottom-0 left-0 right-0 p-6 pb-safe bg-[#020617]/90">
         <div className="flex gap-3 max-w-md mx-auto">
           <button
             onClick={onBack}
-            className="flex-1 py-4 rounded-xl border border-slate-700 text-slate-400 hover:bg-slate-800/50 transition-all"
+            className="flex-1 py-4 rounded-xl border border-slate-700 text-slate-400 hover:bg-slate-800/50 transition-colors"
           >
             {t.back}
           </button>
           <button
             onClick={handleContinue}
             disabled={!selectedCity}
-            className={`flex-1 py-4 rounded-xl font-semibold transition-all ${
+            className={`flex-1 py-4 rounded-xl font-semibold transition-colors ${
               selectedCity
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900'
+                ? 'bg-amber-500 text-slate-900 hover:bg-amber-400'
                 : 'bg-slate-800 text-slate-500 cursor-not-allowed'
             }`}
           >

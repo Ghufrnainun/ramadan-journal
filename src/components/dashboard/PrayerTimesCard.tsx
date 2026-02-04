@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Loader2, Volume2, Square } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock, Volume2, Square } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   PrayerTimes,
   getPrayerTimesFromApi,
@@ -172,8 +172,15 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
           {t.title}
 
           <button
+            type="button"
             onClick={toggleAdhan}
-            className={`ml-2 p-1.5 rounded-full transition-colors ${isPlaying ? 'bg-amber-500 text-slate-900 animate-pulse' : 'bg-slate-800 text-slate-400 hover:text-amber-400'}`}
+            aria-label={isPlaying ? 'Stop adhan audio' : 'Play adhan audio'}
+            className={cn(
+              'ml-2 rounded-full p-1.5 transition-colors',
+              isPlaying
+                ? 'bg-amber-500 text-slate-900'
+                : 'bg-slate-800 text-slate-400 hover:text-amber-400',
+            )}
             title="Play Adhan"
           >
             {isPlaying ? (
@@ -194,35 +201,38 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
         )}
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 scrollbar-hide">
+      <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 scrollbar-hide md:grid md:grid-cols-3 lg:grid-cols-6 md:overflow-visible md:pb-0">
         {prayers.map((prayer) => (
           <div
             key={prayer.key}
-            className={`flex-shrink-0 min-w-[100px] p-4 rounded-2xl border transition-all relative overflow-hidden group ${
+            className={cn(
+              'group relative min-w-[100px] flex-shrink-0 overflow-hidden rounded-2xl border p-4 transition-colors md:min-w-0',
               prayer.highlight
-                ? 'bg-gradient-to-br from-amber-500 from-10% to-amber-600 border-amber-400 shadow-lg shadow-amber-900/40'
-                : 'bg-slate-900/40 border-slate-800 hover:bg-slate-800/60'
-            }`}
+                ? 'border-amber-400 bg-amber-500/20 shadow-lg'
+                : 'border-slate-800 bg-slate-900/40 hover:bg-slate-800/60',
+            )}
           >
             {prayer.highlight && (
               <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
             )}
 
             <p
-              className={`text-xs font-medium uppercase tracking-wider mb-1 ${
+              className={cn(
+                'mb-1 text-xs font-medium uppercase',
                 prayer.highlight
                   ? 'text-amber-100'
-                  : 'text-slate-500 group-hover:text-slate-400'
-              }`}
+                  : 'text-slate-500 group-hover:text-slate-400',
+              )}
             >
               {prayer.name}
             </p>
             <p
-              className={`font-serif text-xl ${
+              className={cn(
+                'font-serif text-xl',
                 prayer.highlight
                   ? 'text-white'
-                  : 'text-slate-300 group-hover:text-amber-200'
-              }`}
+                  : 'text-slate-300 group-hover:text-amber-200',
+              )}
             >
               {prayer.time}
             </p>

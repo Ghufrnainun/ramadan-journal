@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, Clock, BookOpen, Heart, HandHeart, MessageCircle, RotateCcw } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  Clock,
+  BookOpen,
+  Heart,
+  HandHeart,
+  MessageCircle,
+  RotateCcw,
+} from 'lucide-react';
 import { getProfile } from '@/lib/storage';
-import { 
-  getTodayProgress, 
+import {
+  getTodayProgress,
   toggleItem,
   updateNote,
   getTrackerItems,
@@ -11,12 +20,22 @@ import {
   deleteCustomTrackerItem,
   incrementCount,
   resetCount,
-  getCompletedCount
+  getCompletedCount,
 } from '@/lib/tracker-storage';
 import { markActiveDay } from '@/lib/streak';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
-import MobileContainer from '@/components/layout/MobileContainer';
+import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
 const content = {
   id: {
@@ -138,7 +157,7 @@ const TrackerPage: React.FC = () => {
       id: `custom-${Date.now()}`,
       label: {
         id: customLabelId.trim(),
-        en: (customLabelEn.trim() || customLabelId.trim()),
+        en: customLabelEn.trim() || customLabelId.trim(),
       },
       icon: 'check',
       isCustom: true,
@@ -159,9 +178,9 @@ const TrackerPage: React.FC = () => {
   };
 
   return (
-    <MobileContainer className="pb-24">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 z-20">
+    <ResponsiveLayout className="pb-24">
+      {/* Header - Mobile Only */}
+      <header className="md:hidden flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 z-20">
         <button
           onClick={() => navigate('/dashboard')}
           className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
@@ -169,21 +188,30 @@ const TrackerPage: React.FC = () => {
         >
           <ArrowLeft className="w-5 h-5 text-slate-400" />
         </button>
-        <span className="font-serif text-lg text-white text-balance">{t.title}</span>
+        <span className="font-serif text-lg text-white text-balance">
+          {t.title}
+        </span>
         <div className="w-9" />
       </header>
 
+      {/* Desktop Header */}
+      <div className="hidden md:flex items-center justify-between mb-8 max-w-2xl mx-auto w-full">
+        <h1 className="font-serif text-3xl text-white">{t.title}</h1>
+      </div>
+
       {/* Progress Card */}
-      <div className="px-6 py-6">
+      <div className="px-6 py-6 md:p-0 mb-6 max-w-2xl mx-auto w-full">
         <div>
           <div className="rounded-2xl bg-slate-900/50 border border-slate-800/70 p-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-slate-400 text-sm font-medium">{t.progress}</span>
+              <span className="text-slate-400 text-sm font-medium">
+                {t.progress}
+              </span>
               <span className="text-amber-400 font-medium bg-amber-500/10 px-2 py-1 rounded-lg text-xs border border-amber-500/20 tabular-nums">
                 {completedCount}/{totalItems} {t.completed}
               </span>
             </div>
-            
+
             {/* Progress Bar */}
             <div className="h-3 bg-slate-800/50 rounded-full overflow-hidden mb-4">
               <div
@@ -193,38 +221,42 @@ const TrackerPage: React.FC = () => {
             </div>
 
             {/* Message */}
-            <p className="text-center text-white text-sm font-medium text-pretty">{getMessage()}</p>
+            <p className="text-center text-white text-sm font-medium text-pretty">
+              {getMessage()}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Checklist Items */}
-      <div className="px-6 space-y-3">
+      <div className="px-6 space-y-3 md:p-0 max-w-2xl mx-auto w-full">
         {items.map((item) => {
           const isCount = item.type === 'count';
           const isChecked = progress.items[item.id] || false;
           const currentCount = progress.counts?.[item.id] || 0;
           const targetCount = item.target || 33;
           const isCompleted = isCount ? currentCount >= targetCount : isChecked;
-          
+
           return (
             <div key={item.id}>
               <button
-                onClick={() => (isCount ? handleIncrement(item.id) : handleToggle(item.id))}
+                onClick={() =>
+                  isCount ? handleIncrement(item.id) : handleToggle(item.id)
+                }
                 className={cn(
-                  "w-full p-4 rounded-xl border flex items-center gap-4 transition-all duration-300 group",
-                  isCompleted 
-                    ? "bg-emerald-500/10 border-emerald-500/30" 
-                    : "bg-slate-800/30 border-slate-700 hover:bg-slate-800/50 hover:border-slate-600"
+                  'w-full p-4 rounded-xl border flex items-center gap-4 transition-colors duration-300 group',
+                  isCompleted
+                    ? 'bg-emerald-500/10 border-emerald-500/30'
+                    : 'bg-slate-800/30 border-slate-700 hover:bg-slate-800/50 hover:border-slate-600',
                 )}
               >
                 {/* Checkbox */}
                 <div
                   className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300",
-                    isCompleted 
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" 
-                      : "bg-slate-700/50 text-slate-500 group-hover:bg-slate-700"
+                    'w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-300 shrink-0',
+                    isCompleted
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'bg-slate-700/50 text-slate-500 group-hover:bg-slate-700',
                   )}
                 >
                   {isCompleted ? (
@@ -239,8 +271,10 @@ const TrackerPage: React.FC = () => {
                 {/* Label */}
                 <span
                   className={cn(
-                    "flex-1 text-left font-medium transition-all duration-300",
-                    isCompleted ? "text-emerald-400 line-through decoration-emerald-500/50" : "text-white group-hover:text-amber-100"
+                    'flex-1 text-left font-medium transition-colors duration-300',
+                    isCompleted
+                      ? 'text-emerald-400 line-through decoration-emerald-500/50'
+                      : 'text-white group-hover:text-amber-100',
                   )}
                 >
                   {item.label[lang]}
@@ -254,9 +288,12 @@ const TrackerPage: React.FC = () => {
                 )}
               </button>
               {isCount && (
-                <div className="mt-2 flex items-center justify-between gap-3">
+                <div className="mt-2 flex items-center justify-between gap-3 px-1">
                   <div className="text-xs text-slate-500">
-                    {t.typeCount}: <span className="text-slate-200 tabular-nums">{currentCount}/{targetCount}</span>
+                    {t.typeCount}:{' '}
+                    <span className="text-slate-200 tabular-nums">
+                      {currentCount}/{targetCount}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -286,7 +323,9 @@ const TrackerPage: React.FC = () => {
                     </AlertDialogTrigger>
                     <AlertDialogContent className="bg-slate-900 border-slate-800">
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="text-white">{t.confirmTitle}</AlertDialogTitle>
+                        <AlertDialogTitle className="text-white">
+                          {t.confirmTitle}
+                        </AlertDialogTitle>
                         <AlertDialogDescription className="text-slate-400">
                           {t.confirmDesc}
                         </AlertDialogDescription>
@@ -309,7 +348,7 @@ const TrackerPage: React.FC = () => {
                   </AlertDialog>
                 </div>
               )}
-              <div className="mt-2">
+              <div className="mt-2 px-1">
                 <textarea
                   value={progress.notes[item.id] || ''}
                   onChange={(e) => {
@@ -317,7 +356,8 @@ const TrackerPage: React.FC = () => {
                     setProgress(updated);
                   }}
                   placeholder={t.notePlaceholder}
-                  className="w-full bg-slate-800/20 border-b border-slate-700/50 px-1 py-2 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors resize-none h-8 min-h-[32px] focus:h-20 focus:bg-slate-800/40 rounded-lg text-left"
+                  className="w-full bg-slate-800/20 border-b border-slate-700/50 px-2 py-2 text-xs text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors resize-none h-auto min-h-[32px] focus:min-h-[60px] focus:bg-slate-800/40 rounded-lg text-left"
+                  rows={1}
                 />
               </div>
             </div>
@@ -326,91 +366,99 @@ const TrackerPage: React.FC = () => {
       </div>
 
       {/* Add Custom Tracker */}
-      <div className="px-6 mt-8">
+      <div className="px-6 mt-8 md:px-0 max-w-2xl mx-auto w-full">
         <div className="rounded-2xl bg-slate-900/50 border border-slate-800/70 p-6 space-y-4">
-            <div>
-              <p className="font-serif text-white text-lg text-balance mb-1">{t.addTitle}</p>
-              <p className="text-sm text-slate-500 text-pretty">{t.addHint}</p>
-            </div>
-            <div className="space-y-3">
-              <input
-                value={customLabelId}
-                onChange={(e) => setCustomLabelId(e.target.value)}
-                placeholder={t.labelId}
-                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors"
-              />
-              <input
-                value={customLabelEn}
-                onChange={(e) => setCustomLabelEn(e.target.value)}
-                placeholder={t.labelEn}
-                className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors"
-              />
-              <div className="space-y-2">
-                <label className="text-xs text-slate-500">{t.typeLabel}</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setCustomType('check')}
-                    className={cn(
-                      "py-2 rounded-lg border text-sm transition-colors",
-                      customType === 'check'
-                        ? "border-amber-500/40 text-amber-300 bg-amber-500/10"
-                        : "border-slate-800 text-slate-400 hover:bg-slate-900/40"
-                    )}
-                  >
-                    {t.typeCheck}
-                  </button>
-                  <button
-                    onClick={() => setCustomType('count')}
-                    className={cn(
-                      "py-2 rounded-lg border text-sm transition-colors",
-                      customType === 'count'
-                        ? "border-amber-500/40 text-amber-300 bg-amber-500/10"
-                        : "border-slate-800 text-slate-400 hover:bg-slate-900/40"
-                    )}
-                  >
-                    {t.typeCount}
-                  </button>
-                </div>
+          <div>
+            <p className="font-serif text-white text-lg text-balance mb-1">
+              {t.addTitle}
+            </p>
+            <p className="text-sm text-slate-500 text-pretty">{t.addHint}</p>
+          </div>
+          <div className="space-y-3">
+            <input
+              value={customLabelId}
+              onChange={(e) => setCustomLabelId(e.target.value)}
+              placeholder={t.labelId}
+              className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors"
+            />
+            <input
+              value={customLabelEn}
+              onChange={(e) => setCustomLabelEn(e.target.value)}
+              placeholder={t.labelEn}
+              className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors"
+            />
+            <div className="space-y-2">
+              <label className="text-xs text-slate-500">{t.typeLabel}</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setCustomType('check')}
+                  className={cn(
+                    'py-2 rounded-lg border text-sm transition-colors',
+                    customType === 'check'
+                      ? 'border-amber-500/40 text-amber-300 bg-amber-500/10'
+                      : 'border-slate-800 text-slate-400 hover:bg-slate-900/40',
+                  )}
+                >
+                  {t.typeCheck}
+                </button>
+                <button
+                  onClick={() => setCustomType('count')}
+                  className={cn(
+                    'py-2 rounded-lg border text-sm transition-colors',
+                    customType === 'count'
+                      ? 'border-amber-500/40 text-amber-300 bg-amber-500/10'
+                      : 'border-slate-800 text-slate-400 hover:bg-slate-900/40',
+                  )}
+                >
+                  {t.typeCount}
+                </button>
               </div>
-              {customType === 'count' && (
-                <div className="space-y-2">
-                  <label className="text-xs text-slate-500">{t.targetLabel}</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={customTarget}
-                    onChange={(e) => setCustomTarget(Math.max(1, Number(e.target.value || 1)))}
-                    className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors"
-                  />
-                </div>
-              )}
-              {formError && (
-                <p className="text-xs text-rose-400 bg-rose-500/10 px-3 py-2 rounded-lg">{formError}</p>
-              )}
-              <button
-                onClick={handleAddTracker}
-                className="w-full py-3 rounded-xl border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 transition-colors text-sm font-medium"
-              >
-                {t.addButton}
-              </button>
             </div>
+            {customType === 'count' && (
+              <div className="space-y-2">
+                <label className="text-xs text-slate-500">
+                  {t.targetLabel}
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={customTarget}
+                  onChange={(e) =>
+                    setCustomTarget(Math.max(1, Number(e.target.value || 1)))
+                  }
+                  className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-amber-500/50 transition-colors"
+                />
+              </div>
+            )}
+            {formError && (
+              <p className="text-xs text-rose-400 bg-rose-500/10 px-3 py-2 rounded-lg">
+                {formError}
+              </p>
+            )}
+            <button
+              onClick={handleAddTracker}
+              className="w-full py-3 rounded-xl border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 transition-colors text-sm font-medium"
+            >
+              {t.addButton}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Motivational Footer */}
       {completedCount === totalItems && (
-        <div className="px-6 mt-8">
+        <div className="px-6 mt-8 md:px-0 max-w-2xl mx-auto w-full">
           <div className="text-center p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
             <span className="text-4xl mb-3 block">🎉</span>
             <p className="text-emerald-400 font-serif text-lg text-balance">
-              {lang === 'id' 
-                ? 'Alhamdulillah, hari ini sempurna!' 
+              {lang === 'id'
+                ? 'Alhamdulillah, hari ini sempurna!'
                 : 'Alhamdulillah, perfect day!'}
             </p>
           </div>
         </div>
       )}
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 };
 

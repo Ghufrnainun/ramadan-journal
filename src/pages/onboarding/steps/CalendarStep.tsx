@@ -93,7 +93,7 @@ const CalendarStep: React.FC<CalendarStepProps> = ({
           setUseDefault(true);
           setSelectedDate(defaultDateObj);
         }}
-        className={`w-full p-5 rounded-xl border text-left mb-4 transition-all ${
+        className={`w-full p-5 rounded-xl border text-left mb-4 transition-colors ${
           useDefault
             ? 'bg-amber-500/10 border-amber-500/50'
             : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
@@ -133,7 +133,7 @@ const CalendarStep: React.FC<CalendarStepProps> = ({
           <PopoverTrigger asChild>
             <button
               onClick={() => setUseDefault(false)}
-              className={`w-full p-5 rounded-xl border text-left transition-all ${
+              className={`w-full p-5 rounded-xl border text-left transition-colors ${
                 !useDefault
                   ? 'bg-amber-500/10 border-amber-500/50'
                   : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'
@@ -236,17 +236,17 @@ const CalendarStep: React.FC<CalendarStepProps> = ({
       </motion.div>
 
       {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent">
+      <div className="fixed bottom-0 left-0 right-0 p-6 pb-safe bg-[#020617]/90">
         <div className="flex gap-3 max-w-md mx-auto">
           <button
             onClick={onBack}
-            className="flex-1 py-4 rounded-xl border border-slate-700 text-slate-400 hover:bg-slate-800/50 transition-all"
+            className="flex-1 py-4 rounded-xl border border-slate-700 text-slate-400 hover:bg-slate-800/50 transition-colors"
           >
             {t.back}
           </button>
           <button
             onClick={handleContinue}
-            className="flex-1 py-4 rounded-xl font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 transition-all"
+            className="flex-1 py-4 rounded-xl font-semibold bg-amber-500 text-slate-900 hover:bg-amber-400 transition-colors"
           >
             {t.next}
           </button>

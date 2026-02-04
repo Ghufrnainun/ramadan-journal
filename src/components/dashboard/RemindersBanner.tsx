@@ -1,14 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Bell } from 'lucide-react';
-import { equranApi } from '@/lib/api/equran';
+import React, { useEffect, useMemo, useState } from "react";
+import { Bell } from "lucide-react";
+import { equranApi } from "@/lib/api/equran";
 import {
   getPrayerTimesFromApi,
   PrayerTimes,
   getCityMapping,
-} from '@/lib/prayer-times';
+} from "@/lib/prayer-times";
 
 interface RemindersBannerProps {
-  lang: 'id' | 'en';
+  lang: "id" | "en";
   location: { city: string; province: string } | null;
   ramadanStartDate: string | null;
   ramadanEndDate?: string | null;
@@ -29,7 +29,7 @@ interface ReminderCandidate {
 }
 
 const timeToMinutes = (time: string): number => {
-  const [h, m] = time.split(':').map(Number);
+  const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 };
 
@@ -83,7 +83,7 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
         const times = await getPrayerTimesFromApi(location.city);
         if (isMounted) setPrayerTimes(times);
       } catch (e) {
-        console.error('Failed to load prayer times for reminders', e);
+        console.error("Failed to load prayer times for reminders", e);
       }
 
       if (reminders.sahur || reminders.iftar) {
@@ -95,14 +95,14 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
             mapping.kabkota,
             year,
           );
-          const todayStr = new Date().toISOString().split('T')[0];
+          const todayStr = new Date().toISOString().split("T")[0];
           const today = schedule.find((item) => item.tanggal === todayStr);
           if (today && isMounted) {
             setImsakTime(today.imsak);
             setIftarTime(today.maghrib);
           }
         } catch (e) {
-          console.error('Failed to load imsakiyah for reminders', e);
+          console.error("Failed to load imsakiyah for reminders", e);
         }
       }
     };
@@ -133,33 +133,33 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
 
       if (reminders.prayer && prayerTimes) {
         addCandidate(
-          'subuh',
-          lang === 'id' ? 'Subuh' : 'Fajr',
+          "subuh",
+          lang === "id" ? "Subuh" : "Fajr",
           prayerTimes.subuh,
         );
         addCandidate(
-          'dzuhur',
-          lang === 'id' ? 'Dzuhur' : 'Dhuhr',
+          "dzuhur",
+          lang === "id" ? "Dzuhur" : "Dhuhr",
           prayerTimes.dzuhur,
         );
         addCandidate(
-          'ashar',
-          lang === 'id' ? 'Ashar' : 'Asr',
+          "ashar",
+          lang === "id" ? "Ashar" : "Asr",
           prayerTimes.ashar,
         );
         addCandidate(
-          'maghrib',
-          lang === 'id' ? 'Maghrib' : 'Maghrib',
+          "maghrib",
+          lang === "id" ? "Maghrib" : "Maghrib",
           prayerTimes.maghrib,
         );
-        addCandidate('isya', lang === 'id' ? 'Isya' : 'Isha', prayerTimes.isya);
+        addCandidate("isya", lang === "id" ? "Isya" : "Isha", prayerTimes.isya);
       }
 
       if (isInRamadan(ramadanStartDate, ramadanEndDate)) {
         if (reminders.sahur)
-          addCandidate('imsak', lang === 'id' ? 'Imsak' : 'Imsak', imsakTime);
+          addCandidate("imsak", lang === "id" ? "Imsak" : "Imsak", imsakTime);
         if (reminders.iftar)
-          addCandidate('iftar', lang === 'id' ? 'Berbuka' : 'Iftar', iftarTime);
+          addCandidate("iftar", lang === "id" ? "Berbuka" : "Iftar", iftarTime);
       }
 
       if (reminders.reflection && prayerTimes?.isya) {
@@ -167,9 +167,9 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
         const h = Math.floor(isyaMinutes / 60) % 24;
         const m = isyaMinutes % 60;
         addCandidate(
-          'reflection',
-          lang === 'id' ? 'Refleksi Malam' : 'Night Reflection',
-          `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`,
+          "reflection",
+          lang === "id" ? "Refleksi Malam" : "Night Reflection",
+          `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
         );
       }
 
@@ -183,19 +183,19 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
         setNextReminder(null);
       }
 
-      if (upcoming && upcoming.minutesLeft <= 5 && 'Notification' in window) {
+      if (upcoming && upcoming.minutesLeft <= 5 && "Notification" in window) {
         const key = `myramadhanku_notified_${upcoming.id}_${upcoming.time}`;
         if (
           !localStorage.getItem(key) &&
-          Notification.permission === 'granted' &&
+          Notification.permission === "granted" &&
           !silentMode
         ) {
           const body =
-            lang === 'id'
+            lang === "id"
               ? `${upcoming.label} dalam ${upcoming.minutesLeft} menit`
               : `${upcoming.label} in ${upcoming.minutesLeft} minutes`;
-          new Notification('MyRamadhanku', { body });
-          localStorage.setItem(key, '1');
+          new Notification("MyRamadhanku", { body });
+          localStorage.setItem(key, "1");
         }
       }
     };
@@ -210,6 +210,7 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
     imsakTime,
     iftarTime,
     ramadanStartDate,
+    ramadanEndDate,
     lang,
     silentMode,
   ]);
@@ -224,8 +225,8 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
       <div>
         <p className="text-sm text-white font-medium">{nextReminder.label}</p>
         <p className="text-xs text-amber-200/80">
-          {lang === 'id' ? 'Mulai dalam' : 'Starts in'}{' '}
-          {nextReminder.minutesLeft} {lang === 'id' ? 'menit' : 'minutes'}
+          {lang === "id" ? "Mulai dalam" : "Starts in"}{" "}
+          {nextReminder.minutesLeft} {lang === "id" ? "menit" : "minutes"}
         </p>
       </div>
     </div>

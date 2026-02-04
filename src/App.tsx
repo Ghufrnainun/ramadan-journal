@@ -16,6 +16,7 @@ import SettingsPage from './pages/SettingsPage';
 import ReflectionPage from './pages/ReflectionPage';
 import BookmarksPage from './pages/BookmarksPage';
 import CalendarPage from './pages/CalendarPage';
+import HadithPage from './pages/HadithPage';
 import NotFound from './pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/dhikr" element={<DhikrPage />} />
+            <Route path="/hadith" element={<HadithPage />} />
             <Route path="/doa" element={<DoaPage />} />
             <Route path="/tracker" element={<TrackerPage />} />
             <Route path="/quran" element={<QuranPage />} />

@@ -8,6 +8,7 @@ import {
   BookHeart,
   Calendar,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface QuickActionsProps {
   lang: 'id' | 'en';
@@ -44,15 +45,12 @@ const moduleIcons: Record<string, React.ReactNode> = {
 };
 
 const moduleColors: Record<string, string> = {
-  quran:
-    'from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 text-emerald-400',
-  dhikr: 'from-amber-500/20 to-amber-600/10 border-amber-500/30 text-amber-400',
-  doa: 'from-rose-500/20 to-rose-600/10 border-rose-500/30 text-rose-400',
-  tracker: 'from-blue-500/20 to-blue-600/10 border-blue-500/30 text-blue-400',
-  reflection:
-    'from-purple-500/20 to-purple-600/10 border-purple-500/30 text-purple-400',
-  calendar:
-    'from-indigo-500/20 to-indigo-600/10 border-indigo-500/30 text-indigo-400',
+  quran: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+  dhikr: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+  doa: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
+  tracker: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
+  reflection: 'bg-violet-500/10 border-violet-500/30 text-violet-400',
+  calendar: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400',
 };
 
 const QuickActions: React.FC<QuickActionsProps> = ({
@@ -85,7 +83,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
   }));
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
       {modules.map((module, index) => {
         // If user has focused modules, only show those first (for later implementation)
         // For now show all 4 main ones
@@ -101,7 +99,10 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             transition={{ delay: index * 0.05 }}
           >
             <div
-              className={`w-14 h-14 rounded-2xl ${module.color} flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 group-hover:shadow-amber-900/20 border border-white/5`}
+              className={cn(
+                'flex h-14 w-14 items-center justify-center rounded-2xl border shadow-lg transition-[transform,box-shadow] group-hover:scale-105 group-hover:shadow-xl',
+                module.color,
+              )}
             >
               {/* Force white color on existing icons */}
               {React.cloneElement(module.icon as React.ReactElement, {

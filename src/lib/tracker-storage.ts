@@ -33,6 +33,13 @@ export const DEFAULT_TRACKER_ITEMS: TrackerItem[] = [
     type: 'check',
   },
   {
+    id: 'quran_target',
+    label: { id: 'Target Tadarus (Halaman)', en: 'Quran Target (Pages)' },
+    icon: 'book-open',
+    type: 'count',
+    target: 20, // 1 Juz standard
+  },
+  {
     id: 'dzikir',
     label: { id: 'Dzikir Pagi/Petang', en: 'Morning/Evening Dhikr' },
     icon: 'heart',
@@ -87,7 +94,10 @@ export const getCustomTrackerItems = (): TrackerItem[] => {
 export const saveCustomTrackerItem = (item: TrackerItem): void => {
   try {
     const current = getCustomTrackerItems();
-    localStorage.setItem(CUSTOM_ITEMS_KEY, JSON.stringify([{ ...item, isCustom: true }, ...current]));
+    localStorage.setItem(
+      CUSTOM_ITEMS_KEY,
+      JSON.stringify([{ ...item, isCustom: true }, ...current]),
+    );
   } catch (e) {
     console.error('Error saving tracker item:', e);
   }
@@ -95,7 +105,7 @@ export const saveCustomTrackerItem = (item: TrackerItem): void => {
 
 export const deleteCustomTrackerItem = (itemId: string): void => {
   try {
-    const next = getCustomTrackerItems().filter(item => item.id !== itemId);
+    const next = getCustomTrackerItems().filter((item) => item.id !== itemId);
     localStorage.setItem(CUSTOM_ITEMS_KEY, JSON.stringify(next));
   } catch (e) {
     console.error('Error deleting tracker item:', e);
@@ -109,15 +119,15 @@ export const getTrackerItems = (): TrackerItem[] => {
 export const getTodayProgress = (): DailyProgress => {
   const today = getTodayDate();
   const allProgress = getAllProgress();
-  const existing = allProgress.find(p => p.date === today);
-  
+  const existing = allProgress.find((p) => p.date === today);
+
   if (existing) {
     return {
       ...existing,
       counts: existing.counts || {},
     };
   }
-  
+
   // Return empty progress for today
   return {
     date: today,
@@ -130,14 +140,16 @@ export const getTodayProgress = (): DailyProgress => {
 export const saveProgress = (progress: DailyProgress): void => {
   try {
     const allProgress = getAllProgress();
-    const existingIndex = allProgress.findIndex(p => p.date === progress.date);
-    
+    const existingIndex = allProgress.findIndex(
+      (p) => p.date === progress.date,
+    );
+
     if (existingIndex >= 0) {
       allProgress[existingIndex] = progress;
     } else {
       allProgress.push(progress);
     }
-    
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(allProgress));
   } catch (e) {
     console.error('Error saving tracker progress:', e);
@@ -158,7 +170,10 @@ export const updateNote = (itemId: string, note: string): DailyProgress => {
   return progress;
 };
 
-export const incrementCount = (itemId: string, step: number = 1): DailyProgress => {
+export const incrementCount = (
+  itemId: string,
+  step: number = 1,
+): DailyProgress => {
   const progress = getTodayProgress();
   const current = progress.counts[itemId] || 0;
   progress.counts[itemId] = current + step;
@@ -176,7 +191,7 @@ export const resetCount = (itemId: string): DailyProgress => {
 export const getCompletedCount = (): number => {
   const progress = getTodayProgress();
   const items = getTrackerItems();
-  return items.filter(item => {
+  return items.filter((item) => {
     if (item.type === 'count') {
       const target = item.target || 33;
       return (progress.counts[item.id] || 0) >= target;

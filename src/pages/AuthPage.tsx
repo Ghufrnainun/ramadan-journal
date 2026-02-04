@@ -112,7 +112,7 @@ const AuthPage: React.FC = () => {
         <button
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="w-full py-4 px-6 rounded-xl font-medium bg-white text-slate-900 hover:bg-slate-100 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+          className="w-full py-4 px-6 rounded-xl font-medium bg-white text-slate-900 hover:bg-slate-100 transition-colors flex items-center justify-center gap-3 disabled:opacity-50"
         >
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -151,7 +151,7 @@ const AuthPage: React.FC = () => {
         {/* Continue as Guest */}
         <button
           onClick={handleContinueAsGuest}
-          className="w-full py-4 px-6 rounded-xl font-medium border border-slate-700 text-slate-300 hover:bg-slate-800/50 transition-all"
+          className="w-full py-4 px-6 rounded-xl font-medium border border-slate-700 text-slate-300 hover:bg-slate-800/50 transition-colors"
         >
           {t.continueAsGuest}
         </button>

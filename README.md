@@ -1,74 +1,109 @@
-# MyRamadhan 🌙
+# MyRamadhan Journal
 
-Aplikasi pendamping ibadah Ramadhan untuk Muslim di Indonesia. Dibangun dengan React, TypeScript, dan Tailwind CSS.
+Aplikasi pendamping ibadah Ramadhan untuk Muslim di Indonesia.
 
-## Fitur
+## Fitur Utama
 
-- 📿 **Dzikir & Doa** - Koleksi dzikir dan doa harian dengan penghitung
-- 📖 **Tadarus** - Baca Al-Quran digital dengan audio dan terjemahan
-- 🕌 **Jadwal Sholat** - Waktu sholat akurat untuk seluruh kota di Indonesia
-- 📅 **Imsakiyah** - Jadwal imsak dan buka puasa
-- ✅ **Daily Tracker** - Pantau ibadah harian: sholat, tadarus, dzikir, sedekah
-- 🌅 **Countdown** - Hitung mundur waktu berbuka & sahur
-- 💬 **Quote Harian** - Motivasi dari Al-Quran dan Hadits
+- Dzikir dan doa harian
+- Tadarus Al-Quran digital
+- Jadwal sholat per kota di Indonesia
+- Imsakiyah Ramadhan
+- Daily tracker ibadah
+- Countdown sahur dan berbuka
+- Kutipan harian Islami
 
-## Teknologi
+## Tech Stack
 
-- **Frontend**: React 18, TypeScript, Vite
-- **Styling**: Tailwind CSS, shadcn/ui
-- **Animation**: Framer Motion
-- **Backend**: Lovable Cloud (Supabase)
-- **Auth**: Google OAuth
+- React 18 + TypeScript
+- Vite
+- Tailwind CSS + shadcn/ui
+- Framer Motion
+- Supabase (auth + backend)
 
 ## API Credits
 
-Aplikasi ini menggunakan **[eQuran.id API](https://equran.id/apidev)** untuk data islami:
+Proyek ini memakai [eQuran.id API](https://equran.id/apidev) untuk data islami:
 
-| API Endpoint | Kegunaan |
-|--------------|----------|
-| `/api/v2/surat` | Data Al-Quran (114 surat, ayat, audio, terjemahan) |
-| `/api/v2/tafsir` | Tafsir Al-Quran |
-| `/api/doa` | Koleksi 228 doa harian dari Al-Quran & Sunnah |
-| `/api/v2/shalat` | Jadwal waktu sholat untuk kota-kota Indonesia |
-| `/api/v2/imsakiyah` | Jadwal imsakiyah Ramadhan |
+- `/api/v2/surat`
+- `/api/v2/tafsir`
+- `/api/doa`
+- `/api/v2/shalat`
+- `/api/v2/imsakiyah`
 
-Terima kasih kepada tim [eQuran.id](https://equran.id) atas API gratisnya! 🙏
+Terima kasih untuk tim eQuran.id.
 
 ## Menjalankan Lokal
 
+Prasyarat:
+
+- Node.js 20+ (disarankan)
+- npm 10+ (atau versi bawaan Node.js terbaru)
+
+Langkah:
+
 ```bash
-# Clone repository
 git clone <YOUR_GIT_URL>
-
-# Masuk ke direktori
-cd <YOUR_PROJECT_NAME>
-
-# Install dependencies
+cd ramadan-journal
 npm install
+```
 
-# Jalankan development server
+Buat file `.env` (atau `.env.local`) dengan variabel berikut:
+
+```bash
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+```
+
+Jalankan development server:
+
+```bash
 npm run dev
 ```
 
-## Struktur Proyek
+## Scripts
 
-```
+- `npm run dev` - jalankan app lokal
+- `npm run build` - build production
+- `npm run preview` - preview hasil build
+- `npm run lint` - lint semua file
+- `npm run test` - jalankan unit test sekali
+- `npm run test:watch` - jalankan unit test mode watch
+
+## Struktur Folder (Ringkas)
+
+```text
 src/
-├── components/      # Komponen UI reusable
-│   ├── dashboard/   # Komponen untuk dashboard
-│   └── ui/          # shadcn/ui components
-├── hooks/           # Custom React hooks
-├── lib/             # Utilities & helpers
-│   └── api/         # API clients (eQuran, etc.)
-├── pages/           # Halaman aplikasi
-│   └── onboarding/  # Flow onboarding
-└── data/            # Static data (quotes, cities)
+  components/   UI reusable dan dashboard blocks
+  hooks/        custom React hooks
+  lib/          helper, storage, API layer
+  pages/        route-level pages
+  integrations/ supabase client integration
+public/
+  sw.js         service worker PWA
 ```
+
+## Contributing
+
+Kontribusi sangat terbuka.
+
+1. Fork repo ini.
+2. Buat branch baru dari `main`:
+   - `feat/nama-fitur`
+   - `fix/nama-perbaikan`
+3. Install dependency lalu jalankan:
+   - `npm run lint`
+   - `npm run test`
+   - `npm run build`
+4. Commit perubahan dengan pesan yang jelas.
+5. Push branch dan buka Pull Request.
+
+Checklist sebelum PR:
+
+- Scope perubahan fokus (tidak campur banyak hal)
+- Tidak ada error lint/test/build
+- Ada deskripsi perubahan dan alasan
+- Sertakan screenshot jika ada perubahan UI
 
 ## Lisensi
 
-MIT License - Gunakan dengan bebas untuk kebaikan.
-
----
-
-Dibuat dengan ❤️ untuk umat Muslim Indonesia
+MIT License.

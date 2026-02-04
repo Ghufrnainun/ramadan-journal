@@ -3,9 +3,9 @@ export interface StreakData {
   reflectionDays: string[];
 }
 
-const STORAGE_KEY = 'myramadhanku_streak';
+const STORAGE_KEY = "myramadhanku_streak";
 
-const getTodayDate = (): string => new Date().toISOString().split('T')[0];
+const getTodayDate = (): string => new Date().toISOString().split("T")[0];
 
 const readStreak = (): StreakData => {
   try {
@@ -14,11 +14,13 @@ const readStreak = (): StreakData => {
       const parsed = JSON.parse(stored) as StreakData;
       return {
         activeDays: Array.isArray(parsed.activeDays) ? parsed.activeDays : [],
-        reflectionDays: Array.isArray(parsed.reflectionDays) ? parsed.reflectionDays : [],
+        reflectionDays: Array.isArray(parsed.reflectionDays)
+          ? parsed.reflectionDays
+          : [],
       };
     }
   } catch (e) {
-    console.error('Error reading streak data:', e);
+    console.error("Error reading streak data:", e);
   }
   return { activeDays: [], reflectionDays: [] };
 };
@@ -27,7 +29,7 @@ const writeStreak = (data: StreakData) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
-    console.error('Error saving streak data:', e);
+    console.error("Error saving streak data:", e);
   }
 };
 
@@ -49,7 +51,9 @@ export const markReflectionDay = (date: string = getTodayDate()): void => {
   writeStreak(data);
 };
 
-const getRamadanWindow = (ramadanStartDate?: string | null): { start: Date; end: Date } | null => {
+const getRamadanWindow = (
+  ramadanStartDate?: string | null,
+): { start: Date; end: Date } | null => {
   if (!ramadanStartDate) return null;
   const start = new Date(ramadanStartDate);
   const end = new Date(start);
@@ -57,21 +61,27 @@ const getRamadanWindow = (ramadanStartDate?: string | null): { start: Date; end:
   return { start, end };
 };
 
-const isWithinWindow = (dateStr: string, window: { start: Date; end: Date } | null): boolean => {
+const isWithinWindow = (
+  dateStr: string,
+  window: { start: Date; end: Date } | null,
+): boolean => {
   if (!window) return false;
   const date = new Date(dateStr);
   return date >= window.start && date <= window.end;
 };
 
-const computeCurrentStreak = (dates: string[], window: { start: Date; end: Date } | null): number => {
+const computeCurrentStreak = (
+  dates: string[],
+  window: { start: Date; end: Date } | null,
+): number => {
   if (!window) return 0;
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-  const set = new Set(dates.filter(date => isWithinWindow(date, window)));
+  const todayStr = today.toISOString().split("T")[0];
+  const set = new Set(dates.filter((date) => isWithinWindow(date, window)));
   let count = 0;
-  let cursor = new Date(todayStr);
+  const cursor = new Date(todayStr);
   while (true) {
-    const key = cursor.toISOString().split('T')[0];
+    const key = cursor.toISOString().split("T")[0];
     if (!set.has(key)) break;
     count += 1;
     cursor.setDate(cursor.getDate() - 1);
@@ -82,8 +92,12 @@ const computeCurrentStreak = (dates: string[], window: { start: Date; end: Date 
 export const getStreakSummary = (ramadanStartDate?: string | null) => {
   const data = readStreak();
   const window = getRamadanWindow(ramadanStartDate);
-  const activeInRamadan = data.activeDays.filter(date => isWithinWindow(date, window));
-  const reflectionInRamadan = data.reflectionDays.filter(date => isWithinWindow(date, window));
+  const activeInRamadan = data.activeDays.filter((date) =>
+    isWithinWindow(date, window),
+  );
+  const reflectionInRamadan = data.reflectionDays.filter((date) =>
+    isWithinWindow(date, window),
+  );
 
   return {
     activeDays: activeInRamadan.length,

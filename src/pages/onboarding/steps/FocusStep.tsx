@@ -112,7 +112,7 @@ const FocusStep: React.FC<FocusStepProps> = ({ lang, initialModules, onNext, onB
             <motion.button
               key={module.id}
               onClick={() => toggleModule(module.id)}
-              className={`w-full p-4 rounded-xl border flex items-center gap-4 transition-all ${
+              className={`w-full p-4 rounded-xl border flex items-center gap-4 transition-colors ${
                 isSelected
                   ? 'bg-amber-500/10 border-amber-500/50'
                   : 'bg-slate-800/30 border-slate-700 hover:border-slate-600'
@@ -160,17 +160,17 @@ const FocusStep: React.FC<FocusStepProps> = ({ lang, initialModules, onNext, onB
       </motion.p>
 
       {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent">
+      <div className="fixed bottom-0 left-0 right-0 p-6 pb-safe bg-[#020617]/90">
         <div className="flex gap-3 max-w-md mx-auto">
           <button
             onClick={onBack}
-            className="flex-1 py-4 rounded-xl border border-slate-700 text-slate-400 hover:bg-slate-800/50 transition-all"
+            className="flex-1 py-4 rounded-xl border border-slate-700 text-slate-400 hover:bg-slate-800/50 transition-colors"
           >
             {t.back}
           </button>
           <button
             onClick={handleContinue}
-            className="flex-1 py-4 rounded-xl font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 transition-all"
+            className="flex-1 py-4 rounded-xl font-semibold bg-amber-500 text-slate-900 hover:bg-amber-400 transition-colors"
           >
             {t.next}
           </button>

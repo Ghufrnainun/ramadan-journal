@@ -53,7 +53,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ lang, onNext }) => {
       />
 
       <motion.p
-        className="text-amber-400/80 text-sm tracking-widest uppercase mb-4"
+        className="text-amber-400/80 text-sm uppercase mb-4"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
@@ -105,7 +105,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ lang, onNext }) => {
       {/* CTA */}
       <motion.button
         onClick={onNext}
-        className="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 font-semibold px-10 py-4 rounded-full shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all"
+        className="bg-amber-500 text-slate-900 font-semibold px-10 py-4 rounded-full shadow-lg hover:bg-amber-400 transition-colors"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9 }}

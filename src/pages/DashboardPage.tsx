@@ -13,7 +13,7 @@ import QuickActions from '@/components/dashboard/QuickActions';
 import RemindersBanner from '@/components/dashboard/RemindersBanner';
 import DailyStatusCard from '@/components/dashboard/DailyStatusCard';
 
-import MobileContainer from '@/components/layout/MobileContainer';
+import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -55,21 +55,23 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <MobileContainer>
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-6 pt-8">
+    <ResponsiveLayout>
+      {/* Header - Mobile Only */}
+      <header className="flex md:hidden items-center justify-between px-6 py-6 pt-8">
         <div className="flex items-center gap-2">
           <Moon className="w-6 h-6 text-amber-400" />
           <div>
             <span className="font-serif text-xl text-white block leading-none">
               MyRamadhan
             </span>
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest">
+            <span className="text-[10px] text-slate-500 uppercase">
               Journal
             </span>
           </div>
         </div>
         <button
+          type="button"
+          aria-label="Open settings"
           onClick={() => navigate('/settings')}
           className="w-10 h-10 rounded-full bg-slate-900/50 border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition-colors"
         >
@@ -78,7 +80,7 @@ const DashboardPage: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="px-6 pb-32 space-y-6">
+      <main className="px-6 pb-32 space-y-6 md:p-0 md:pb-0">
         {/* Greeting & Location */}
         <div className="space-y-1">
           <motion.div
@@ -124,7 +126,7 @@ const DashboardPage: React.FC = () => {
 
         {/* Quick Actions - Grid Layout for variation */}
         <div>
-          <h3 className="text-sm font-medium text-slate-500 mb-3 uppercase tracking-wider pl-1">
+          <h3 className="text-sm font-medium text-slate-500 mb-3 uppercase pl-1">
             Menu
           </h3>
           <QuickActions
@@ -135,7 +137,7 @@ const DashboardPage: React.FC = () => {
         </div>
 
         {/* Info Cards Grid */}
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Prayer Times */}
           {profile.location && (
             <PrayerTimesCard lang={lang} city={profile.location.city} />
@@ -158,8 +160,8 @@ const DashboardPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 z-50 w-full max-w-[480px] bg-[#020617]/80 backdrop-blur-xl border-t border-slate-800/50 pb-safe">
+      {/* Bottom Navigation - Mobile Only */}
+      <nav className="fixed bottom-0 z-50 w-full md:hidden bg-[#020617]/80 backdrop-blur-xl border-t border-slate-800/50 pb-safe">
         <div className="flex items-center justify-around px-2 py-3">
           <button className="flex flex-col items-center gap-1 text-amber-400">
             <Moon className="w-6 h-6 fill-amber-400/20" />
@@ -239,7 +241,7 @@ const DashboardPage: React.FC = () => {
           </button>
         </div>
       </nav>
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 };
 

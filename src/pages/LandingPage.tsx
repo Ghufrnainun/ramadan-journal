@@ -12,6 +12,8 @@ import {
   Smartphone,
   VolumeX,
   Leaf,
+  Settings,
+  Github,
 } from 'lucide-react';
 import { getRamadanInfo } from '@/lib/ramadan-dates';
 
@@ -26,287 +28,312 @@ const CONTENT = {
   id: {
     hero: {
       label: 'Teman Ibadah Digital',
-      headline: 'Ramadan, Tenang.',
+      headline: 'Ramadan Damai, Tanpa Kebisingan Digital.',
       subhead:
-        'Jurnal Ramadan yang fokus pada ketenangan hati, bukan sekadar mengejar target angka.',
-      cta_primary: 'Mulai Sekarang',
+        'Fokus pada ibadah dan ketenangan hati dengan jurnal yang menghormati privasimu. Tanpa iklan, tanpa leaderboard, 100% offline-ready.',
+      cta_primary: 'Mulai Jurnal Ramadan',
       cta_secondary: 'Lihat Preview',
-      trust: ['Privasi Aman'],
+      trust: ['Data Tersimpan di HP', 'Bebas Iklan', 'Open Source'],
       countdown: 'Ramadan dimulai dalam ±32 hari',
     },
     whisper: {
-      text: 'Malam ini, pelan-pelan saja. Bernapas. Kita mulai lagi esok hari.',
-      note: 'Berdasarkan penetapan Sidang Isbat nanti.',
+      text: 'Malam ini, izinkan dirimu istirahat. Tidak perlu mengejar angka, cukup hadir dengan hati.',
+      note: 'Menunggu sidang Isbat untuk kepastian tanggal.',
     },
     problem: {
-      title: 'Kenapa MyRamadhan?',
+      title: 'Masalah Aplikasi Ramadan Lain',
       points: [
-        { t: 'Bingung', d: 'Terlalu banyak fitur, hilang fokus ibadah.' },
-        { t: 'Berat', d: 'Aplikasi lain penuh iklan & notifikasi bising.' },
-        { t: 'Kompetitif', d: 'Ibadah jadi beban karena leaderboard.' },
+        {
+          t: 'Notifikasi Berisik',
+          d: 'Iklan muncul saat sedang khusyuk berdoa.',
+        },
+        {
+          t: 'Terlalu Kompetitif',
+          d: 'Leaderboard membuat ibadah terasa seperti lomba.',
+        },
+        {
+          t: 'Fitur Berlebihan',
+          d: 'Banyak fitur tidak perlu yang justru membingungkan.',
+        },
       ],
     },
     promise: {
-      title: 'Janji Kami',
-      text: 'Sebuah ruang digital yang tenang, ringan, dan menemani tanpa menghakimi.',
-      badge: 'No Judgement Zone',
+      title: 'Janji Kami untuk Anda',
+      text: 'Sebuah ruang digital yang hening. Kami tidak melacak datamu, tidak menjual perhatianmu, dan tidak menghakimimu.',
+      badge: 'Zona Bebas Penghakiman',
     },
     day_flow: {
-      title: 'Satu Hari Bersama Kami',
+      title: 'Rutinitas Tenang',
       steps: [
         {
-          time: 'Pagi',
-          title: 'Niat & Fokus',
-          desc: 'Satu kutipan penyemangat saat sahur.',
+          time: 'Sahur',
+          title: 'Niat & Doa',
+          desc: 'Satu doa pendek untuk memulai hari dengan sadar.',
         },
         {
           time: 'Siang',
-          title: 'Tracker Ringan',
-          desc: 'Checklist simpel di sela kesibukan.',
+          title: 'Cek Ibadah',
+          desc: 'Tandai sholat & puasa tanpa tekanan.',
         },
         {
           time: 'Sore',
-          title: 'Jelang Berbuka',
-          desc: 'Hitung mundur & doa harian.',
+          title: 'Jelang Buka',
+          desc: 'Hitung mundur tenang & doa berbuka.',
         },
         {
           time: 'Malam',
-          title: 'Refleksi',
-          desc: 'Jurnal syukur sebelum tidur.',
+          title: 'Refleksi Syukur',
+          desc: 'Tulis satu hal yang disyukuri hari ini.',
         },
       ],
     },
     features: {
       1: {
-        title: 'Waktu Sholat & Imsak',
-        desc: 'Otomatis sesuai lokasi, tanpa suara bising default.',
+        title: 'Jadwal Sholat Akurat',
+        desc: 'Sesuai lokasimu. Tanpa suara adzan default yang mengagetkan.',
       },
       2: {
-        title: 'Dzikir Counter',
-        desc: 'Tap area luas, getaran lembut, reset harian otomatis.',
+        title: 'Dzikir Haptik',
+        desc: 'Rasakan getaran lembut tiap ketukan. Fokus tanpa perlu melihat layar.',
       },
       3: {
-        title: 'Target Tadarus',
-        desc: 'Progress bar visual yang tidak mengintimidasi.',
+        title: 'Target Quran Visual',
+        desc: 'Lihat progress jus/halaman tanpa merasa tertinggal.',
       },
       4: {
-        title: 'Koleksi Doa',
-        desc: 'Bookmark doa-doa favorit untuk dibaca cepat.',
+        title: 'Koleksi Doa Pilihan',
+        desc: 'Simpan doa yang benar-benar kamu butuhkan saat ini.',
       },
       5: {
-        title: 'Mode Offline',
-        desc: 'Tetap lancar saat sinyal susah atau mode pesawat.',
+        title: 'Mode Hemat Data',
+        desc: 'Semua fitur utama jalan offline. Cocok untuk sinyal susah.',
       },
       6: {
         title: 'Kartu Refleksi',
-        desc: 'Bagikan momen bermakna dengan desain estetik.',
+        desc: 'Bagikan inspirasi visual ke teman tanpa watermark mengganggu.',
       },
     },
     streak: {
-      title: 'Hari Aktif Ramadan',
-      desc: 'Bukan tentang rantai yang putus, tapi tentang kembali hadir.',
-      label: '30 Hari Perjalanan',
+      title: 'Konsistensi',
+      desc: 'Jika terlewat satu hari, tidak apa-apa. Mulai lagi lusa. Kami tidak memutus rantaimu.',
+      label: 'Perjalanan 30 Hari',
     },
     reminders: {
-      title: 'Notifikasi yang Sopan',
-      desc: 'Kami menghormati ketenanganmu. Notifikasi default adalah OFF. Nyalakan hanya yang penting.',
-      limit: '*Browser mungkin membatasi notifikasi di iOS',
+      title: 'Notifikasi Santun',
+      desc: 'Kami hanya mengingatkan waktu sholat jika diminta. Tidak ada spam "ayo buka aplikasi".',
+      limit: '*iOS mungkin membatasi notifikasi web',
     },
     privacy: {
-      title: 'Privasi Adalah Prioritas',
+      title: 'Privasi Tanpa Kompromi',
       bullets: [
-        'Mode Tamu (Tanpa Login)',
-        'Sinkronisasi Opsional',
-        'Tidak Ada Pelacakan Iklan',
+        'Tidak Perlu Login (Mode Tamu)',
+        'Data di Local Storage HP Anda',
+        'Kode Sumber Terbuka (Transparan)',
       ],
-      cta: 'Baca Manifesto Data',
+      cta: 'Pelajari Teknisnya',
     },
     faq: {
-      title: 'Pertanyaan Umum',
+      title: 'Pertanyaan yang Sering Muncul',
       items: [
         {
-          q: 'Apakah aplikasi ini gratis?',
-          a: '100% Gratis dan open source. Tanpa fitur berbayar.',
+          q: 'Benar-benar gratis selamanya?',
+          a: 'Ya. Proyek ini adalah wakaf digital. Tidak akan ada fitur berbayar.',
         },
         {
-          q: 'Perlu login?',
-          a: 'Tidak. Anda bisa menggunakan Mode Tamu selamanya.',
+          q: 'Kalau ganti HP bagaimana?',
+          a: 'Gunakan fitur "Sync" opsional untuk memidahkan data. Defaultnya ada di HP lama.',
         },
         {
           q: 'Bisa dipakai offline?',
-          a: 'Ya, ini adalah PWA. Bisa diinstal dan jalan tanpa internet.',
+          a: 'Bisa banget. Jurnal, tracker, dan dzikir jalan tanpa internet.',
         },
         {
-          q: 'Tanggal Ramadan bisa diubah?',
-          a: 'Ya, Anda bisa menyesuaikan tanggal 1 Ramadan manual.',
+          q: 'Siapa yang membuat ini?',
+          a: 'Komunitas developer muslim yang lelah dengan aplikasi penuh iklan.',
         },
         {
-          q: 'Apakah data saya aman?',
-          a: 'Data tersimpan di HP Anda (local storage) kecuali Anda login.',
+          q: 'Apakah data saya dijual?',
+          a: 'Tidak. Kami bahkan tidak punya server analitik untuk melacakmu.',
         },
       ],
     },
     final: {
-      title: 'Siap Menyambut Ramadan?',
-      sub: 'Mari jalani dengan lebih sadar dan tenang.',
-      cta: 'Mulai Perjalanan',
-      micro: 'Ringan untuk semua HP',
+      title: 'Siap untuk Ramadan yang Lebih Tenang?',
+      sub: 'Bergabunglah dengan ribuan pengguna yang memilih fokus daripada fitur.',
+      cta: 'Mulai Jurnal Sekarang',
+      micro: 'Gratis • Ringan • Privasi Aman',
     },
     sticky: {
-      text: 'Mulai dalam 30 detik',
+      text: 'Mulai Jurnal Ramadan (Gratis)',
       cta: 'Buka App',
     },
     testimonials: [
       {
-        t: 'Akhirnya ada app yang nggak bikin merasa bersalah kalau lupa isi.',
-        u: 'Rina, Jakarta',
+        t: 'Jujur, ini satu-satunya app Ramadan yang nggak bikin HP panas karena iklan.',
+        u: 'Rina, Pengguna Android',
       },
       {
-        t: 'Tampilannya adem banget di mata pas bangun sahur.',
-        u: 'Dimas, Bandung',
+        t: 'Fitur dzikirnya enak banget, ada getarnya jadi berasa pegang tasbih fisik.',
+        u: 'Dimas, Desainer Grafis',
       },
       {
-        t: 'Simpel, to the point, gak berat di HP kentang.',
-        u: 'Fauzan, Jogja',
+        t: 'Suka banget karena nggak ada leaderboard. Ibadah jadi buat Allah, bukan buat skor.',
+        u: 'Fauzan, Mahasiswa',
       },
     ],
   },
   en: {
     hero: {
       label: 'Digital Worship Companion',
-      headline: 'Ramadan, Calm.',
+      headline: 'A Peaceful Ramadan, Without the Digital Noise.',
       subhead:
-        'A Ramadan journal focused on peace of heart, not just chasing numbers.',
-      cta_primary: 'Get Started',
-      cta_secondary: 'See Preview',
-      trust: ['Offline PWA', 'No Ads', 'Private'],
+        'Focus on worship and peace of heart with a privacy-first journal. No ads, no leaderboards, 100% offline-ready.',
+      cta_primary: 'Start Ramadan Journal',
+      cta_secondary: 'Preview App',
+      trust: ['Data Stored Locally', 'Ad-Free', 'Open Source'],
       countdown: 'Ramadan starts in ±32 days',
     },
     whisper: {
-      text: 'Tonight, take it slow. Just breathe. We start again tomorrow.',
-      note: 'Subject to official sighting (Sidang Isbat).',
+      text: 'Tonight, give yourself permission to rest. No need to chase numbers, just be present.',
+      note: 'Waiting for official sighting (Sidang Isbat).',
     },
     problem: {
-      title: 'Why MyRamadhan?',
+      title: 'The Problem with Other Apps',
       points: [
-        { t: 'Confusing', d: 'Too many features, losing spiritual focus.' },
-        { t: 'Heavy', d: 'Other apps are full of ads & loud notifications.' },
         {
-          t: 'Competitive',
-          d: 'Worship feels like a burden due to leaderboards.',
+          t: 'Noisy Notifications',
+          d: 'Ads popping up right when you are trying to pray.',
         },
+        {
+          t: 'Too Competitive',
+          d: 'Leaderboards make worship feel like a contest.',
+        },
+        { t: 'Bloated Features', d: 'Too many confusing tools you never use.' },
       ],
     },
     promise: {
-      title: 'Our Promise',
-      text: 'A digital space that is calm, lightweight, and accompanies without judging.',
-      badge: 'No Judgement Zone',
+      title: 'Our Promise to You',
+      text: 'A silent digital space. We don’t track your data, sell your attention, or judge your progress.',
+      badge: 'Judgment-Free Zone',
     },
     day_flow: {
-      title: 'A Day With Us',
+      title: 'A Calm Routine',
       steps: [
         {
-          time: 'Morning',
+          time: 'Suhoor',
           title: 'Intention',
-          desc: 'One uplifting quote at Suhoor.',
+          desc: 'One short dua to start the day consciously.',
         },
         {
           time: 'Noon',
-          title: 'Light Tracker',
-          desc: 'Simple checklist between tasks.',
+          title: 'Worship Check',
+          desc: 'Mark prayers & fasting without pressure.',
         },
         {
           time: 'Evening',
-          title: 'Pre-Maghrib',
-          desc: 'Countdown & daily prayers.',
+          title: 'Pre-Iftar',
+          desc: 'Calm countdown & breaking fast dua.',
         },
         {
           time: 'Night',
-          title: 'Reflection',
-          desc: 'Gratitude journal before sleep.',
+          title: 'Gratitude',
+          desc: 'Write one thing you are grateful for today.',
         },
       ],
     },
     features: {
       1: {
-        title: 'Prayer & Imsak',
-        desc: 'Auto-location, no loud default sounds.',
+        title: 'Accurate Prayer Times',
+        desc: 'Based on your location. No startling default adhan sounds.',
       },
       2: {
-        title: 'Dhikr Counter',
-        desc: 'Large tap area, haptic feedback, auto-daily reset.',
+        title: 'Haptic Dhikr',
+        desc: 'Feel a gentle vibration with each tap. Focus without looking at the screen.',
       },
       3: {
-        title: 'Quran Goals',
-        desc: "Visual progress bar that doesn't intimidate.",
+        title: 'Visual Quran Goals',
+        desc: 'Track juz/pages progress without feeling behind.',
       },
       4: {
-        title: 'Prayer Collection',
-        desc: 'Bookmark favorite Duas for quick access.',
+        title: 'Curated Duas',
+        desc: 'Save the prayers you actually need right now.',
       },
       5: {
-        title: 'Offline Mode',
-        desc: 'Smooth even with bad signal or airplane mode.',
+        title: 'Data Saver Mode',
+        desc: 'All main features work offline. Perfect for spotty signal.',
       },
       6: {
         title: 'Reflection Cards',
-        desc: 'Share meaningful moments with aesthetic design.',
+        desc: 'Share visual inspiration with friends, no annoying watermarks.',
       },
     },
     streak: {
-      title: 'Active Ramadan Days',
-      desc: "It's not about the broken chain, it's about showing up again.",
+      title: 'Consistency',
+      desc: 'Missed a day? It’s okay. Start again tomorrow. We won’t break your chain.',
       label: '30 Days Journey',
     },
     reminders: {
-      title: 'Respectful Notifications',
-      desc: 'We respect your peace. Default is OFF. Turn on only what matters.',
-      limit: '*Browsers might limit notifications on iOS',
+      title: 'Polite Notifications',
+      desc: 'We only remind you of prayer times if asked. No "open the app" spam.',
+      limit: '*iOS browsers may limit web notifications',
     },
     privacy: {
-      title: 'Privacy First',
-      bullets: ['Guest Mode (No Login)', 'Optional Sync', 'No Ad Tracking'],
-      cta: 'Read Data Manifesto',
+      title: 'Uncompromised Privacy',
+      bullets: [
+        'No Login Needed (Guest Mode)',
+        'Data on Your Phone',
+        'Open Source Code',
+      ],
+      cta: 'See Technical Details',
     },
     faq: {
-      title: 'Common Questions',
+      title: 'Frequently Asked Questions',
       items: [
-        { q: 'Is it free?', a: '100% Free and open source. No paid features.' },
-        { q: 'Login required?', a: 'No. You can use Guest Mode forever.' },
         {
-          q: 'Works offline?',
-          a: "Yes, it's a PWA. Installs and runs without internet.",
+          q: 'Is it really free forever?',
+          a: 'Yes. This is a digital waqf project. No paid features ever.',
         },
         {
-          q: 'Change Ramadan date?',
-          a: 'Yes, you can manually adjust the start date.',
+          q: 'What if I change phones?',
+          a: 'Use the optional "Sync" feature. Default data stays on the old phone.',
         },
         {
-          q: 'Is my data safe?',
-          a: 'Data is stored on your phone (local storage) unless you login.',
+          q: 'Does it work offline?',
+          a: 'Absolutely. Journal, tracker, and dhikr work without internet.',
+        },
+        {
+          q: 'Who made this?',
+          a: 'A community of Muslim developers tired of ad-filled apps.',
+        },
+        {
+          q: 'Is my data sold?',
+          a: 'No. We don’t even have analytics servers to track you.',
         },
       ],
     },
     final: {
-      title: 'Ready for Ramadan?',
-      sub: "Let's go through it with more mindfulness.",
-      cta: 'Start Journey',
-      micro: 'Lightweight for all phones',
+      title: 'Ready for a Calmer Ramadan?',
+      sub: 'Join thousands of users who choose focus over features.',
+      cta: 'Start Journaling Now',
+      micro: 'Free • Lightweight • Private',
     },
     sticky: {
-      text: 'Start in 30 seconds',
+      text: 'Start Ramadan Journal (Free)',
       cta: 'Open App',
     },
     testimonials: [
       {
-        t: "Finally an app that doesn't make me feel guilty.",
-        u: 'Rina, Jakarta',
+        t: "Finally, a Ramadan app that doesn't heat up my phone with ads.",
+        u: 'Rina, Android User',
       },
       {
-        t: 'The interface is so soothing for my eyes at Suhoor.',
-        u: 'Dimas, Bandung',
+        t: 'The haptic dhikr feels so good, like holding real beads.',
+        u: 'Dimas, Graphic Designer',
       },
-      { t: 'Simple, to the point, works on my old phone.', u: 'Fauzan, Jogja' },
+      {
+        t: 'Love that there is no leaderboard. Worship is for Allah, not for points.',
+        u: 'Fauzan, Student',
+      },
     ],
   },
 };
@@ -319,7 +346,7 @@ const CONTENT = {
 
 const NoiseOverlay = () => (
   <div
-    className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03]"
+    className="fixed inset-0 pointer-events-none z-50 opacity-[0.03]"
     style={{
       backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
     }}
@@ -376,7 +403,7 @@ const Lantern = ({ delay = 0, x = '10%', scale = 1, duration = 6 }) => {
       transition={{ duration, repeat: Infinity, ease: 'easeInOut', delay }}
     >
       {/* String */}
-      <div className="w-px h-16 bg-gradient-to-b from-amber-900/50 to-amber-700/80 mx-auto" />
+      <div className="w-px h-16 bg-amber-700/60 mx-auto" />
 
       {/* Lantern Body */}
       <motion.div
@@ -437,7 +464,7 @@ const MoonTimeline = () => (
     {[...Array(8)].map((_, i) => (
       <motion.div
         key={i}
-        className="w-3 h-3 rounded-full bg-gradient-to-br from-amber-200 to-amber-400"
+        className="w-3 h-3 rounded-full bg-amber-300"
         style={{ opacity: 0.3 + i * 0.1 }}
         animate={{ scale: [1, 1.2, 1] }}
         transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
@@ -448,40 +475,107 @@ const MoonTimeline = () => (
 
 const MockupCard = ({ type }: { type: 'count' | 'quote' | 'dhikr' }) => {
   return (
-    <div className="w-64 h-80 bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-white/10 p-6 flex-shrink-0 shadow-2xl">
-      {type === 'count' && (
-        <div className="h-full flex flex-col items-center justify-center text-center">
-          <motion.div
-            className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/10 flex items-center justify-center mb-4"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <Clock className="w-10 h-10 text-amber-400" />
-          </motion.div>
-          <p className="text-4xl font-bold text-white font-serif">04:32</p>
-          <p className="text-sm text-slate-400 mt-2">Menjelang Maghrib</p>
+    <div className="relative w-72 h-[580px] bg-slate-950 rounded-[3rem] border-8 border-slate-900 shadow-2xl overflow-hidden flex-shrink-0">
+      {/* Phone Bezel Details */}
+      <div className="absolute top-0 inset-x-0 h-6 bg-slate-900 rounded-b-3xl mx-auto w-40 z-20" />
+      <div className="absolute top-2 inset-x-0 flex justify-between px-6 text-[10px] text-slate-500 font-medium z-10">
+        <span>9:41</span>
+        <div className="flex gap-1">
+          <span className="w-3 h-3 bg-slate-800 rounded-full" />
+          <span className="w-3 h-3 bg-slate-800 rounded-full" />
         </div>
-      )}
-      {type === 'quote' && (
-        <div className="h-full flex flex-col items-center justify-center text-center px-2">
-          <p className="text-4xl text-amber-400 font-serif mb-4">"</p>
-          <p className="text-white/90 font-serif italic text-lg leading-relaxed">
-            Maka sesungguhnya bersama kesulitan ada kemudahan.
-          </p>
-          <p className="text-sm text-slate-400 mt-4">QS Al-Insyirah: 5</p>
-        </div>
-      )}
-      {type === 'dhikr' && (
-        <div className="h-full flex flex-col items-center justify-center text-center">
-          <motion.div
-            className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border-2 border-emerald-500/30 flex items-center justify-center mb-4"
-            whileTap={{ scale: 0.95 }}
-          >
-            <span className="text-5xl font-bold text-emerald-400">33</span>
-          </motion.div>
-          <p className="text-white/80 text-sm">Subhanallah</p>
-        </div>
-      )}
+      </div>
+
+      {/* Screen Content */}
+      <div className="h-full w-full bg-[#020617] relative flex flex-col pt-12 pb-8 px-6">
+        {type === 'count' && (
+          <div className="h-full flex flex-col items-center justify-center text-center">
+            <div className="absolute top-12 right-6 p-2 bg-slate-800/50 rounded-full">
+              <Settings className="w-4 h-4 text-slate-400" />
+            </div>
+
+            <motion.div
+              className="w-32 h-32 rounded-full bg-amber-500/10 flex items-center justify-center mb-8 relative"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 4, repeat: Infinity }}
+            >
+              <div className="absolute inset-0 border border-amber-500/20 rounded-full animate-ping opacity-20" />
+              <Clock className="w-12 h-12 text-amber-400" />
+            </motion.div>
+
+            <p className="text-5xl font-bold text-white font-serif tracking-tight">
+              04:32
+            </p>
+            <p className="text-sm text-slate-400 mt-2 font-medium">
+              Menjelang Maghrib
+            </p>
+
+            <div className="mt-8 flex gap-3 text-xs text-slate-500">
+              <span className="px-3 py-1 rounded-full bg-slate-900 border border-slate-800">
+                Jakarta
+              </span>
+              <span className="px-3 py-1 rounded-full bg-slate-900 border border-slate-800">
+                Ashar 15:12
+              </span>
+            </div>
+          </div>
+        )}
+
+        {type === 'quote' && (
+          <div className="h-full flex flex-col justify-center text-left">
+            <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center mb-6">
+              <BookOpen className="w-4 h-4 text-emerald-400" />
+            </div>
+            <p className="text-5xl text-emerald-500/20 font-serif absolute top-24 left-4">
+              "
+            </p>
+            <p className="text-white/90 font-serif italic text-xl leading-relaxed relative z-10">
+              Maka sesungguhnya bersama kesulitan ada kemudahan.
+            </p>
+            <div className="h-px w-12 bg-emerald-500/30 my-6" />
+            <p className="text-sm text-emerald-400 font-medium">
+              QS Al-Insyirah: 5
+            </p>
+
+            <div className="mt-auto flex gap-4">
+              <button className="p-2 rounded-full bg-slate-800/50 text-slate-400">
+                <Share2 className="w-4 h-4" />
+              </button>
+              <button className="p-2 rounded-full bg-slate-800/50 text-slate-400">
+                <Heart className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {type === 'dhikr' && (
+          <div className="h-full flex flex-col items-center justify-center text-center relative">
+            <p className="absolute top-4 text-xs font-medium text-slate-500 uppercase tracking-widest">
+              Dzikir Pagi
+            </p>
+
+            <motion.div
+              className="w-48 h-48 rounded-full bg-gradient-to-b from-emerald-500/20 to-transparent border border-emerald-500/30 flex items-center justify-center mb-8 cursor-pointer shadow-[0_0_40px_rgba(16,185,129,0.1)]"
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="text-6xl font-bold text-emerald-400 font-mono">
+                33
+              </span>
+            </motion.div>
+            <p className="text-white text-lg font-medium mb-1">Subhanallah</p>
+            <p className="text-slate-500 text-sm">Target: 33</p>
+
+            <div className="absolute bottom-6 w-full flex justify-center">
+              <div className="h-1 w-1/3 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-full w-2/3 bg-emerald-500 rounded-full" />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Home Indicator */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-800 rounded-full" />
     </div>
   );
 };
@@ -497,6 +591,7 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   const { scrollY } = useScroll();
   const [showSticky, setShowSticky] = useState(false);
+  const localized = CONTENT[lang];
 
   // Calculate dynamic badge text
   const getBadgeText = () => {
@@ -519,11 +614,15 @@ export default function LandingPage() {
 
   const t = (key: string) => {
     const keys = key.split('.');
-    let result: any = CONTENT[lang];
+    let result: unknown = localized;
     for (const k of keys) {
-      result = result ? result[k] : null;
+      if (result && typeof result === 'object' && !Array.isArray(result)) {
+        result = (result as Record<string, unknown>)[k];
+      } else {
+        return '';
+      }
     }
-    return result || '';
+    return typeof result === 'string' ? result : '';
   };
 
   useEffect(() => {
@@ -564,7 +663,7 @@ export default function LandingPage() {
       >
         {formatNumber(value)}
       </motion.div>
-      <span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest mt-1">
+      <span className="text-[10px] sm:text-xs text-slate-400 uppercase mt-1">
         {label}
       </span>
     </div>
@@ -573,7 +672,7 @@ export default function LandingPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden font-sans selection:bg-amber-500/30">
+    <div className="min-h-dvh bg-[#020617] text-slate-200 overflow-x-hidden font-sans selection:bg-amber-500/30">
       <NoiseOverlay />
       <StarField />
 
@@ -583,12 +682,12 @@ export default function LandingPage() {
       <Lantern x="85%" delay={0.5} duration={7} scale={0.7} />
 
       {/* --- NAVIGATION --- */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent backdrop-blur-sm">
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-black/60 backdrop-blur-sm">
         <motion.span
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="font-serif text-xl font-semibold text-amber-100/90 tracking-wide"
+          className="font-serif text-xl font-semibold text-amber-100/90"
         >
           MyRamadhan.
         </motion.span>
@@ -598,7 +697,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             onClick={() => setLang((l) => (l === 'id' ? 'en' : 'id'))}
-            className="text-[10px] font-bold tracking-widest border border-white/10 bg-black/20 backdrop-blur-sm rounded-full px-3 py-1.5 hover:bg-white/10 transition-colors uppercase"
+            className="text-[10px] font-bold border border-white/10 bg-black/20 backdrop-blur-sm rounded-full px-3 py-1.5 hover:bg-white/10 transition-colors uppercase"
           >
             {lang === 'id' ? 'ID' : 'EN'}
           </motion.button>
@@ -606,7 +705,7 @@ export default function LandingPage() {
       </nav>
 
       {/* --- SECTION 1: HERO --- */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
+      <section className="relative min-h-dvh flex items-center justify-center px-6 pt-24 pb-16">
         <div className="relative z-10 text-center max-w-3xl mx-auto">
           {/* Floating Glow - Animated Pulse */}
           <motion.div
@@ -648,7 +747,7 @@ export default function LandingPage() {
           >
             <button
               onClick={() => navigate('/auth')}
-              className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-full hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] transition-all duration-300 flex items-center gap-2"
+              className="px-10 py-5 bg-amber-500 text-slate-900 font-bold rounded-full hover:bg-amber-400 transition-colors duration-300 flex items-center gap-3 shadow-[0_0_30px_rgba(245,158,11,0.3)] hover:shadow-[0_0_50px_rgba(245,158,11,0.5)] transform hover:-translate-y-1"
             >
               {t('hero.cta_primary')}
               <motion.span
@@ -664,7 +763,7 @@ export default function LandingPage() {
                   .getElementById('preview')
                   ?.scrollIntoView({ behavior: 'smooth' })
               }
-              className="px-8 py-4 text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium tracking-wide group"
+              className="px-8 py-4 text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium group"
             >
               {t('hero.cta_secondary')}
               <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
@@ -721,7 +820,7 @@ export default function LandingPage() {
             transition={{ delay: 1 }}
             className="flex items-center justify-center gap-6 mt-12 text-xs text-slate-500"
           >
-            {(t('hero.trust') as string[]).map((item, i) => (
+            {localized.hero.trust.map((item, i) => (
               <span key={i} className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-emerald-500/60 rounded-full" />{' '}
                 {item}
@@ -733,7 +832,7 @@ export default function LandingPage() {
 
       {/* --- SECTION 2: WHISPER --- */}
       <section className="relative py-24 px-6">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/50 to-transparent" />
+        <div className="absolute inset-0 bg-slate-900/30" />
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -757,11 +856,11 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto mb-24"
         >
-          <p className="text-amber-400/80 text-sm tracking-widest uppercase mb-4 text-center">
+          <p className="text-amber-400/80 text-sm uppercase mb-4 text-center">
             {t('problem.title')}
           </p>
           <div className="grid md:grid-cols-3 gap-8">
-            {(t('problem.points') as any[]).map((p, i) => (
+            {localized.problem.points.map((p, i) => (
               <div
                 key={i}
                 className="text-center p-6 rounded-2xl bg-white/[0.02] border border-white/5"
@@ -781,7 +880,7 @@ export default function LandingPage() {
           className="max-w-xl mx-auto text-center"
         >
           <Heart className="w-10 h-10 text-rose-400/40 mx-auto mb-6" />
-          <p className="text-amber-400/80 text-sm tracking-widest uppercase mb-4">
+          <p className="text-amber-400/80 text-sm uppercase mb-4">
             {t('promise.title')}
           </p>
           <p className="font-serif text-2xl md:text-3xl text-white/90 leading-relaxed mb-6">
@@ -801,7 +900,7 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <p className="text-amber-400/80 text-sm tracking-widest uppercase mb-2">
+          <p className="text-amber-400/80 text-sm uppercase mb-2">
             Experience Peace
           </p>
           <p className="text-slate-400 text-sm">Swipe to explore →</p>
@@ -821,14 +920,14 @@ export default function LandingPage() {
 
       {/* --- SECTION 6: A DAY FLOW --- */}
       <section className="py-20 px-6">
-        <p className="text-amber-400/80 text-sm tracking-widest uppercase mb-8 text-center">
+        <p className="text-amber-400/80 text-sm uppercase mb-8 text-center">
           {t('day_flow.title')}
         </p>
 
         <MoonTimeline />
 
         <div className="max-w-4xl mx-auto grid md:grid-cols-4 gap-6 mt-8">
-          {(t('day_flow.steps') as any[]).map((step, i) => (
+          {localized.day_flow.steps.map((step, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -838,7 +937,7 @@ export default function LandingPage() {
               className="relative text-center"
             >
               <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
-                <p className="text-amber-400 text-xs uppercase tracking-wider mb-2">
+                <p className="text-amber-400 text-xs uppercase mb-2">
                   {step.time}
                 </p>
                 <p className="font-serif text-lg text-white mb-2">
@@ -851,7 +950,7 @@ export default function LandingPage() {
               <div className="w-3 h-3 bg-amber-500/40 rounded-full mx-auto mt-4 border-2 border-amber-500/60" />
 
               {i < 3 && (
-                <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-px bg-gradient-to-r from-white/10 to-transparent" />
+                <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-px bg-white/10" />
               )}
             </motion.div>
           ))}
@@ -862,7 +961,8 @@ export default function LandingPage() {
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((num) => {
-            const f = t(`features.${num}`) as any;
+            const f =
+              localized.features[num as keyof typeof localized.features];
             const icons = [Clock, VolumeX, BookOpen, Heart, Shield, Share2];
             const Icon = icons[num - 1] || Moon;
 
@@ -958,7 +1058,7 @@ export default function LandingPage() {
           {t('privacy.title')}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-          {(t('privacy.bullets') as string[]).map((b, i) => (
+          {localized.privacy.bullets.map((b, i) => (
             <span
               key={i}
               className="px-4 py-2 bg-white/5 rounded-full text-sm text-slate-300 border border-white/5"
@@ -975,7 +1075,7 @@ export default function LandingPage() {
       {/* --- TESTIMONIALS --- */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
-          {(t('testimonials') as any[]).map((tm, i) => (
+          {localized.testimonials.map((tm, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -1000,7 +1100,7 @@ export default function LandingPage() {
           {t('faq.title')}
         </p>
         <div className="max-w-2xl mx-auto space-y-4">
-          {(t('faq.items') as any[]).map((item, i) => (
+          {localized.faq.items.map((item, i) => (
             <details
               key={i}
               className="group p-6 rounded-2xl bg-white/[0.02] border border-white/5 cursor-pointer"
@@ -1041,7 +1141,7 @@ export default function LandingPage() {
 
           <button
             onClick={() => navigate('/auth')}
-            className="px-10 py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-bold text-lg rounded-full hover:shadow-[0_0_40px_rgba(251,191,36,0.5)] transition-all duration-300"
+            className="px-10 py-5 bg-amber-500 text-slate-900 font-bold text-lg rounded-full hover:bg-amber-400 transition-colors duration-300"
           >
             {t('final.cta')}
           </button>
@@ -1053,21 +1153,23 @@ export default function LandingPage() {
       </section>
 
       {/* --- FOOTER --- */}
-      <footer className="py-12 px-6 border-t border-white/5">
-        <div className="flex flex-wrap items-center justify-center gap-8 mb-6 text-sm text-slate-500">
-          <a href="#" className="hover:text-white transition-colors">
-            Instagram
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Twitter
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            GitHub
-          </a>
+      <footer className="relative z-10 py-8 px-6 border-t border-slate-800/50 mt-24">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-slate-500 text-sm">
+            © 2026 MyRamadhanKu. Open Source Project.
+          </p>
+          <div className="flex items-center gap-6">
+            <a
+              href="https://github.com/Ghufrnainun/ramadan-journal"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-500 hover:text-amber-400 transition-colors flex items-center gap-2"
+            >
+              <Github className="w-5 h-5" />
+              <span className="text-sm font-medium">GitHub</span>
+            </a>
+          </div>
         </div>
-        <p className="text-center text-xs text-slate-600">
-          © {new Date().getFullYear()} MyRamadhanKu. Open Source Project.
-        </p>
       </footer>
 
       {/* --- STICKY MOBILE CTA --- */}
@@ -1077,13 +1179,13 @@ export default function LandingPage() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-black/90 backdrop-blur-md border-t border-white/10 md:hidden"
+            className="fixed bottom-0 left-0 right-0 z-50 p-4 pb-safe bg-black/90 backdrop-blur-md border-t border-white/10 md:hidden"
           >
             <div className="flex items-center justify-between gap-4">
               <span className="text-sm text-slate-300">{t('sticky.text')}</span>
               <button
                 onClick={() => navigate('/auth')}
-                className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold rounded-full text-sm"
+                className="px-6 py-3 bg-amber-500 text-slate-900 font-semibold rounded-full text-sm"
               >
                 {t('sticky.cta')}
               </button>

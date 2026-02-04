@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Smile, Meh, Frown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getDailyStatus, saveDailyStatus } from '@/lib/daily-status';
+import { cn } from '@/lib/utils';
 
 interface DailyStatusCardProps {
   lang: 'id' | 'en';
@@ -45,7 +46,7 @@ const DailyStatusCard: React.FC<DailyStatusCardProps> = ({ lang }) => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-4"
     >
-      <div className="rounded-2xl bg-gradient-to-br from-slate-900/60 to-slate-900/40 p-1">
+      <div className="rounded-2xl bg-slate-900/60 p-1">
         <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-5 border border-slate-800/50">
           <p className="text-amber-400 font-serif text-lg mb-3">{t.title}</p>
           <textarea
@@ -63,32 +64,30 @@ const DailyStatusCard: React.FC<DailyStatusCardProps> = ({ lang }) => {
             id: 'calm',
             label: t.calm,
             icon: <Smile className="w-5 h-5" />,
-            color: 'text-emerald-400',
-            bg: 'bg-emerald-500/10',
+            activeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
           },
           {
             id: 'okay',
             label: t.okay,
             icon: <Meh className="w-5 h-5" />,
-            color: 'text-amber-400',
-            bg: 'bg-amber-500/10',
+            activeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
           },
           {
             id: 'heavy',
             label: t.heavy,
             icon: <Frown className="w-5 h-5" />,
-            color: 'text-rose-400',
-            bg: 'bg-rose-500/10',
+            activeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
           },
         ].map((option) => (
           <button
             key={option.id}
             onClick={() => setMood(option.id)}
-            className={`flex-1 min-w-[100px] flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition-all ${
+            className={cn(
+              'flex min-w-[100px] flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition-colors',
               mood === option.id
-                ? `${option.bg} border-${option.color.split('-')[1]}-500/30 ${option.color}`
-                : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-800/60'
-            }`}
+                ? option.activeClass
+                : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-800/60',
+            )}
           >
             {option.icon}
             <span>{option.label}</span>

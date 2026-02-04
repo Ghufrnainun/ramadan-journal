@@ -30,6 +30,8 @@ dist-ssr
 .claude
 .cursor
 .gemini
+.opencode
+.trae
 
 .env
 .env*

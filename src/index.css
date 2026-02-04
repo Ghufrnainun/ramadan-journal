@@ -118,8 +118,24 @@
   h1,
   h2,
   h3,
+  h4,
+  h5,
+  h6,
   .font-serif {
     font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-balance;
+  }
+
+  p {
+    @apply text-pretty;
   }
 }
 
@@ -135,7 +151,7 @@
 
   /* Text gradient utility */
   .text-gradient-gold {
-    @apply bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 bg-clip-text text-transparent;
+    @apply text-amber-400;
   }
 
   /* Glow effects */

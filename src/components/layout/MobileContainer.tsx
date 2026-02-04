@@ -12,10 +12,10 @@ const MobileContainer: React.FC<MobileContainerProps> = ({
   ...props
 }) => {
   return (
-    <div className="min-h-screen bg-slate-950 flex justify-center w-full">
+    <div className="min-h-dvh bg-slate-950 flex justify-center w-full">
       <div
         className={cn(
-          'w-full max-w-[480px] min-h-screen bg-[#020617] relative shadow-2xl overflow-x-hidden',
+          'w-full md:max-w-5xl lg:max-w-7xl min-h-dvh bg-[#020617] relative shadow-2xl overflow-x-hidden transition-colors duration-300',
           className,
         )}
         {...props}

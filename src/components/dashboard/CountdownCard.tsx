@@ -59,7 +59,7 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 p-6 text-center">
+        <div className="relative overflow-hidden rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-6 text-center">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl" />
           <div className="relative z-10">
             <Sparkles className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
@@ -82,13 +82,13 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/20 p-6">
+        <div className="relative overflow-hidden rounded-2xl bg-amber-500/10 border border-amber-500/20 p-6">
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
 
           <div className="relative">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-amber-500 text-xs font-semibold tracking-wider uppercase mb-1">
+                <p className="text-amber-500 text-xs font-semibold uppercase mb-1">
                   {t.during}
                 </p>
                 <div className="flex items-baseline gap-2">
@@ -103,12 +103,12 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
                 {ramadanInfo.daysRemaining !== undefined &&
                   ramadanInfo.daysRemaining > 0 && (
                     <p className="text-slate-400 text-xs mt-3 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                       {ramadanInfo.daysRemaining} {t.daysRemaining}
                     </p>
                   )}
               </div>
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-900/20 opacity-90">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500 flex items-center justify-center shadow-lg opacity-90">
                 <Moon className="w-8 h-8 text-white fill-white/20" />
               </div>
             </div>
@@ -136,7 +136,7 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
               <div className="p-1.5 rounded bg-amber-500/10 border border-amber-500/20">
                 <CalendarDays className="w-4 h-4 text-amber-400" />
               </div>
-              <span className="text-slate-300 text-sm font-medium tracking-wide">
+              <span className="text-slate-300 text-sm font-medium">
                 {t.before}
               </span>
             </div>
@@ -159,7 +159,7 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">
+                  <span className="text-[10px] text-slate-500 mt-1 uppercase">
                     {item.label}
                   </span>
                 </div>
@@ -210,7 +210,7 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 p-6 text-center">
+      <div className="relative overflow-hidden rounded-2xl bg-slate-900/60 border border-slate-700/50 p-6 text-center">
         <div className="absolute top-0 right-0 w-32 h-32 bg-slate-700/10 rounded-full blur-3xl" />
         <div className="relative z-10">
           <Moon className="w-10 h-10 text-slate-400 mx-auto mb-3" />

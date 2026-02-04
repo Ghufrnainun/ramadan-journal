@@ -101,7 +101,7 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border-purple-700/30">
+        <Card className="bg-slate-900/60 border-slate-700/50">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium text-white flex items-center gap-2">
               <Moon className="w-4 h-4 text-purple-400" />
@@ -125,7 +125,7 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border-purple-700/30">
+        <Card className="bg-slate-900/60 border-slate-700/50">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium text-white flex items-center gap-2">
               <Moon className="w-4 h-4 text-purple-400" />
@@ -148,7 +148,7 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <Card className="bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border-purple-700/30">
+      <Card className="bg-slate-900/60 border-slate-700/50">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-medium text-white flex items-center gap-2">

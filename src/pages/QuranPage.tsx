@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   BookOpen,
@@ -12,62 +12,62 @@ import {
   CheckCircle,
   Search,
   X,
-} from 'lucide-react';
-import { getProfile } from '@/lib/storage';
-import { equranApi, Surah, SurahDetail } from '@/lib/api/equran';
+} from "lucide-react";
+import { getProfile } from "@/lib/storage";
+import { equranApi, Surah, SurahDetail } from "@/lib/api/equran";
 import {
   getReadingProgress,
   getReadingTarget,
   saveReadingProgress,
   saveReadingTarget,
-} from '@/lib/reading-progress';
-import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
-import { markActiveDay } from '@/lib/streak';
-import MobileContainer from '@/components/layout/MobileContainer';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
+} from "@/lib/reading-progress";
+import { isBookmarked, toggleBookmark } from "@/lib/bookmarks";
+import { markActiveDay } from "@/lib/streak";
+import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 const content = {
   id: {
-    title: 'Tadarus',
-    subtitle: 'Al-Quran Digital',
-    loading: 'Memuat...',
-    error: 'Gagal memuat data',
-    retry: 'Coba Lagi',
-    ayat: 'ayat',
-    surah: 'Surat',
-    searchPlaceholder: 'Cari surat...',
-    markLast: 'Tandai Terakhir',
-    continueReading: 'Lanjutkan Membaca',
-    lastRead: 'Terakhir Dibaca',
-    target: 'Target Harian',
-    pages: 'halaman',
-    noResults: 'Surat tidak ditemukan',
+    title: "Tadarus",
+    subtitle: "Al-Quran Digital",
+    loading: "Memuat...",
+    error: "Gagal memuat data",
+    retry: "Coba Lagi",
+    ayat: "ayat",
+    surah: "Surat",
+    searchPlaceholder: "Cari surat...",
+    markLast: "Tandai Terakhir",
+    continueReading: "Lanjutkan Membaca",
+    lastRead: "Terakhir Dibaca",
+    target: "Target Harian",
+    pages: "halaman",
+    noResults: "Surat tidak ditemukan",
   },
   en: {
-    title: 'Quran Reading',
-    subtitle: 'Digital Quran',
-    loading: 'Loading...',
-    error: 'Failed to load data',
-    retry: 'Try Again',
-    ayat: 'verses',
-    surah: 'Surah',
-    searchPlaceholder: 'Search surah...',
-    markLast: 'Mark last read',
-    continueReading: 'Continue Reading',
-    lastRead: 'Last Read',
-    target: 'Daily Target',
-    pages: 'pages',
-    noResults: 'Surah not found',
+    title: "Quran Reading",
+    subtitle: "Digital Quran",
+    loading: "Loading...",
+    error: "Failed to load data",
+    retry: "Try Again",
+    ayat: "verses",
+    surah: "Surah",
+    searchPlaceholder: "Search surah...",
+    markLast: "Mark last read",
+    continueReading: "Continue Reading",
+    lastRead: "Last Read",
+    target: "Daily Target",
+    pages: "pages",
+    noResults: "Surah not found",
   },
 };
 
 const QuranPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [lang, setLang] = useState<'id' | 'en'>('id');
+  const [lang, setLang] = useState<"id" | "en">("id");
   const [surahs, setSurahs] = useState<Surah[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedSurah, setSelectedSurah] = useState<SurahDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSurah, setIsLoadingSurah] = useState(false);
@@ -81,51 +81,40 @@ const QuranPage: React.FC = () => {
   );
   const [readingProgress, setReadingProgress] = useState(getReadingProgress());
 
+  const [playingFullSurah, setPlayingFullSurah] =
+    useState<HTMLAudioElement | null>(null);
+
   const t = content[lang];
 
-  useEffect(() => {
-    const profile = getProfile();
-    if (!profile.onboardingCompleted) {
-      navigate('/onboarding');
-      return;
-    }
-    setLang(profile.language);
-    loadSurahs();
-  }, [navigate]);
-
-  useEffect(() => {
-    const surahParam = searchParams.get('surah');
-    if (surahParam && surahs.length > 0) {
-      loadSurah(parseInt(surahParam));
-    }
-  }, [searchParams, surahs]);
-
-  const loadSurahs = async () => {
+  const loadSurahs = useCallback(async (errorMessage: string) => {
     try {
       setIsLoading(true);
       setError(null);
       const data = await equranApi.getAllSurahs();
       setSurahs(data);
     } catch (err) {
-      setError(t.error);
-      console.error('Failed to load surahs:', err);
+      setError(errorMessage);
+      console.error("Failed to load surahs:", err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadSurah = async (number: number) => {
-    try {
-      setIsLoadingSurah(true);
-      const data = await equranApi.getSurah(number);
-      setSelectedSurah(data);
-      setSearchParams({ surah: number.toString() });
-    } catch (err) {
-      console.error('Failed to load surah:', err);
-    } finally {
-      setIsLoadingSurah(false);
-    }
-  };
+  const loadSurah = useCallback(
+    async (number: number) => {
+      try {
+        setIsLoadingSurah(true);
+        const data = await equranApi.getSurah(number);
+        setSelectedSurah(data);
+        setSearchParams({ surah: number.toString() });
+      } catch (err) {
+        console.error("Failed to load surah:", err);
+      } finally {
+        setIsLoadingSurah(false);
+      }
+    },
+    [setSearchParams],
+  );
 
   const handleMarkProgress = (ayahNumber: number) => {
     if (!selectedSurah) return;
@@ -144,7 +133,7 @@ const QuranPage: React.FC = () => {
       setSearchParams({});
       stopAudio();
     } else {
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
   };
 
@@ -152,7 +141,6 @@ const QuranPage: React.FC = () => {
     stopAudio();
     const audio = new Audio(audioUrl);
     audio.onended = () => {
-      // Auto-play next ayah logic could go here
       setPlayingAudio(null);
       setPlayingAyah(null);
     };
@@ -161,14 +149,69 @@ const QuranPage: React.FC = () => {
     setPlayingAyah(ayahNumber);
   };
 
-  const stopAudio = () => {
+  const toggleFullSurahAudio = () => {
+    if (playingFullSurah) {
+      stopAudio();
+      return;
+    }
+
+    if (!selectedSurah || !selectedSurah.audioFull) return;
+
+    // Default to first available audio source (usually '01' Abdullah Al-Juhany or similar)
+    // The API returns an object like { "01": "url", "02": "url" }
+    const audioSources = Object.values(selectedSurah.audioFull);
+    if (audioSources.length === 0) return;
+
+    const audioUrl = audioSources[0]; // Pick the first one (usually '01') or a specific one if preferred
+
+    stopAudio(); // Stop any existing audio (ayah or full)
+
+    const audio = new Audio(audioUrl);
+    audio.onended = () => {
+      setPlayingFullSurah(null);
+    };
+    audio.play();
+    setPlayingFullSurah(audio);
+  };
+
+  const stopAudio = useCallback(() => {
     if (playingAudio) {
       playingAudio.pause();
       playingAudio.currentTime = 0;
       setPlayingAudio(null);
       setPlayingAyah(null);
     }
-  };
+    if (playingFullSurah) {
+      playingFullSurah.pause();
+      playingFullSurah.currentTime = 0;
+      setPlayingFullSurah(null);
+    }
+  }, [playingAudio, playingFullSurah]);
+
+  useEffect(() => {
+    const profile = getProfile();
+    if (!profile.onboardingCompleted) {
+      navigate("/onboarding");
+      return;
+    }
+    const nextLang = profile.language;
+    setLang(nextLang);
+    void loadSurahs(content[nextLang].error);
+  }, [navigate, loadSurahs]);
+
+  useEffect(() => {
+    const surahParam = searchParams.get("surah");
+    if (surahParam && surahs.length > 0) {
+      void loadSurah(parseInt(surahParam, 10));
+    }
+  }, [loadSurah, searchParams, surahs]);
+
+  // Stop audio when unmounting or leaving
+  useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+  }, [stopAudio]);
 
   const filteredSurahs = useMemo(() => {
     if (!searchQuery) return surahs;
@@ -184,29 +227,29 @@ const QuranPage: React.FC = () => {
   // Loading State
   if (isLoading) {
     return (
-      <MobileContainer className="flex items-center justify-center min-h-screen">
+      <ResponsiveLayout className="flex items-center justify-center min-h-dvh">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-emerald-400 mx-auto mb-4" />
           <p className="text-slate-400">{t.loading}</p>
         </div>
-      </MobileContainer>
+      </ResponsiveLayout>
     );
   }
 
   // Error State
   if (error) {
     return (
-      <MobileContainer className="flex items-center justify-center min-h-screen">
+      <ResponsiveLayout className="flex items-center justify-center min-h-dvh">
         <div className="text-center p-6">
           <p className="text-red-400 mb-4">{error}</p>
           <button
-            onClick={loadSurahs}
+            onClick={() => void loadSurahs(t.error)}
             className="px-6 py-3 bg-amber-500 text-slate-900 rounded-xl font-medium hover:bg-amber-400 transition-colors"
           >
             {t.retry}
           </button>
         </div>
-      </MobileContainer>
+      </ResponsiveLayout>
     );
   }
 
@@ -215,11 +258,13 @@ const QuranPage: React.FC = () => {
      ========================================================================= */
   if (selectedSurah) {
     return (
-      <MobileContainer className="pb-32">
-        {/* Sticky Header */}
+      <ResponsiveLayout className="pb-32">
+        {/* Sticky Header - Mobile Only? No, keep sticky header for detail view but adapt */}
         <header className="sticky top-0 z-20 bg-[#020617]/95 backdrop-blur border-b border-slate-800/50">
           <div className="flex items-center justify-between px-6 py-4">
             <button
+              type="button"
+              aria-label="Back to surah list"
               onClick={handleBack}
               className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
             >
@@ -239,18 +284,44 @@ const QuranPage: React.FC = () => {
 
         {/* Hero Card */}
         <div className="px-6 py-6">
-          <div className="rounded-3xl bg-gradient-to-br from-emerald-600/20 to-emerald-900/10 border border-emerald-500/20 p-8 text-center relative overflow-hidden shadow-2xl shadow-emerald-900/10">
+          <div className="rounded-3xl bg-emerald-500/10 border border-emerald-500/20 p-8 text-center relative overflow-hidden shadow-xl">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="relative z-10">
               <p className="text-6xl text-emerald-400 font-serif mb-3 leading-tight">
                 {selectedSurah.nama}
               </p>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300/80 text-xs font-medium tracking-wide">
-                <span>{selectedSurah.tempatTurun.toUpperCase()}</span>
-                <span>•</span>
-                <span>
-                  {selectedSurah.jumlahAyat} {t.ayat.toUpperCase()}
-                </span>
+              <div className="flex flex-col items-center gap-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300/80 text-xs font-medium">
+                  <span>{selectedSurah.tempatTurun.toUpperCase()}</span>
+                  <span>•</span>
+                  <span>
+                    {selectedSurah.jumlahAyat} {t.ayat.toUpperCase()}
+                  </span>
+                </div>
+
+                {selectedSurah.audioFull && (
+                  <button
+                    onClick={toggleFullSurahAudio}
+                    className={cn(
+                      "inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-medium transition-colors duration-300 shadow-lg",
+                      playingFullSurah
+                        ? "bg-amber-500 text-slate-900 hover:bg-amber-400"
+                        : "bg-emerald-500 text-slate-900 hover:bg-emerald-400",
+                    )}
+                  >
+                    {playingFullSurah ? (
+                      <>
+                        <Pause className="w-4 h-4 fill-current" />
+                        Stop Murottal
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 fill-current" />
+                        Play Murottal
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -276,10 +347,10 @@ const QuranPage: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
-                  'rounded-2xl p-5 border transition-all duration-300',
+                  "rounded-2xl p-5 border transition-colors duration-300",
                   isActive
-                    ? 'bg-emerald-900/10 border-emerald-500/30 shadow-lg shadow-emerald-900/10'
-                    : 'bg-slate-900/30 border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/50',
+                    ? "bg-emerald-900/10 border-emerald-500/30 shadow-lg"
+                    : "bg-slate-900/30 border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/50",
                 )}
               >
                 {/* Header (Number + Actions) */}
@@ -291,6 +362,12 @@ const QuranPage: React.FC = () => {
                   <div className="flex items-center gap-1">
                     {ayah.audio && Object.keys(ayah.audio).length > 0 && (
                       <button
+                        type="button"
+                        aria-label={
+                          isActive
+                            ? `Pause ayah ${ayah.nomorAyat}`
+                            : `Play ayah ${ayah.nomorAyat}`
+                        }
                         onClick={() => {
                           const audioUrl = Object.values(ayah.audio)[0];
                           if (isActive) {
@@ -300,10 +377,10 @@ const QuranPage: React.FC = () => {
                           }
                         }}
                         className={cn(
-                          'p-2 rounded-lg transition-colors',
+                          "p-2 rounded-lg transition-colors",
                           isActive
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'hover:bg-slate-800 text-slate-400',
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : "hover:bg-slate-800 text-slate-400",
                         )}
                       >
                         {isActive ? (
@@ -314,6 +391,8 @@ const QuranPage: React.FC = () => {
                       </button>
                     )}
                     <button
+                      type="button"
+                      aria-label={`Mark ayah ${ayah.nomorAyat} as last read`}
                       onClick={() => handleMarkProgress(ayah.nomorAyat)}
                       className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors"
                       title={t.markLast}
@@ -321,11 +400,13 @@ const QuranPage: React.FC = () => {
                       <CheckCircle className="w-4 h-4" />
                     </button>
                     <button
+                      type="button"
+                      aria-label={`Bookmark ayah ${ayah.nomorAyat}`}
                       onClick={() => {
                         const bookmarkId = `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`;
                         toggleBookmark({
                           id: bookmarkId,
-                          type: 'ayah',
+                          type: "ayah",
                           title: `${selectedSurah.namaLatin} : ${ayah.nomorAyat}`,
                           subtitle: selectedSurah.arti,
                           content: ayah.teksIndonesia,
@@ -333,13 +414,13 @@ const QuranPage: React.FC = () => {
                         });
                       }}
                       className={cn(
-                        'p-2 rounded-lg hover:bg-slate-800 transition-colors',
+                        "p-2 rounded-lg hover:bg-slate-800 transition-colors",
                         isBookmarked(
-                          'ayah',
+                          "ayah",
                           `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`,
                         )
-                          ? 'text-amber-400'
-                          : 'text-slate-400 hover:text-amber-400',
+                          ? "text-amber-400"
+                          : "text-slate-400 hover:text-amber-400",
                       )}
                     >
                       <Bookmark className="w-4 h-4" />
@@ -374,31 +455,37 @@ const QuranPage: React.FC = () => {
 
         {/* Sticky Player (Only when playing) */}
         <AnimatePresence>
-          {playingAudio && (
+          {(playingAudio || playingFullSurah) && (
             <motion.div
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
-              className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[440px] px-4 z-50"
+              className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[440px] px-4 pb-safe z-50"
             >
               <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700/50 rounded-2xl p-4 shadow-xl flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-emerald-400 text-xs font-bold uppercase tracking-wider mb-0.5">
+                  <p className="text-emerald-400 text-xs font-bold uppercase mb-0.5">
                     Now Playing
                   </p>
                   <p className="text-white text-sm font-medium truncate">
-                    Ayat {playingAyah}
+                    {playingFullSurah
+                      ? `Full Surah: ${selectedSurah.namaLatin}`
+                      : `Ayat ${playingAyah}`}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   {/* Simplified controls for now */}
                   <button
+                    type="button"
+                    aria-label="Pause audio playback"
                     onClick={stopAudio}
-                    className="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center transition-colors shadow-lg shadow-emerald-500/20"
+                    className="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center transition-colors shadow-lg"
                   >
                     <Pause className="w-4 h-4 fill-current" />
                   </button>
                   <button
+                    type="button"
+                    aria-label="Close audio player"
                     onClick={stopAudio}
                     className="p-2 text-slate-400 hover:text-white transition-colors"
                   >
@@ -409,7 +496,7 @@ const QuranPage: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </MobileContainer>
+      </ResponsiveLayout>
     );
   }
 
@@ -424,12 +511,14 @@ const QuranPage: React.FC = () => {
   };
 
   return (
-    <MobileContainer className="pb-24">
-      {/* Header */}
-      <header className="px-6 py-4 sticky top-0 bg-[#020617]/80 backdrop-blur z-20 space-y-4 border-b border-slate-800/50">
+    <ResponsiveLayout className="pb-24">
+      {/* Header - Mobile Only or desktop title? */}
+      <header className="px-6 py-4 sticky top-0 bg-[#020617]/80 backdrop-blur z-20 space-y-4 border-b border-slate-800/50 md:hidden">
         <div className="flex items-center justify-between">
           <button
-            onClick={() => navigate('/dashboard')}
+            type="button"
+            aria-label="Back to dashboard"
+            onClick={() => navigate("/dashboard")}
             className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-slate-400" />
@@ -442,15 +531,20 @@ const QuranPage: React.FC = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
-            type="text"
+            type="search"
+            name="quran-search-mobile"
+            aria-label={t.searchPlaceholder}
+            autoComplete="off"
             placeholder={t.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all"
+            className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-colors"
           />
           {searchQuery && (
             <button
-              onClick={() => setSearchQuery('')}
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setSearchQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full bg-slate-800 text-slate-400 hover:text-white"
             >
               <X className="w-3 h-3" />
@@ -459,18 +553,36 @@ const QuranPage: React.FC = () => {
         </div>
       </header>
 
-      <ScrollArea className="h-[calc(100vh-140px)]">
-        <div className="px-6 py-4 space-y-6 pb-32">
+      {/* Desktop Header / Search */}
+      <div className="hidden md:flex items-center justify-between mb-6">
+        <h1 className="font-serif text-3xl text-white">{t.title}</h1>
+        <div className="relative w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input
+            type="search"
+            name="quran-search-desktop"
+            aria-label={t.searchPlaceholder}
+            autoComplete="off"
+            placeholder={t.searchPlaceholder}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
+          />
+        </div>
+      </div>
+
+      <ScrollArea className="h-[calc(100dvh-140px)] md:h-auto">
+        <div className="px-6 py-4 space-y-6 pb-32 md:p-0 md:pb-0">
           {/* Last Read Card - Only show if no search query */}
           {!searchQuery && readingProgress && (
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/10 border border-indigo-500/20 p-6">
+            <div className="relative overflow-hidden rounded-2xl bg-indigo-500/10 border border-indigo-500/20 p-6">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl" />
 
               <div className="relative z-10 flex items-center justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <BookOpen className="w-4 h-4 text-indigo-400" />
-                    <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">
+                    <span className="text-xs font-semibold text-indigo-300 uppercase">
                       {t.lastRead}
                     </span>
                   </div>
@@ -483,8 +595,10 @@ const QuranPage: React.FC = () => {
                 </div>
 
                 <button
+                  type="button"
+                  aria-label="Continue reading from last progress"
                   onClick={handleContinueReading}
-                  className="shrink-0 w-12 h-12 rounded-full bg-indigo-500 hover:bg-indigo-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 transition-all active:scale-95"
+                  className="shrink-0 w-12 h-12 rounded-full bg-indigo-500 hover:bg-indigo-400 flex items-center justify-center text-white shadow-lg transition-transform active:scale-95"
                 >
                   <Play className="w-5 h-5 fill-current ml-0.5" />
                 </button>
@@ -493,14 +607,14 @@ const QuranPage: React.FC = () => {
           )}
 
           {/* Surah List */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredSurahs.length > 0 ? (
               filteredSurahs.map((surah, i) => (
                 <motion.button
                   key={surah.nomor}
                   onClick={() => loadSurah(surah.nomor)}
                   disabled={isLoadingSurah}
-                  className="w-full p-4 rounded-2xl border border-slate-800/60 bg-slate-900/20 hover:bg-slate-800/50 hover:border-emerald-500/20 transition-all flex items-center gap-4 text-left group disabled:opacity-50"
+                  className="w-full p-4 rounded-2xl border border-slate-800/60 bg-slate-900/20 hover:bg-slate-800/50 hover:border-emerald-500/20 transition-colors flex items-center gap-4 text-left group disabled:opacity-50"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(i * 0.03, 0.5) }}
@@ -544,7 +658,7 @@ const QuranPage: React.FC = () => {
           </div>
         </div>
       )}
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 };
 

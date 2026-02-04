@@ -20,6 +20,31 @@ export interface PrayerTimes {
 const cachedPrayerTimes: {
   [key: string]: { times: PrayerTimes; date: string };
 } = {};
+const prayerCacheOrder: string[] = [];
+const PRAYER_CACHE_MAX_ENTRIES = 14;
+
+const setPrayerTimesCache = (
+  cacheKey: string,
+  cacheValue: { times: PrayerTimes; date: string },
+) => {
+  if (!cachedPrayerTimes[cacheKey]) {
+    prayerCacheOrder.push(cacheKey);
+  } else {
+    const existingKeyIndex = prayerCacheOrder.indexOf(cacheKey);
+    if (existingKeyIndex !== -1) {
+      prayerCacheOrder.splice(existingKeyIndex, 1);
+      prayerCacheOrder.push(cacheKey);
+    }
+  }
+
+  cachedPrayerTimes[cacheKey] = cacheValue;
+
+  while (prayerCacheOrder.length > PRAYER_CACHE_MAX_ENTRIES) {
+    const oldestKey = prayerCacheOrder.shift();
+    if (!oldestKey) break;
+    delete cachedPrayerTimes[oldestKey];
+  }
+};
 
 // Province mapping for common cities
 const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> =
@@ -74,6 +99,11 @@ export const getPrayerTimesFromApi = async (
     cachedPrayerTimes[cacheKey] &&
     cachedPrayerTimes[cacheKey].date === dateStr
   ) {
+    const existingKeyIndex = prayerCacheOrder.indexOf(cacheKey);
+    if (existingKeyIndex !== -1) {
+      prayerCacheOrder.splice(existingKeyIndex, 1);
+      prayerCacheOrder.push(cacheKey);
+    }
     return cachedPrayerTimes[cacheKey].times;
   }
 
@@ -113,7 +143,7 @@ export const getPrayerTimesFromApi = async (
     };
 
     // Cache the result
-    cachedPrayerTimes[cacheKey] = { times, date: dateStr };
+    setPrayerTimesCache(cacheKey, { times, date: dateStr });
 
     return times;
   } catch (error) {

@@ -13,7 +13,7 @@ import {
 } from 'date-fns';
 import { ArrowLeft, ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MobileContainer from '@/components/layout/MobileContainer';
+import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
@@ -123,10 +123,12 @@ const CalendarPage = () => {
   };
 
   return (
-    <MobileContainer className="pb-24">
-      {/* Header */}
+    <ResponsiveLayout className="pb-24">
+      {/* Header - Mobile Only? Keep it for now or adapt */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 backdrop-blur z-20">
         <button
+          type="button"
+          aria-label="Back to dashboard"
           onClick={() => navigate('/dashboard')}
           className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
         >
@@ -184,7 +186,7 @@ const CalendarPage = () => {
                 transition={{ delay: i * 0.02 }}
                 onClick={() => setSelectedDate(date)}
                 className={cn(
-                  'relative aspect-square rounded-xl flex flex-col items-center justify-center transition-all border',
+                  'relative aspect-square rounded-xl flex flex-col items-center justify-center transition-colors border',
                   isSelected
                     ? 'bg-amber-500/20 border-amber-500 text-white'
                     : isTodayDate
@@ -284,7 +286,7 @@ const CalendarPage = () => {
               {/* Status Section */}
               {getStatusForDate(selectedDate) ? (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                  <h4 className="text-sm font-medium text-slate-400 uppercase">
                     Dialy Journal
                   </h4>
                   <div className="bg-slate-950/50 rounded-xl p-4 border border-slate-800">
@@ -313,7 +315,7 @@ const CalendarPage = () => {
               {/* Tracker Section */}
               {getProgressForDate(selectedDate) ? (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                  <h4 className="text-sm font-medium text-slate-400 uppercase">
                     Tracker
                   </h4>
                   <div className="space-y-2">
@@ -352,7 +354,7 @@ const CalendarPage = () => {
           )}
         </DialogContent>
       </Dialog>
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 };
 

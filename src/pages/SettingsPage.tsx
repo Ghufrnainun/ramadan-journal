@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import MobileContainer from '@/components/layout/MobileContainer';
+import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -58,9 +58,11 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <MobileContainer className="pb-0">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 backdrop-blur z-10">
+    <ResponsiveLayout className="pb-0">
+      <header className="md:hidden flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 backdrop-blur z-10">
         <button
+          type="button"
+          aria-label="Back to dashboard"
           onClick={() => navigate('/dashboard')}
           className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
         >
@@ -75,7 +77,17 @@ const SettingsPage: React.FC = () => {
         <div className="w-9" />
       </header>
 
-      <main className="px-6 py-6 space-y-6 pb-32">
+      {/* Desktop Header */}
+      <div className="hidden md:flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-serif text-3xl text-white">
+            {dict.settings.title}
+          </h1>
+          <p className="text-slate-400 mt-1">{dict.settings.subtitle}</p>
+        </div>
+      </div>
+
+      <main className="px-6 py-6 space-y-6 pb-32 md:p-0 md:pb-12">
         <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -128,7 +140,7 @@ const SettingsPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => updateProfile({ language: 'id' })}
-              className={`flex-1 py-3 rounded-xl text-sm font-medium border transition-all ${
+              className={`flex-1 py-3 rounded-xl text-sm font-medium border transition-colors ${
                 profile.language === 'id'
                   ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                   : 'bg-slate-800/50 border-slate-700 text-slate-400'
@@ -138,7 +150,7 @@ const SettingsPage: React.FC = () => {
             </button>
             <button
               onClick={() => updateProfile({ language: 'en' })}
-              className={`flex-1 py-3 rounded-xl text-sm font-medium border transition-all ${
+              className={`flex-1 py-3 rounded-xl text-sm font-medium border transition-colors ${
                 profile.language === 'en'
                   ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                   : 'bg-slate-800/50 border-slate-700 text-slate-400'
@@ -342,16 +354,26 @@ const SettingsPage: React.FC = () => {
         )}
       </main>
 
-      {/* Fixed bottom button constrained to max width */}
-      <div className="fixed bottom-0 w-full max-w-[480px] left-1/2 -translate-x-1/2 p-6 bg-gradient-to-t from-[#020617] via-[#020617] to-transparent z-20">
+      {/* Fixed bottom button constrained to max width - Mobile Only */}
+      <div className="md:hidden fixed bottom-0 w-full max-w-[480px] left-1/2 -translate-x-1/2 p-6 pb-safe bg-[#020617]/90 z-20">
         <button
           onClick={saveChanges}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 font-semibold text-base shadow-lg shadow-amber-900/20"
+          className="w-full py-4 rounded-2xl bg-amber-500 text-slate-900 font-semibold text-base shadow-md hover:bg-amber-400 transition-colors"
         >
           {dict.settings.saveChanges}
         </button>
       </div>
-    </MobileContainer>
+
+      {/* Desktop Save Button */}
+      <div className="hidden md:flex justify-end mt-8 border-t border-slate-800 pt-6">
+        <button
+          onClick={saveChanges}
+          className="px-8 py-3 rounded-xl bg-amber-500 text-slate-900 font-semibold hover:bg-amber-400 transition-colors"
+        >
+          {dict.settings.saveChanges}
+        </button>
+      </div>
+    </ResponsiveLayout>
   );
 };
 

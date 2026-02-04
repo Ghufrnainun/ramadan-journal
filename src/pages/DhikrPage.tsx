@@ -14,7 +14,7 @@ import {
 } from '@/lib/dhikr-storage';
 import { cn } from '@/lib/utils';
 import { markActiveDay } from '@/lib/streak';
-import MobileContainer from '@/components/layout/MobileContainer';
+import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
 const content = {
   id: {
@@ -156,10 +156,12 @@ const DhikrPage: React.FC = () => {
   // Counter View (Premium Circular Design)
   if (selectedPreset) {
     return (
-      <div className="min-h-screen bg-[#020617] text-slate-200 flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
+      <ResponsiveLayout className="flex flex-col">
+        {/* Header - Mobile Only */}
+        <header className="md:hidden flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
           <button
+            type="button"
+            aria-label="Back to dhikr list"
             onClick={() => setSelectedPreset(null)}
             className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
           >
@@ -169,6 +171,8 @@ const DhikrPage: React.FC = () => {
             {selectedPreset.transliteration}
           </span>
           <button
+            type="button"
+            aria-label="Reset dzikir counter"
             onClick={handleReset}
             className="p-2 -mr-2 rounded-lg hover:bg-slate-800/50 transition-colors"
           >
@@ -228,7 +232,7 @@ const DhikrPage: React.FC = () => {
             {/* Inner Circle */}
             <div
               className={cn(
-                'w-56 h-56 rounded-full flex flex-col items-center justify-center transition-all duration-300 border-4',
+                'w-56 h-56 rounded-full flex flex-col items-center justify-center transition-colors duration-300 border-4',
                 isCompleted
                   ? 'bg-green-500/10 border-green-500/30'
                   : 'bg-slate-900 border-slate-800 group-hover:bg-slate-800',
@@ -275,16 +279,19 @@ const DhikrPage: React.FC = () => {
             {t.tap}
           </p>
         </div>
-      </div>
+      </ResponsiveLayout>
     );
   }
 
-  // List View with MobileContainer
+  // List View with Layout
   return (
-    <MobileContainer className="pb-24">
+    <ResponsiveLayout className="pb-24">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 backdrop-blur z-20">
+      {/* Header - Mobile Only */}
+      <header className="flex md:hidden items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 backdrop-blur z-20">
         <button
+          type="button"
+          aria-label="Back to dashboard"
           onClick={() => navigate('/dashboard')}
           className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
         >
@@ -297,12 +304,22 @@ const DhikrPage: React.FC = () => {
         <div className="w-9" />
       </header>
 
+      {/* Desktop Header */}
+      <div className="hidden md:flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-serif text-3xl text-white">{t.title}</h1>
+          <p className="text-slate-400 mt-1">{t.subtitle}</p>
+        </div>
+      </div>
+
       {/* Content */}
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-6 py-6 space-y-6 md:p-0">
         {/* Create New Toggle */}
         <button
+          type="button"
+          aria-label={isCreating ? 'Hide custom dzikir form' : 'Show custom dzikir form'}
           onClick={() => setIsCreating(!isCreating)}
-          className="w-full p-4 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/30 text-amber-200 flex items-center justify-center gap-2 hover:bg-amber-500/30 transition-all font-medium"
+          className="w-full p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 flex items-center justify-center gap-2 hover:bg-amber-500/20 transition-colors font-medium"
         >
           <Plus className="w-5 h-5" />
           {t.custom}
@@ -417,7 +434,7 @@ const DhikrPage: React.FC = () => {
                 key={preset.id}
                 onClick={() => handleSelectPreset(preset)}
                 className={cn(
-                  'w-full p-4 rounded-2xl border transition-all flex items-center justify-between group text-left',
+                  'w-full p-4 rounded-2xl border transition-colors flex items-center justify-between group text-left',
                   isComplete
                     ? 'bg-green-500/5 border-green-500/20'
                     : 'bg-slate-900/40 border-slate-800 hover:border-amber-500/30 hover:bg-slate-800/50',
@@ -471,7 +488,7 @@ const DhikrPage: React.FC = () => {
           })}
         </div>
       </div>
-    </MobileContainer>
+    </ResponsiveLayout>
   );
 };
 
