@@ -697,7 +697,10 @@ export default function LandingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             onClick={() => setLang((l) => (l === 'id' ? 'en' : 'id'))}
-            className="text-[10px] font-bold border border-white/10 bg-black/20 backdrop-blur-sm rounded-full px-3 py-1.5 hover:bg-white/10 transition-colors uppercase"
+            className="text-[10px] font-bold border border-white/10 bg-black/20 backdrop-blur-sm rounded-full px-4 py-2 hover:bg-white/10 transition-colors uppercase"
+            aria-label={
+              lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'
+            }
           >
             {lang === 'id' ? 'ID' : 'EN'}
           </motion.button>
@@ -843,7 +846,7 @@ export default function LandingPage() {
           <p className="font-serif text-2xl md:text-3xl text-white/80 italic leading-relaxed mb-4">
             "{t('whisper.text')}"
           </p>
-          <p className="text-sm text-slate-500">{t('whisper.note')}</p>
+          <p className="text-sm text-slate-400">{t('whisper.note')}</p>
         </motion.div>
       </section>
 
