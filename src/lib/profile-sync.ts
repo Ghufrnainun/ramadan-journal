@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/runtime-client";
 import { getProfile, saveProfile, UserProfile } from "@/lib/storage";
 import { Database } from "@/integrations/supabase/types";
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Moon, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/runtime-client';
 import { lovable } from '@/integrations/lovable';
 import { toast } from '@/hooks/use-toast';
 import MobileContainer from '@/components/layout/MobileContainer';
