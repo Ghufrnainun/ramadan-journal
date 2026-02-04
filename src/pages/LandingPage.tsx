@@ -475,46 +475,55 @@ const MoonTimeline = () => (
 
 const MockupCard = ({ type }: { type: 'count' | 'quote' | 'dhikr' }) => {
   return (
-    <div className="relative w-72 h-[580px] bg-slate-950 rounded-[3rem] border-8 border-slate-900 shadow-2xl overflow-hidden flex-shrink-0">
-      {/* Phone Bezel Details */}
-      <div className="absolute top-0 inset-x-0 h-6 bg-slate-900 rounded-b-3xl mx-auto w-40 z-20" />
-      <div className="absolute top-2 inset-x-0 flex justify-between px-6 text-[10px] text-slate-500 font-medium z-10">
+    <div className="relative w-64 h-[520px] bg-slate-950 rounded-[2.5rem] border-[6px] border-slate-800/80 shadow-2xl overflow-hidden flex-shrink-0">
+      {/* Phone Notch */}
+      <div className="absolute top-0 inset-x-0 flex justify-center z-20">
+        <div className="h-6 w-28 bg-slate-900 rounded-b-2xl" />
+      </div>
+      
+      {/* Status Bar */}
+      <div className="absolute top-1.5 inset-x-0 flex justify-between items-center px-5 text-[10px] text-slate-500 font-medium z-10">
         <span>9:41</span>
-        <div className="flex gap-1">
-          <span className="w-3 h-3 bg-slate-800 rounded-full" />
-          <span className="w-3 h-3 bg-slate-800 rounded-full" />
+        <div className="flex gap-1 items-center">
+          <div className="w-2.5 h-2.5 bg-slate-700 rounded-full" />
+          <div className="w-2.5 h-2.5 bg-slate-700 rounded-full" />
         </div>
       </div>
 
       {/* Screen Content */}
-      <div className="h-full w-full bg-[#020617] relative flex flex-col pt-12 pb-8 px-6">
+      <div className="h-full w-full bg-[#0a0f1c] relative flex flex-col pt-10 pb-6 px-5">
         {type === 'count' && (
-          <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className="absolute top-12 right-6 p-2 bg-slate-800/50 rounded-full">
-              <Settings className="w-4 h-4 text-slate-400" />
+          <div className="h-full flex flex-col items-center justify-center text-center relative">
+            {/* Settings Icon */}
+            <div className="absolute top-2 right-0">
+              <div className="p-2 rounded-full bg-slate-800/40">
+                <Settings className="w-4 h-4 text-slate-500" />
+              </div>
             </div>
 
+            {/* Clock Circle */}
             <motion.div
-              className="w-32 h-32 rounded-full bg-amber-500/10 flex items-center justify-center mb-8 relative"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 4, repeat: Infinity }}
+              className="w-28 h-28 rounded-full bg-slate-800/60 flex items-center justify-center mb-10 relative"
+              animate={{ scale: [1, 1.02, 1] }}
+              transition={{ duration: 3, repeat: Infinity }}
             >
-              <div className="absolute inset-0 border border-amber-500/20 rounded-full animate-ping opacity-20" />
-              <Clock className="w-12 h-12 text-amber-400" />
+              <Clock className="w-10 h-10 text-amber-400" />
             </motion.div>
 
+            {/* Time Display */}
             <p className="text-5xl font-bold text-white font-serif tracking-tight">
               04:32
             </p>
-            <p className="text-sm text-slate-400 mt-2 font-medium">
+            <p className="text-sm text-slate-400 mt-2">
               Menjelang Maghrib
             </p>
 
-            <div className="mt-8 flex gap-3 text-xs text-slate-500">
-              <span className="px-3 py-1 rounded-full bg-slate-900 border border-slate-800">
+            {/* Location Tags */}
+            <div className="mt-8 flex gap-2 text-[11px] text-slate-400">
+              <span className="px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700/50">
                 Jakarta
               </span>
-              <span className="px-3 py-1 rounded-full bg-slate-900 border border-slate-800">
+              <span className="px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700/50">
                 Ashar 15:12
               </span>
             </div>
@@ -522,26 +531,36 @@ const MockupCard = ({ type }: { type: 'count' | 'quote' | 'dhikr' }) => {
         )}
 
         {type === 'quote' && (
-          <div className="h-full flex flex-col justify-center text-left">
-            <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center mb-6">
-              <BookOpen className="w-4 h-4 text-emerald-400" />
+          <div className="h-full flex flex-col justify-center text-left relative pt-4">
+            {/* Quote Icon */}
+            <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center mb-8">
+              <BookOpen className="w-5 h-5 text-emerald-400" />
             </div>
-            <p className="text-5xl text-emerald-500/20 font-serif absolute top-24 left-4">
+            
+            {/* Quote Mark */}
+            <p className="text-4xl text-emerald-500/30 font-serif absolute top-16 left-0 leading-none">
               "
             </p>
-            <p className="text-white/90 font-serif italic text-xl leading-relaxed relative z-10">
+            
+            {/* Quote Text */}
+            <p className="text-white/90 font-serif italic text-lg leading-relaxed pl-1">
               Maka sesungguhnya bersama kesulitan ada kemudahan.
             </p>
-            <div className="h-px w-12 bg-emerald-500/30 my-6" />
-            <p className="text-sm text-emerald-400 font-medium">
+            
+            {/* Divider */}
+            <div className="h-0.5 w-10 bg-amber-500/50 my-5" />
+            
+            {/* Source */}
+            <p className="text-sm text-amber-400 font-medium">
               QS Al-Insyirah: 5
             </p>
 
-            <div className="mt-auto flex gap-4">
-              <button className="p-2 rounded-full bg-slate-800/50 text-slate-400">
+            {/* Action Buttons */}
+            <div className="mt-auto pt-8 flex gap-3">
+              <button className="p-2.5 rounded-full bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 transition-colors">
                 <Share2 className="w-4 h-4" />
               </button>
-              <button className="p-2 rounded-full bg-slate-800/50 text-slate-400">
+              <button className="p-2.5 rounded-full bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 transition-colors">
                 <Heart className="w-4 h-4" />
               </button>
             </div>
@@ -550,24 +569,41 @@ const MockupCard = ({ type }: { type: 'count' | 'quote' | 'dhikr' }) => {
 
         {type === 'dhikr' && (
           <div className="h-full flex flex-col items-center justify-center text-center relative">
-            <p className="absolute top-4 text-xs font-medium text-slate-500 uppercase tracking-widest">
+            {/* Settings Icon */}
+            <div className="absolute top-2 right-0">
+              <div className="p-2 rounded-full bg-slate-800/40">
+                <Settings className="w-4 h-4 text-slate-500" />
+              </div>
+            </div>
+            
+            {/* Title */}
+            <p className="absolute top-4 text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em]">
               Dzikir Pagi
             </p>
 
+            {/* Counter Circle */}
             <motion.div
-              className="w-48 h-48 rounded-full bg-gradient-to-b from-emerald-500/20 to-transparent border border-emerald-500/30 flex items-center justify-center mb-8 cursor-pointer shadow-[0_0_40px_rgba(16,185,129,0.1)]"
+              className="w-40 h-40 rounded-full bg-gradient-to-b from-emerald-500/15 to-emerald-500/5 border-2 border-emerald-500/40 flex items-center justify-center cursor-pointer shadow-[0_0_60px_rgba(16,185,129,0.15)]"
               whileTap={{ scale: 0.95 }}
             >
-              <span className="text-6xl font-bold text-emerald-400 font-mono">
+              <span className="text-5xl font-bold text-emerald-400 font-mono">
                 33
               </span>
             </motion.div>
-            <p className="text-white text-lg font-medium mb-1">Subhanallah</p>
-            <p className="text-slate-500 text-sm">Target: 33</p>
+            
+            {/* Label */}
+            <p className="text-white text-base font-medium mt-6">Subhanallah</p>
+            <p className="text-slate-500 text-sm mt-1">Target: 33</p>
 
-            <div className="absolute bottom-6 w-full flex justify-center">
-              <div className="h-1 w-1/3 bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full w-2/3 bg-emerald-500 rounded-full" />
+            {/* Progress Bar */}
+            <div className="absolute bottom-4 w-full flex justify-center px-8">
+              <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-emerald-500 rounded-full" 
+                  initial={{ width: 0 }}
+                  animate={{ width: '66%' }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                />
               </div>
             </div>
           </div>
@@ -575,7 +611,7 @@ const MockupCard = ({ type }: { type: 'count' | 'quote' | 'dhikr' }) => {
       </div>
 
       {/* Home Indicator */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-800 rounded-full" />
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-28 h-1 bg-slate-700 rounded-full" />
     </div>
   );
 };

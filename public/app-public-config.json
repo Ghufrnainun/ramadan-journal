@@ -1,0 +1,5 @@
+{
+  "supabaseUrl": "https://kgzixclddlelcinarkut.supabase.co",
+  "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtneml4Y2xkZGxlbGNpbmFya3V0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5ODQ4MTcsImV4cCI6MjA4NTU2MDgxN30.Jdwvwv3VBvXJWjJnsvVKtH0ChYZ-YVeCRnsknQurjMc",
+  "_source": "app-public-config.json"
+}
