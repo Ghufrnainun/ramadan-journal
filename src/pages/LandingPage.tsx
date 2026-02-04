@@ -459,8 +459,8 @@ const Lantern = ({ delay = 0, x = '10%', scale = 1, duration = 6 }) => {
   );
 };
 
-const MoonTimeline = () => (
-  <div className="flex items-center justify-center gap-3 py-8">
+const MoonTimeline = React.forwardRef<HTMLDivElement>((_, ref) => (
+  <div ref={ref} className="flex items-center justify-center gap-3 py-8">
     {[...Array(8)].map((_, i) => (
       <motion.div
         key={i}
@@ -471,11 +471,12 @@ const MoonTimeline = () => (
       />
     ))}
   </div>
-);
+));
+MoonTimeline.displayName = 'MoonTimeline';
 
-const MockupCard = ({ type }: { type: 'count' | 'quote' | 'dhikr' }) => {
+const MockupCard = React.forwardRef<HTMLDivElement, { type: 'count' | 'quote' | 'dhikr' }>(({ type }, ref) => {
   return (
-    <div className="relative w-64 h-[520px] bg-slate-950 rounded-[2.5rem] border-[6px] border-slate-800/80 shadow-2xl overflow-hidden flex-shrink-0">
+    <div ref={ref} className="relative w-64 h-[520px] bg-slate-950 rounded-[2.5rem] border-[6px] border-slate-800/80 shadow-2xl overflow-hidden flex-shrink-0">
       {/* Phone Notch */}
       <div className="absolute top-0 inset-x-0 flex justify-center z-20">
         <div className="h-6 w-28 bg-slate-900 rounded-b-2xl" />
@@ -614,7 +615,8 @@ const MockupCard = ({ type }: { type: 'count' | 'quote' | 'dhikr' }) => {
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-28 h-1 bg-slate-700 rounded-full" />
     </div>
   );
-};
+});
+MockupCard.displayName = 'MockupCard';
 
 /**
  * =====================================================================
