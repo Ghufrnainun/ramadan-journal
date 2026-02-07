@@ -1,237 +1,308 @@
 
 
-# MyRamadhanku — Complete Build Plan
+# Login Required + Demo Mode Strategy
 
-## Overview
-A calm, premium Ramadan companion PWA with a cinematic marketing landing page, bilingual support (ID/EN), and a full-featured spiritual tracking dashboard. Built with React + Vite + Tailwind + your Supabase backend.
+## Konsep Baru
 
----
+Mengubah flow aplikasi dari **full guest mode** menjadi **login required** dengan demo singkat untuk non-authenticated users.
 
-## Implementation Notes (Current)
-Status as of now (codebase is implemented through Phase 8):
-- eQuran API integration via Supabase edge proxy (equran.id/api/v2 + equran.id/apidev)
-- Quran (surah/ayah/tafsir), Doa, Shalat, and Imsakiyah live in app
-- Dashboard includes countdown, imsakiyah, prayer times, daily intention/mood, quote, and quick actions
-- Reflection page with prompts, autosave, share card generator, and gentle streak
-- Bookmarks (quote/ayah/doa/reflection) with local storage
-- Settings page: language, location, Ramadan/Eid dates, reminders, silent mode, hide streak, notifications
-- Guest mode local storage + optional Supabase profile sync
-- PWA manifest, service worker, offline fallback
+| Aspek | Sebelum (Guest Mode) | Sesudah (Login Required) |
+|-------|---------------------|--------------------------|
+| **Akses Fitur** | Full access tanpa login | Harus login untuk semua fitur |
+| **Data Storage** | Dual: localStorage + Supabase | Single: Supabase only |
+| **Demo** | Tidak ada | Interactive demo preview |
+| **Onboarding** | Sebelum login | Setelah login |
 
 ---
 
-## Phase 1: Cinematic Landing Page + Foundation
-**The premium "night Ramadan journal" landing experience**
+## User Flow Baru
 
-### Design System
-- **Color palette**: Deep navy/charcoal (#0f172a, #1e293b) + warm gold (#d4a574) + olive accents
-- **Typography**: Serif accent (for headings/quotes) + clean sans-serif (body)
-- **Motion**: Subtle, calming animations throughout
-
-### Landing Page Structure (10+ sections)
-1. **Hero** — Full-screen cinematic with animated hanging lanterns (SVG + CSS keyframes), twinkling stars, slow gradient drift. Countdown chip showing "Ramadan starts in X days"
-2. **"Tonight focus" whisper** — Journal-tone editorial line
-3. **Problem vignette** — 3 gentle pain points (confusion, dropping off, noisy apps)
-4. **Promise statement** — "Your calm companion, no judgement"
-5. **Product preview gallery** — 4 UI mockup cards (countdown, quote, checklist, dhikr)
-6. **Daily flow timeline** — Pagi → Siang → Maghrib → Malam visual journey
-7. **Feature stories** — 6 alternating left/right blocks with mini UI snippets
-8. **Gentle streak explanation** — Ramadan-only, hideable, no shame messaging
-9. **Reminders philosophy** — OFF by default, silent mode, honest limitations
-10. **Privacy & trust** — Guest mode, optional sync, no ads, no data selling
-11. **FAQ accordion** — 7 common questions
-12. **Final CTA + footer** — "Mulai Sekarang" prominent
-
-### Interactive Elements
-- Sticky mobile bottom CTA (appears after scroll > 420px)
-- Language toggle (ID/EN) in navigation
-- Smooth scroll navigation
-- Lantern swing + glow animation
-- Content reveal animations on scroll
-
----
-
-## Phase 2: Core Infrastructure
-**Bilingual system, auth, and data layer**
-
-### i18n (Bilingual ID + EN)
-- Translation dictionaries: `/src/i18n/id.ts` and `/src/i18n/en.ts`
-- Lightweight hook-based translation system (no heavy libs)
-- Language stored in localStorage (guest) or profiles table (logged in)
-- Toggle in Settings with instant UI update
-
-### Supabase Integration
-- Connect your Supabase project
-- Auth with email/password
-- Clean auth pages matching the calm design
- - eQuran API proxy via Supabase Edge Function (equran-proxy)
-
-### Database Schema
-**Tables:**
-- `profiles` — user settings, location, Ramadan dates, language preference
-- `daily_status` — date, intention, mood, notes
-- `checklist_items` — default + custom items per user
-- `daily_checklist` — completion status per item per day
-- `reading_progress` — Quran tracking (surah, ayah, page, target)
-- `dhikr_presets` — static presets (seeded)
-- `dhikr_sessions` — user counts per day per dhikr
-- `reflections` — nightly reflections with draft support
-- `quotes` — daily quotes (seeded, bilingual)
-- `bookmarks` — saved ayahs, quotes, dhikr
-
-**RLS Policies:**
-- All user tables: `user_id = auth.uid()`
-- Public tables (quotes, presets): read-only for all
-
-### Guest Mode Architecture
-- IndexedDB for local storage
-- Same data structure as Supabase tables
-- "Merge on login" flow with user prompt
+```text
+Landing Page (/)
+       │
+       ▼
+  ┌─────────────────────────────────┐
+  │    "Lihat Demo" (tanpa login)   │──────┐
+  │    "Mulai Tracking" (login)     │      │
+  └─────────────────────────────────┘      │
+              │                             │
+              ▼                             ▼
+       ┌──────────┐               ┌──────────────────┐
+       │  Auth    │               │   Demo Page      │
+       │  Page    │               │   (read-only)    │
+       └──────────┘               └──────────────────┘
+              │                             │
+              ▼                             │
+       ┌──────────┐                         │
+       │ Onboard- │                         │
+       │   ing    │                         │
+       └──────────┘                 "Daftar Sekarang"
+              │                             │
+              ▼                             │
+       ┌──────────┐                         │
+       │Dashboard │◄────────────────────────┘
+       │ (Full)   │
+       └──────────┘
+```
 
 ---
 
-## Phase 3: Onboarding Flow
-**5-step welcoming experience**
+## Bagian 1: Demo Page (Baru)
 
-1. **Welcome** — Calm, warm greeting (no pressure)
-2. **Location** — Auto-detect + manual city selector for Indonesia
-3. **Calendar** — Set Ramadan start date (Sidang Isbat override)
-4. **Focus picker** — Choose which modules appear on dashboard
-5. **Reminders** — All OFF by default, gentle opt-in
+Halaman interaktif yang menunjukkan fitur-fitur utama **tanpa perlu login**. Data dummy/static.
 
-Saves to profile (logged in) or localStorage (guest)
+### Demo Screens
 
----
+1. **Demo Dashboard**
+   - Mock countdown ke Maghrib (static)
+   - Sample prayer times card
+   - Sample quote card
+   - Disabled quick actions
 
-## Phase 4: Dashboard & Core Features
-**The daily companion experience**
+2. **Demo Dhikr**
+   - Functional counter (tidak disimpan)
+   - 3 preset dhikr
+   - Haptic feedback tetap jalan
 
-### Dashboard Layout
-- **Countdown/Day display** — "Ramadan Day X" or countdown to start/Eid
-- **Quote of the day** — Bilingual, contextual
-- **Prayer times** — Imsak, Subuh, Dzuhur, Ashar, Maghrib, Isya
-- **Quick actions** — Navigate to Tracker, Dhikr, Quran
-- **Today's intention** — Editable daily intention
-- **Mood tracker** — Simple 😌 😐 😫 selector
+3. **Demo Tracker** 
+   - Sample checklist items
+   - Toggle works tapi tidak persist
+   - Progress bar animasi
 
-### Prayer Times
-- Fetch from eQuran API (shalat endpoint)
-- Location-based for Indonesian cities (province/city selection)
-- Graceful fallback with retry on failure
+### UI Demo Page
 
-### Daily Tracker (Checklist)
-- Default 5 items: Shalat tepat waktu, Tadarus, Dzikir, Sedekah, Menjaga lisan
-- Visual progress (no percentages/scores)
-- Optional notes per item
-- Daily reset
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  ⚡ MODE DEMO                              [Daftar Gratis →]│
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Coba fitur-fitur MyRamadhan tanpa membuat akun.           │
+│  Data tidak akan tersimpan.                                 │
+│                                                             │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐                     │
+│  │Dashboard│  │ Dzikir  │  │ Tracker │                     │
+│  └─────────┘  └─────────┘  └─────────┘                     │
+│                                                             │
+│         [Demo content appears here]                         │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  Suka? Daftar gratis untuk menyimpan progressmu     │   │
+│  │              [Daftar dengan Google]                  │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### Dhikr Counter
-- Big tap area for easy counting
-- Preset dhikr (SubhanAllah, Alhamdulillah, etc.)
-- Custom dhikr creation
-- Daily session tracking with reset
-- Works offline, syncs when connected
-
-### Quran/Tadarus Progress
-- eQuran API (surah/ayah/tafsir, audio)
-- Lazy-loaded reader component
-- Track: last surah/ayah/page
-- Daily target (default 1 juz)
-- Simple "Tadarus mode" progress indicator
-
----
-
-## Phase 5: Mindful Features
-**Reflection and gentle accountability**
-
-### Daily Reflection
-- Prompted after Isya
-- One journaling prompt per day
-- Auto-save drafts
-- Privacy-first (only user can see)
-
-### Gentle Streak
-- Ramadan-only (max 30 days)
-- Two types: active days, reflection days
-- No "streak lost" messaging
-- Toggle to hide completely
-
-### Bookmarks
-- Save: ayahs, quotes, dhikr
-- Unified bookmarks page
-- Stored as JSON payloads
+### New Files for Demo
+- `src/pages/DemoPage.tsx` — Demo container dengan tabs
+- `src/components/demo/DemoDashboard.tsx` — Mock dashboard
+- `src/components/demo/DemoDhikr.tsx` — Functional counter tanpa save
+- `src/components/demo/DemoTracker.tsx` — Mock tracker
 
 ---
 
-## Phase 6: Sharing & Social
-**Spread positivity without pressure**
+## Bagian 2: Auth Flow Changes
 
-### Share Reflection Card
-- Client-side canvas image generation
-- Shows: Ramadan Day X, reflection/quote, optional checkmarks
-- Web Share API with image download fallback
-- Beautiful, shareable design
+### Landing Page Updates
+- "Mulai Jurnal Ramadan" → Redirect ke `/auth` (bukan `/onboarding`)
+- Tambah button "Lihat Demo" → Redirect ke `/demo`
 
----
+### Auth Page Updates  
+- Remove "Continue as Guest" button
+- Hanya Google Sign In (sudah ada)
+- Setelah sign in → `/onboarding`
 
-## Phase 7: Settings & Polish
+### Protected Routes
+Semua halaman utama require authentication:
+- `/dashboard`
+- `/quran`
+- `/dhikr`
+- `/doa`
+- `/tracker`
+- `/reflection`
+- `/calendar`
+- `/hadith`
+- `/settings`
+- `/bookmarks`
 
-### Settings Page
-- Language toggle (ID/EN)
-- Location management
-- Ramadan/Eid date override
-- Notification preferences
-- Silent mode toggle
-- Profile management
-- Logout
+### Route Protection Component
 
-### Reminders (Gentle)
-- In-app reminder surfaces (banners, schedule)
-- Browser notifications (when app open + permission granted)
-- Clear UI explanation of limitations (especially iOS)
-- Types: countdown reminders, prayer times, habits, reflection
+```typescript
+// src/components/ProtectedRoute.tsx
+const ProtectedRoute = ({ children }) => {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/auth" replace />;
+  
+  return children;
+};
+```
 
----
+### App.tsx Route Updates
 
-## Phase 8: PWA & Offline
-
-### PWA Setup
-- Manifest with proper icons
-- App name: "MyRamadhanku"
-- Installable on mobile
-
-### Offline Support
-- Service worker caching
-- Static JSON datasets cached
-- Offline fallback page
-- Sync queue for offline actions
-
----
-
-## Design Highlights Throughout
-- **Night Ramadan vibe**: Dark backgrounds, warm gold accents
-- **Calming motion**: Subtle fades, no jarring animations
-- **Mobile-first**: Optimized for low-end Android phones
-- **Bottom navigation**: Dashboard, Quran, Dhikr, Tracker, More
-- **Lightweight**: No videos, minimal images, SVG icons only
-- **Accessible**: Clear contrast, readable fonts
+```typescript
+<Route path="/demo" element={<DemoPage />} />
+<Route path="/dashboard" element={
+  <ProtectedRoute><DashboardPage /></ProtectedRoute>
+} />
+// ... semua route lain dibungkus ProtectedRoute
+```
 
 ---
 
-## What We'll Deliver
-✅ Full cinematic landing page with lantern animations  
-✅ Complete bilingual system (ID + EN)  
-✅ Supabase auth + database with RLS  
-✅ Guest mode with merge-on-login  
-✅ 5-step onboarding  
-✅ Dashboard with countdown, prayer times, quote  
-✅ Daily tracker with checklist  
-✅ Dhikr counter with presets  
-✅ Quran reading progress  
-✅ Reflection journal  
-✅ Gentle streak system  
-✅ Bookmarks  
-✅ Share card generator  
-✅ PWA with offline support  
-✅ Settings with all user preferences
+## Bagian 3: Storage Simplification
+
+### Remove Guest Mode Storage Logic
+Tidak perlu lagi maintain localStorage untuk data utama.
+
+**Files to Simplify:**
+- `src/lib/storage.ts` — Hapus guest mode logic, hanya untuk UI preferences
+- `src/lib/profile-sync.ts` — Simplify, no need to merge
+- `src/lib/tracker-storage.ts` — Remove localStorage, Supabase only
+- `src/lib/dhikr-storage.ts` — Remove localStorage, Supabase only
+- `src/lib/reading-progress.ts` — Remove localStorage, Supabase only
+- `src/lib/reflection-storage.ts` — Remove localStorage, Supabase only
+
+### Keep Local Storage For:
+- UI preferences sementara (language, theme)
+- Cached API responses
+- Demo mode state
+
+### Database-First Approach
+Semua data disimpan langsung ke Supabase:
+- `profiles` — User profile data
+- `daily_tracker` — Daily checklist
+- `dhikr_sessions` — Dhikr counts
+- `reading_progress` — Quran progress
+- (New tables untuk fitur baru)
+
+---
+
+## Bagian 4: Onboarding Flow Update
+
+### Current Flow (Guest)
+`Landing → Auth (optional) → Onboarding → Dashboard`
+
+### New Flow (Login Required)
+`Landing → Auth (required) → Onboarding → Dashboard`
+
+### Onboarding Changes
+- Remove guest-specific messaging
+- Data langsung save ke Supabase (user sudah login)
+- No need for "sync on login" logic
+
+---
+
+## Bagian 5: Benefits
+
+| Benefit | Dampak |
+|---------|--------|
+| **Simpler Codebase** | Hapus dual storage logic, less bugs |
+| **Better Data Integrity** | Single source of truth (Supabase) |
+| **Cross-Device Sync** | Otomatis dari awal |
+| **Analytics Ready** | Semua user teridentifikasi |
+| **Demo for Conversion** | Tetap bisa coba sebelum daftar |
+
+---
+
+## Implementation Phases
+
+### Phase 1: Create Demo Page (2-3 jam)
+- Buat DemoPage.tsx dengan tabs
+- Buat demo components (dashboard, dhikr, tracker)
+- Static/mock data
+
+### Phase 2: Auth Flow Updates (1-2 jam)
+- Update LandingPage CTAs
+- Remove "Continue as Guest" dari AuthPage
+- Create ProtectedRoute component
+- Wrap semua routes
+
+### Phase 3: Storage Cleanup (3-4 jam)
+- Refactor storage modules ke Supabase-only
+- Remove localStorage fallbacks untuk data utama
+- Simplify profile-sync.ts
+- Update semua pages yang pakai getProfile()
+
+### Phase 4: Testing & Polish (1-2 jam)
+- Test auth flow end-to-end
+- Test demo mode
+- Verify data persistence
+
+**Total Estimated: 7-11 jam kerja**
+
+---
+
+## Files Changed Summary
+
+### New Files
+- `src/pages/DemoPage.tsx`
+- `src/components/demo/DemoDashboard.tsx`
+- `src/components/demo/DemoDhikr.tsx`
+- `src/components/demo/DemoTracker.tsx`
+- `src/components/ProtectedRoute.tsx`
+
+### Modified Files
+- `src/App.tsx` — Add routes, wrap with ProtectedRoute
+- `src/pages/LandingPage.tsx` — Update CTAs
+- `src/pages/AuthPage.tsx` — Remove guest option
+- `src/pages/OnboardingPage.tsx` — Simplify (always logged in)
+- `src/lib/storage.ts` — Simplify to preferences only
+- `src/lib/profile-sync.ts` — Simplify sync logic
+- `src/lib/tracker-storage.ts` — Supabase-first
+- `src/lib/dhikr-storage.ts` — Supabase-first
+- `src/lib/reading-progress.ts` — Supabase-first
+- All page components — Remove onboardingCompleted checks, use ProtectedRoute
+
+---
+
+## Demo Page Content Details
+
+### Tab 1: Dashboard Demo
+```text
+Mock data:
+- Location: "Jakarta Selatan, DKI Jakarta"
+- Next prayer: Maghrib 17:48 (countdown)
+- Quote: Static inspirational quote
+- Quick actions: Visible but show "Login to access" tooltip
+```
+
+### Tab 2: Dhikr Demo
+```text
+Functional:
+- Counter button works (haptic + animation)
+- 3 presets: Subhanallah, Alhamdulillah, Allahu Akbar
+- Target: 33 each
+
+Not saved:
+- Progress resets on tab switch
+- Banner: "Login untuk menyimpan progress"
+```
+
+### Tab 3: Tracker Demo
+```text
+Mock items:
+- ☑️ Sholat Subuh
+- ☐ Sholat Dzuhur  
+- ☐ Puasa Hari Ini
+- ☐ Baca Quran
+
+Interactive:
+- Toggle works temporarily
+- Progress bar animates
+- Data resets on leave
+```
+
+---
+
+## Questions
+
+Sebelum implementasi, ada beberapa hal yang perlu dikonfirmasi:
+
+1. **Fitur demo mana yang paling penting?** Dashboard saja, atau include Dhikr counter yang functional?
+
+2. **Apakah perlu "preview" Quran reader di demo?** (Ini lebih complex karena butuh API call)
+
+3. **Email/password signup** perlu ditambah, atau Google only sudah cukup?
 
