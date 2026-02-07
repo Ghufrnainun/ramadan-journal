@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Moon, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import { lovable } from '@/integrations/lovable';
 import { toast } from '@/hooks/use-toast';
 import MobileContainer from '@/components/layout/MobileContainer';
 
@@ -81,17 +82,14 @@ const AuthPage: React.FC = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth`,
-        },
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
       });
 
-      if (error) {
+      if (result.error) {
         toast({
           title: lang === 'id' ? 'Gagal masuk' : 'Sign in failed',
-          description: error.message,
+          description: result.error.message,
           variant: 'destructive',
         });
       }
