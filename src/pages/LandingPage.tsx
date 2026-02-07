@@ -27,13 +27,13 @@ type Lang = 'id' | 'en';
 const CONTENT = {
   id: {
     hero: {
-      label: 'Teman Ibadah Digital',
-      headline: 'Ramadan Damai, Tanpa Kebisingan Digital.',
+      label: 'Your Ramadan Companion',
+      headline: 'Raih Ramadan Terbaikmu.',
       subhead:
-        'Fokus pada ibadah dan ketenangan hati dengan jurnal yang menghormati privasimu. Tanpa iklan, tanpa leaderboard, 100% offline-ready.',
-      cta_primary: 'Mulai Jurnal Ramadan',
-      cta_secondary: 'Lihat Preview',
-      trust: ['Data Tersimpan di HP', 'Bebas Iklan', 'Open Source'],
+        'Track ibadah harianmu, pantau progress Quran, dan jaga konsistensi dengan companion app yang selalu menemanimu.',
+      cta_primary: 'Mulai Tracking',
+      cta_secondary: 'Lihat Demo',
+      trust: ['Track Progress', 'Gratis Selamanya', 'Tanpa Iklan'],
       countdown: 'Ramadan dimulai dalam ±32 hari',
     },
     whisper: {
@@ -44,23 +44,23 @@ const CONTENT = {
       title: 'Masalah Aplikasi Ramadan Lain',
       points: [
         {
-          t: 'Notifikasi Berisik',
-          d: 'Iklan muncul saat sedang khusyuk berdoa.',
+          t: 'Susah Konsisten',
+          d: '30 hari terasa panjang tanpa tracking yang jelas',
         },
         {
-          t: 'Terlalu Kompetitif',
-          d: 'Leaderboard membuat ibadah terasa seperti lomba.',
+          t: 'Lupa Progress Quran',
+          d: 'Sudah sampai juz berapa? Susah diingat',
         },
         {
-          t: 'Fitur Berlebihan',
-          d: 'Banyak fitur tidak perlu yang justru membingungkan.',
+          t: 'Target Tak Tercapai',
+          d: 'Ibadah terasa random tanpa checklist harian',
         },
       ],
     },
     promise: {
-      title: 'Janji Kami untuk Anda',
-      text: 'Sebuah ruang digital yang hening. Kami tidak melacak datamu, tidak menjual perhatianmu, dan tidak menghakimimu.',
-      badge: 'Zona Bebas Penghakiman',
+      title: 'Companion yang Menemanimu',
+      text: 'Kami ada di setiap sahur, sholat, dan buka puasa. 30 hari penuh.',
+      badge: 'Konsistensi Tanpa Tekanan',
     },
     day_flow: {
       title: 'Rutinitas Tenang',
@@ -89,28 +89,28 @@ const CONTENT = {
     },
     features: {
       1: {
-        title: 'Jadwal Sholat Akurat',
-        desc: 'Sesuai lokasimu. Tanpa suara adzan default yang mengagetkan.',
+        title: 'Track Sholat',
+        desc: 'Tandai 5 waktu sholat setiap hari dengan mudah.',
       },
       2: {
-        title: 'Dzikir Haptik',
-        desc: 'Rasakan getaran lembut tiap ketukan. Fokus tanpa perlu melihat layar.',
+        title: 'Progress Quran',
+        desc: 'Pantau tadarus juz & halaman dengan visual progress bar.',
       },
       3: {
-        title: 'Target Quran Visual',
-        desc: 'Lihat progress jus/halaman tanpa merasa tertinggal.',
+        title: 'Streak Puasa',
+        desc: 'Catat puasa harianmu dan bangun streak 30 hari.',
       },
       4: {
-        title: 'Koleksi Doa Pilihan',
-        desc: 'Simpan doa yang benar-benar kamu butuhkan saat ini.',
+        title: 'Dzikir Counter',
+        desc: 'Hitung dzikir dengan haptic feedback & animasi.',
       },
       5: {
-        title: 'Mode Hemat Data',
-        desc: 'Semua fitur utama jalan offline. Cocok untuk sinyal susah.',
+        title: 'Jadwal Akurat',
+        desc: 'Waktu sholat & imsakiyah sesuai lokasi real-time.',
       },
       6: {
-        title: 'Kartu Refleksi',
-        desc: 'Bagikan inspirasi visual ke teman tanpa watermark mengganggu.',
+        title: 'Refleksi Harian',
+        desc: 'Jurnal malam untuk menutup hari dengan syukur.',
       },
     },
     streak: {
@@ -158,10 +158,10 @@ const CONTENT = {
       ],
     },
     final: {
-      title: 'Siap untuk Ramadan yang Lebih Tenang?',
-      sub: 'Bergabunglah dengan ribuan pengguna yang memilih fokus daripada fitur.',
-      cta: 'Mulai Jurnal Sekarang',
-      micro: 'Gratis • Ringan • Privasi Aman',
+      title: 'Siap Raih Ramadan Terbaikmu?',
+      sub: 'Mulai tracking progress harianmu hari ini. Gratis, selamanya.',
+      cta: 'Daftar Sekarang',
+      micro: 'Gratis • Tanpa Iklan • Open Source',
     },
     sticky: {
       text: 'Mulai Jurnal Ramadan (Gratis)',
@@ -243,28 +243,28 @@ const CONTENT = {
     },
     features: {
       1: {
-        title: 'Accurate Prayer Times',
-        desc: 'Based on your location. No startling default adhan sounds.',
+        title: 'Track Prayers',
+        desc: 'Mark 5 daily prayers easily without pressure.',
       },
       2: {
-        title: 'Haptic Dhikr',
-        desc: 'Feel a gentle vibration with each tap. Focus without looking at the screen.',
+        title: 'Quran Progress',
+        desc: 'Monitor juz & pages with visual progress bar.',
       },
       3: {
-        title: 'Visual Quran Goals',
-        desc: 'Track juz/pages progress without feeling behind.',
+        title: 'Fasting Streak',
+        desc: 'Log your fasting and build a 30-day streak.',
       },
       4: {
-        title: 'Curated Duas',
-        desc: 'Save the prayers you actually need right now.',
+        title: 'Dhikr Counter',
+        desc: 'Count dhikr with haptic feedback & animations.',
       },
       5: {
-        title: 'Data Saver Mode',
-        desc: 'All main features work offline. Perfect for spotty signal.',
+        title: 'Accurate Schedules',
+        desc: 'Prayer times & imsakiyah based on your location.',
       },
       6: {
-        title: 'Reflection Cards',
-        desc: 'Share visual inspiration with friends, no annoying watermarks.',
+        title: 'Daily Reflection',
+        desc: 'Evening journal to end your day with gratitude.',
       },
     },
     streak: {
@@ -280,8 +280,8 @@ const CONTENT = {
     privacy: {
       title: 'Uncompromised Privacy',
       bullets: [
-        'No Login Needed (Guest Mode)',
-        'Data on Your Phone',
+        'Data Stays on Your Device',
+        'No Ads, Ever',
         'Open Source Code',
       ],
       cta: 'See Technical Details',
@@ -312,14 +312,14 @@ const CONTENT = {
       ],
     },
     final: {
-      title: 'Ready for a Calmer Ramadan?',
-      sub: 'Join thousands of users who choose focus over features.',
-      cta: 'Start Journaling Now',
-      micro: 'Free • Lightweight • Private',
+      title: 'Ready for Your Best Ramadan?',
+      sub: 'Start tracking your progress today. Free, forever.',
+      cta: 'Sign Up Now',
+      micro: 'Free • No Ads • Open Source',
     },
     sticky: {
-      text: 'Start Ramadan Journal (Free)',
-      cta: 'Open App',
+      text: 'Start Tracking Your Ramadan',
+      cta: 'Get Started',
     },
     testimonials: [
       {
@@ -1082,7 +1082,137 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* --- SECTION 10: PRIVACY --- */}
+      {/* --- SECTION 9B: ADVANCED FEATURES --- */}
+      <section className="py-20 px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12 max-w-2xl mx-auto"
+        >
+          <p className="text-amber-400/80 text-sm uppercase mb-4">Fitur Tambahan</p>
+          <p className="font-serif text-3xl text-white">
+            {lang === 'id' ? 'Tracking Lengkap untuk Ramadan Sempurna' : 'Complete Tracking for Perfect Ramadan'}
+          </p>
+        </motion.div>
+
+        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-6">
+          {/* Quran Progress */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0 }}
+            className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-blue-500/20 transition-colors"
+          >
+            <div className="text-3xl mb-3">📖</div>
+            <p className="font-serif text-lg text-white mb-2">
+              {lang === 'id' ? 'Progress Quran' : 'Quran Progress'}
+            </p>
+            <p className="text-sm text-slate-400">
+              {lang === 'id' 
+                ? 'Pantau tadarus juz & halaman dengan visual progress bar yang akurat' 
+                : 'Monitor your juz & pages with accurate visual progress'}
+            </p>
+          </motion.div>
+
+          {/* Fasting Calendar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-emerald-500/20 transition-colors"
+          >
+            <div className="text-3xl mb-3">📅</div>
+            <p className="font-serif text-lg text-white mb-2">
+              {lang === 'id' ? 'Kalender Puasa' : 'Fasting Calendar'}
+            </p>
+            <p className="text-sm text-slate-400">
+              {lang === 'id' 
+                ? 'Visualisasi 30 hari puasa dengan status per hari' 
+                : '30-day fasting calendar with daily status tracking'}
+            </p>
+          </motion.div>
+
+          {/* Goals */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-amber-500/20 transition-colors"
+          >
+            <div className="text-3xl mb-3">🎯</div>
+            <p className="font-serif text-lg text-white mb-2">
+              {lang === 'id' ? 'Target Ramadan' : 'Ramadan Goals'}
+            </p>
+            <p className="text-sm text-slate-400">
+              {lang === 'id' 
+                ? 'Tentukan target personal & pantau progres selama 30 hari' 
+                : 'Set personal goals and track progress throughout Ramadan'}
+            </p>
+          </motion.div>
+
+          {/* Tarawih Tracker */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-purple-500/20 transition-colors"
+          >
+            <div className="text-3xl mb-3">🌙</div>
+            <p className="font-serif text-lg text-white mb-2">
+              {lang === 'id' ? 'Tarawih Tracker' : 'Tarawih Tracker'}
+            </p>
+            <p className="text-sm text-slate-400">
+              {lang === 'id' 
+                ? 'Catat sholat tarawih & witir setiap malam' 
+                : 'Track nightly Tarawih and Witir prayers'}
+            </p>
+          </motion.div>
+
+          {/* Sedekah */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-rose-500/20 transition-colors"
+          >
+            <div className="text-3xl mb-3">❤️</div>
+            <p className="font-serif text-lg text-white mb-2">
+              {lang === 'id' ? 'Log Sedekah' : 'Charity Log'}
+            </p>
+            <p className="text-sm text-slate-400">
+              {lang === 'id' 
+                ? 'Catat sedekah harian & bangun konsistensi berbagi' 
+                : 'Log daily charity and build giving consistency'}
+            </p>
+          </motion.div>
+
+          {/* Weekly Share */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-orange-500/20 transition-colors"
+          >
+            <div className="text-3xl mb-3">📸</div>
+            <p className="font-serif text-lg text-white mb-2">
+              {lang === 'id' ? 'Share Progress' : 'Share Progress'}
+            </p>
+            <p className="text-sm text-slate-400">
+              {lang === 'id' 
+                ? 'Bagikan progress mingguan ke sosial media' 
+                : 'Share your weekly progress on social media'}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       <section className="py-20 px-6 text-center">
         <motion.div
           initial={{ opacity: 0 }}
