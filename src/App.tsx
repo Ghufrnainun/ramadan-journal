@@ -4,8 +4,10 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/hooks/useAuth';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
+import DemoPage from './pages/DemoPage';
 import OnboardingPage from './pages/OnboardingPage';
 import DashboardPage from './pages/DashboardPage';
 import DhikrPage from './pages/DhikrPage';
@@ -29,20 +31,47 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/dhikr" element={<DhikrPage />} />
-            <Route path="/hadith" element={<HadithPage />} />
-            <Route path="/doa" element={<DoaPage />} />
-            <Route path="/tracker" element={<TrackerPage />} />
-            <Route path="/quran" element={<QuranPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/reflection" element={<ReflectionPage />} />
-            <Route path="/bookmarks" element={<BookmarksPage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/demo" element={<DemoPage />} />
+            
+            {/* Protected routes - require authentication */}
+            <Route path="/onboarding" element={
+              <ProtectedRoute><OnboardingPage /></ProtectedRoute>
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute><DashboardPage /></ProtectedRoute>
+            } />
+            <Route path="/dhikr" element={
+              <ProtectedRoute><DhikrPage /></ProtectedRoute>
+            } />
+            <Route path="/hadith" element={
+              <ProtectedRoute><HadithPage /></ProtectedRoute>
+            } />
+            <Route path="/doa" element={
+              <ProtectedRoute><DoaPage /></ProtectedRoute>
+            } />
+            <Route path="/tracker" element={
+              <ProtectedRoute><TrackerPage /></ProtectedRoute>
+            } />
+            <Route path="/quran" element={
+              <ProtectedRoute><QuranPage /></ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute><SettingsPage /></ProtectedRoute>
+            } />
+            <Route path="/reflection" element={
+              <ProtectedRoute><ReflectionPage /></ProtectedRoute>
+            } />
+            <Route path="/bookmarks" element={
+              <ProtectedRoute><BookmarksPage /></ProtectedRoute>
+            } />
+            <Route path="/calendar" element={
+              <ProtectedRoute><CalendarPage /></ProtectedRoute>
+            } />
+            
+            {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

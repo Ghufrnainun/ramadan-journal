@@ -799,15 +799,11 @@ export default function LandingPage() {
               </motion.span>
             </button>
             <button
-              onClick={() =>
-                document
-                  .getElementById('preview')
-                  ?.scrollIntoView({ behavior: 'smooth' })
-              }
-              className="px-8 py-4 text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium group"
+              onClick={() => navigate('/demo')}
+              className="px-8 py-4 border border-white/20 rounded-full text-white hover:bg-white/10 transition-colors flex items-center gap-2 text-sm font-medium group"
             >
-              {t('hero.cta_secondary')}
-              <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
+              {lang === 'id' ? 'Lihat Demo' : 'Try Demo'}
+              <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform rotate-[-90deg]" />
             </button>
           </motion.div>
 
@@ -1180,12 +1176,20 @@ export default function LandingPage() {
           </p>
           <p className="text-slate-400 mb-10">{t('final.sub')}</p>
 
-          <button
-            onClick={() => navigate('/auth')}
-            className="px-10 py-5 bg-amber-500 text-slate-900 font-bold text-lg rounded-full hover:bg-amber-400 transition-colors duration-300"
-          >
-            {t('final.cta')}
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => navigate('/auth')}
+              className="px-10 py-5 bg-amber-500 text-slate-900 font-bold text-lg rounded-full hover:bg-amber-400 transition-colors duration-300"
+            >
+              {t('final.cta')}
+            </button>
+            <button
+              onClick={() => navigate('/demo')}
+              className="px-8 py-4 border border-white/20 rounded-full text-white hover:bg-white/10 transition-colors text-sm font-medium"
+            >
+              {lang === 'id' ? 'Coba Demo Dulu' : 'Try Demo First'}
+            </button>
+          </div>
 
           <p className="text-xs text-slate-500 mt-6 flex items-center justify-center gap-2">
             <Smartphone className="w-4 h-4" /> {t('final.micro')}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Moon, Loader2 } from 'lucide-react';
+import { Moon, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/runtime-client';
 import { lovable } from '@/integrations/lovable';
 import { toast } from '@/hooks/use-toast';
@@ -10,17 +10,21 @@ import MobileContainer from '@/components/layout/MobileContainer';
 const content = {
   id: {
     title: 'Masuk ke MyRamadhanku',
-    subtitle: 'Simpan progress ibadahmu di cloud',
-    continueAsGuest: 'Lanjut sebagai Tamu',
-    guestNote: 'Data tersimpan di perangkat ini saja',
-    orText: 'atau',
+    subtitle: 'Simpan progress ibadahmu dan akses dari mana saja',
+    benefits: [
+      'Sync progress di semua perangkat',
+      'Data tersimpan aman di cloud',
+      'Tidak perlu setup ulang',
+    ],
   },
   en: {
     title: 'Sign in to MyRamadhanku',
-    subtitle: 'Save your worship progress to the cloud',
-    continueAsGuest: 'Continue as Guest',
-    guestNote: 'Data saved on this device only',
-    orText: 'or',
+    subtitle: 'Save your worship progress and access from anywhere',
+    benefits: [
+      'Sync progress across all devices',
+      'Data safely stored in cloud',
+      'No need to setup again',
+    ],
   },
 };
 
@@ -37,7 +41,18 @@ const AuthPage: React.FC = () => {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
-        navigate('/dashboard');
+        // Check if onboarding is completed
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+
+        if (profile?.onboarding_completed) {
+          navigate('/dashboard');
+        } else {
+          navigate('/onboarding');
+        }
       }
     };
     checkAuth();
@@ -80,12 +95,18 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  const handleContinueAsGuest = () => {
-    navigate('/onboarding');
-  };
-
   return (
     <MobileContainer className="flex flex-col items-center justify-center px-6 text-slate-200">
+      {/* Back Button */}
+      <motion.button
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <ArrowLeft className="w-5 h-5 text-slate-400" />
+      </motion.button>
+
       {/* Logo */}
       <motion.div
         className="mb-8"
@@ -98,15 +119,39 @@ const AuthPage: React.FC = () => {
         <h1 className="font-serif text-2xl text-white text-center">
           {t.title}
         </h1>
-        <p className="text-slate-400 text-sm text-center mt-2">{t.subtitle}</p>
+        <p className="text-slate-400 text-sm text-center mt-2 max-w-xs">
+          {t.subtitle}
+        </p>
       </motion.div>
 
-      {/* Auth Buttons */}
+      {/* Benefits List */}
+      <motion.div
+        className="w-full max-w-sm mb-8"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="space-y-3">
+          {t.benefits.map((benefit, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 px-4 py-3 bg-slate-900/50 border border-slate-800 rounded-xl"
+            >
+              <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                <span className="text-emerald-400 text-xs">✓</span>
+              </div>
+              <span className="text-sm text-slate-300">{benefit}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Auth Button */}
       <motion.div
         className="w-full max-w-sm space-y-4"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.2 }}
       >
         {/* Google Sign In */}
         <button
@@ -141,21 +186,16 @@ const AuthPage: React.FC = () => {
           )}
         </button>
 
-        {/* Divider */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1 h-px bg-slate-700" />
-          <span className="text-slate-500 text-sm">{t.orText}</span>
-          <div className="flex-1 h-px bg-slate-700" />
-        </div>
-
-        {/* Continue as Guest */}
-        <button
-          onClick={handleContinueAsGuest}
-          className="w-full py-4 px-6 rounded-xl font-medium border border-slate-700 text-slate-300 hover:bg-slate-800/50 transition-colors"
-        >
-          {t.continueAsGuest}
-        </button>
-        <p className="text-center text-slate-500 text-xs">{t.guestNote}</p>
+        {/* Demo Link */}
+        <p className="text-center text-slate-500 text-sm">
+          {lang === 'id' ? 'Ingin coba dulu?' : 'Want to try first?'}{' '}
+          <button
+            onClick={() => navigate('/demo')}
+            className="text-amber-400 hover:text-amber-300 transition-colors underline underline-offset-2"
+          >
+            {lang === 'id' ? 'Lihat Demo' : 'View Demo'}
+          </button>
+        </p>
       </motion.div>
     </MobileContainer>
   );
