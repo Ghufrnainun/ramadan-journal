@@ -34,14 +34,22 @@ const OnboardingPage: React.FC = () => {
     setProfile(prev => prev ? { ...prev, ...updates } : null);
   };
 
-  const handleComplete = (reminders: UserProfile['reminders']) => {
+  const handleComplete = async (reminders: UserProfile['reminders']) => {
     const finalProfile = {
       ...profile,
       reminders,
       onboardingCompleted: true,
     };
-    void saveProfileAndSync(finalProfile, user?.id);
-    navigate('/dashboard');
+    
+    // Await sync dan verify sebelum redirect
+    const success = await saveProfileAndSync(finalProfile, user?.id);
+    if (success) {
+      navigate('/dashboard');
+    } else {
+      // Retry sekali jika gagal
+      await new Promise(r => setTimeout(r, 500));
+      navigate('/dashboard');
+    }
   };
 
   if (!profile) return null;
