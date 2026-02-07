@@ -22,7 +22,6 @@
       <path d="M-20,60 L20,60 L28,90 L-28,90 Z" fill="#d4a574" />
       <path d="M-28,90 L28,90 L28,150 L-28,150 Z" fill="#fcd34d" fill-opacity="0.9" />
       <path d="M-28,150 L28,150 L20,170 L-20,170 Z" fill="#d4a574" />
-      <circle cx="0" cy="120" r="8" fill="#fff" filter="url(#glow)" />
     </g>
     
     <path d="M380,100 L385,115 L400,120 L385,125 L380,140 L375,125 L360,120 L375,115 Z" fill="#fbbf24" opacity="0.8" />
