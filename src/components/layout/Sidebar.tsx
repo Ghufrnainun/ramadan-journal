@@ -10,6 +10,8 @@ import {
   Settings,
   Sparkles,
   Book,
+  Target,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getProfile } from '@/lib/storage';
@@ -26,6 +28,8 @@ const Sidebar = () => {
     { icon: Repeat, label: 'Dhikr', path: '/dhikr' },
     { icon: Book, label: 'Doa', path: '/doa' },
     { icon: Heart, label: 'Reflection', path: '/reflection' },
+    { icon: Target, label: 'Goals', path: '/goals' },
+    { icon: BarChart3, label: 'Stats', path: '/stats' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

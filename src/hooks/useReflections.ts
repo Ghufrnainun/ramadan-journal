@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 export const useReflections = (date?: string) => {
   const queryClient = useQueryClient();
@@ -26,7 +27,7 @@ export const useReflections = (date?: string) => {
   const createReflection = useMutation({
     mutationFn: async (reflection: {
       prompt_id: string;
-      prompt_text: any;
+      prompt_text: Json;
       content: string;
       mood?: string;
     }) => {

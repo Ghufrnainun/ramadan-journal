@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Moon, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/runtime-client';
-import { lovable } from '@/integrations/lovable';
 import { toast } from '@/hooks/use-toast';
 import MobileContainer from '@/components/layout/MobileContainer';
 
@@ -35,6 +34,16 @@ const AuthPage: React.FC = () => {
   const t = content[lang];
 
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const oauthError = url.searchParams.get('error_description') || url.searchParams.get('error');
+    if (oauthError) {
+      toast({
+        title: lang === 'id' ? 'Google OAuth error' : 'Google OAuth error',
+        description: decodeURIComponent(oauthError.replace(/\+/g, ' ')),
+        variant: 'destructive',
+      });
+    }
+
     // Check if already logged in
     const checkAuth = async () => {
       const {
@@ -67,19 +76,22 @@ const AuthPage: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, lang]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: `${window.location.origin}/auth`,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+        },
       });
 
-      if (result.error) {
+      if (error) {
         toast({
           title: lang === 'id' ? 'Gagal masuk' : 'Sign in failed',
-          description: result.error.message,
+          description: error.message,
           variant: 'destructive',
         });
       }

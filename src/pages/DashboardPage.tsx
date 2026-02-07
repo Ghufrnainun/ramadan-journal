@@ -12,6 +12,8 @@ import ImsakiyahCard from '@/components/dashboard/ImsakiyahCard';
 import QuickActions from '@/components/dashboard/QuickActions';
 import RemindersBanner from '@/components/dashboard/RemindersBanner';
 import DailyStatusCard from '@/components/dashboard/DailyStatusCard';
+import QuranProgressCard from '@/components/dashboard/QuranProgressCard';
+import RamadanGoalsCard from '@/components/dashboard/RamadanGoalsCard';
 
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
@@ -50,6 +52,8 @@ const DashboardPage: React.FC = () => {
       tracker: '/tracker',
       reflection: '/reflection',
       calendar: '/calendar',
+      goals: '/goals',
+      stats: '/stats',
     };
     navigate(routes[module] || '/dashboard');
   };
@@ -134,6 +138,22 @@ const DashboardPage: React.FC = () => {
             focusModules={profile.focusModules}
             onNavigate={handleNavigate}
           />
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/goals')}
+              className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:border-amber-400/40 hover:bg-amber-500/10"
+            >
+              Ramadan Goals
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/stats')}
+              className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:border-emerald-400/40 hover:bg-emerald-500/10"
+            >
+              Statistik
+            </button>
+          </div>
         </div>
 
         {/* Info Cards Grid */}
@@ -146,8 +166,14 @@ const DashboardPage: React.FC = () => {
           {/* Daily Status */}
           <DailyStatusCard lang={lang} />
 
+          {/* Quran progress */}
+          <QuranProgressCard />
+
           {/* Quote of the Day */}
           <QuoteCard lang={lang} quote={quote} />
+
+          {/* Goals summary */}
+          <RamadanGoalsCard />
 
           {/* Imsakiyah Card - Show only during Ramadan */}
           {profile.location && ramadanInfo.status === 'during' && (

@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
+import { getLocalDateKey } from '@/lib/date';
 
 export const useDailyTracker = (date?: string) => {
   const queryClient = useQueryClient();
-  const targetDate = date || new Date().toISOString().split('T')[0];
+  const targetDate = date || getLocalDateKey();
 
   const { data: tracker, isLoading, error } = useQuery({
     queryKey: ['dailyTracker', targetDate],
@@ -26,8 +28,8 @@ export const useDailyTracker = (date?: string) => {
 
   const upsertTracker = useMutation({
     mutationFn: async (update: {
-      items?: Record<string, any>;
-      notes?: Record<string, any>;
+      items?: Record<string, Json>;
+      notes?: Record<string, Json>;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
