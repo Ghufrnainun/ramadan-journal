@@ -66,10 +66,13 @@ export const syncProfileOnLogin = async (userId: string) => {
   }
 
   if (!data) {
-    await supabase
+    // User baru - insert profile dengan user_id
+    const { error: insertError } = await supabase
       .from("profiles")
-      .update(mapProfileToDb(local))
-      .eq("user_id", userId);
+      .insert({ user_id: userId, ...mapProfileToDb(local) });
+    if (insertError) {
+      console.error("Failed to create profile:", insertError);
+    }
     return;
   }
 
@@ -79,15 +82,30 @@ export const syncProfileOnLogin = async (userId: string) => {
 export const saveProfileAndSync = async (
   updates: Partial<UserProfile>,
   userId?: string | null,
-) => {
+): Promise<boolean> => {
   saveProfile(updates);
-  if (!userId) return;
+  if (!userId) return true;
   const profile = getProfile();
+  
+  // Gunakan upsert untuk handle case profile belum ada
   const { error } = await supabase
     .from("profiles")
-    .update(mapProfileToDb(profile))
-    .eq("user_id", userId);
+    .upsert(
+      { user_id: userId, ...mapProfileToDb(profile) },
+      { onConflict: "user_id" }
+    );
+  
   if (error) {
     console.error("Failed to sync profile:", error);
+    return false;
   }
+  
+  // Verify profile is readable (RLS check)
+  const { data: verified } = await supabase
+    .from("profiles")
+    .select("onboarding_completed")
+    .eq("user_id", userId)
+    .single();
+    
+  return !!verified;
 };
