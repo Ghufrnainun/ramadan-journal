@@ -14,6 +14,12 @@ import {
   Leaf,
   Settings,
   Github,
+  Calendar,
+  Target,
+  HandHeart,
+  Camera,
+  Flame,
+  PenLine,
 } from 'lucide-react';
 import { getRamadanInfo } from '@/lib/ramadan-dates';
 
@@ -1105,7 +1111,9 @@ export default function LandingPage() {
             transition={{ delay: 0 }}
             className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-blue-500/20 transition-colors"
           >
-            <div className="text-3xl mb-3">📖</div>
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-3">
+              <BookOpen className="w-6 h-6 text-blue-400" />
+            </div>
             <p className="font-serif text-lg text-white mb-2">
               {lang === 'id' ? 'Progress Quran' : 'Quran Progress'}
             </p>
@@ -1124,7 +1132,9 @@ export default function LandingPage() {
             transition={{ delay: 0.1 }}
             className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-emerald-500/20 transition-colors"
           >
-            <div className="text-3xl mb-3">📅</div>
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-3">
+              <Calendar className="w-6 h-6 text-emerald-400" />
+            </div>
             <p className="font-serif text-lg text-white mb-2">
               {lang === 'id' ? 'Kalender Puasa' : 'Fasting Calendar'}
             </p>
@@ -1143,7 +1153,9 @@ export default function LandingPage() {
             transition={{ delay: 0.2 }}
             className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-amber-500/20 transition-colors"
           >
-            <div className="text-3xl mb-3">🎯</div>
+            <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mb-3">
+              <Target className="w-6 h-6 text-amber-400" />
+            </div>
             <p className="font-serif text-lg text-white mb-2">
               {lang === 'id' ? 'Target Ramadan' : 'Ramadan Goals'}
             </p>
@@ -1162,7 +1174,9 @@ export default function LandingPage() {
             transition={{ delay: 0.3 }}
             className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-purple-500/20 transition-colors"
           >
-            <div className="text-3xl mb-3">🌙</div>
+            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-3">
+              <Moon className="w-6 h-6 text-purple-400" />
+            </div>
             <p className="font-serif text-lg text-white mb-2">
               {lang === 'id' ? 'Tarawih Tracker' : 'Tarawih Tracker'}
             </p>
@@ -1181,7 +1195,9 @@ export default function LandingPage() {
             transition={{ delay: 0.4 }}
             className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-rose-500/20 transition-colors"
           >
-            <div className="text-3xl mb-3">❤️</div>
+            <div className="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center mb-3">
+              <HandHeart className="w-6 h-6 text-rose-400" />
+            </div>
             <p className="font-serif text-lg text-white mb-2">
               {lang === 'id' ? 'Log Sedekah' : 'Charity Log'}
             </p>
@@ -1200,7 +1216,9 @@ export default function LandingPage() {
             transition={{ delay: 0.5 }}
             className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-orange-500/20 transition-colors"
           >
-            <div className="text-3xl mb-3">📸</div>
+            <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-3">
+              <Share2 className="w-6 h-6 text-orange-400" />
+            </div>
             <p className="font-serif text-lg text-white mb-2">
               {lang === 'id' ? 'Share Progress' : 'Share Progress'}
             </p>
