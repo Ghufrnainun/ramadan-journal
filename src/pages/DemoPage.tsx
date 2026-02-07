@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DemoDashboard from '@/components/demo/DemoDashboard';
 import DemoDhikr from '@/components/demo/DemoDhikr';
 import DemoTracker from '@/components/demo/DemoTracker';
-import { supabase } from '@/integrations/supabase/runtime-client';
+import { lovable } from '@/integrations/lovable';
 import { toast } from '@/hooks/use-toast';
 
 const content = {
@@ -51,17 +51,14 @@ const DemoPage: React.FC = () => {
   const handleSignUp = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth`,
-        },
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: `${window.location.origin}/auth`,
       });
 
-      if (error) {
+      if (result.error) {
         toast({
           title: lang === 'id' ? 'Gagal mendaftar' : 'Sign up failed',
-          description: error.message,
+          description: result.error.message,
           variant: 'destructive',
         });
       }
