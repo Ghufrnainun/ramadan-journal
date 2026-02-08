@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/runtime-client';
 import { getProfile } from '@/lib/storage';
 import { getRamadanInfo } from '@/lib/ramadan-dates';
 import { getStreakSummary } from '@/lib/streak';
