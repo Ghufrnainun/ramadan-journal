@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Stars } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/runtime-client';
 import { cn } from '@/lib/utils';
 import { getRamadanInfo } from '@/lib/ramadan-dates';
 import { getLocalDateKey } from '@/lib/date';
