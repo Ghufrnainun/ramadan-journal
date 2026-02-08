@@ -7,6 +7,16 @@ import { lovable } from '@/integrations/lovable';
 import { toast } from '@/hooks/use-toast';
 import MobileContainer from '@/components/layout/MobileContainer';
 
+// Helper to detect custom domain (not Lovable-managed)
+const isCustomDomain = () => {
+  const hostname = window.location.hostname;
+  return (
+    !hostname.includes('lovable.app') &&
+    !hostname.includes('lovableproject.com') &&
+    !hostname.includes('localhost')
+  );
+};
+
 const content = {
   id: {
     title: 'Masuk ke MyRamadhanku',
@@ -82,16 +92,48 @@ const AuthPage: React.FC = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
-      });
-
-      if (result.error) {
-        toast({
-          title: lang === 'id' ? 'Gagal masuk' : 'Sign in failed',
-          description: result.error.message,
-          variant: 'destructive',
+      if (isCustomDomain()) {
+        // Bypass Lovable auth-bridge for custom domains
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/onboarding`,
+            skipBrowserRedirect: true,
+          },
         });
+
+        if (error) {
+          toast({
+            title: lang === 'id' ? 'Gagal masuk' : 'Sign in failed',
+            description: error.message,
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Validate and redirect to Google OAuth
+        if (data?.url) {
+          const oauthUrl = new URL(data.url);
+          const allowedHosts = ['accounts.google.com', 'www.google.com'];
+          if (allowedHosts.some((host) => oauthUrl.hostname.includes(host))) {
+            window.location.href = data.url;
+          } else {
+            throw new Error('Invalid OAuth redirect URL');
+          }
+        }
+      } else {
+        // Use Lovable managed OAuth for Lovable domains
+        const result = await lovable.auth.signInWithOAuth('google', {
+          redirect_uri: window.location.origin,
+        });
+
+        if (result.error) {
+          toast({
+            title: lang === 'id' ? 'Gagal masuk' : 'Sign in failed',
+            description: result.error.message,
+            variant: 'destructive',
+          });
+        }
       }
     } catch (error) {
       console.error('Google sign in error:', error);
