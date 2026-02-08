@@ -2,6 +2,8 @@
 
 import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
 import { supabase } from "../supabase/client";
+
+// createLovableAuth expects an options argument
 const lovableAuth = createLovableAuth({});
 
 type SignInOptions = {
