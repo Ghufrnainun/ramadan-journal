@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, BellOff, Sunrise, Sunset, Clock, Moon, Info, AlertCircle } from 'lucide-react';
+import { Bell, BellOff, Sunrise, Sunset, Clock, Moon, Info, AlertCircle, Loader2 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 interface RemindersStepProps {
@@ -18,6 +18,7 @@ interface RemindersStepProps {
     reflection: boolean;
   }) => void;
   onBack: () => void;
+  isSubmitting?: boolean;
 }
 
 interface ReminderOption {
@@ -80,6 +81,7 @@ const RemindersStep: React.FC<RemindersStepProps> = ({
   initialReminders,
   onComplete,
   onBack,
+  isSubmitting = false,
 }) => {
   const t = content[lang];
   const [reminders, setReminders] = useState(
@@ -217,9 +219,17 @@ const RemindersStep: React.FC<RemindersStepProps> = ({
           </button>
           <button
             onClick={handleComplete}
-            className="flex-1 py-4 rounded-xl font-semibold bg-amber-500 text-slate-900 hover:bg-amber-400 transition-colors"
+            disabled={isSubmitting}
+            className="flex-1 py-4 rounded-xl font-semibold bg-amber-500 text-slate-900 hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {t.done}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>{lang === 'id' ? 'Menyimpan...' : 'Saving...'}</span>
+              </>
+            ) : (
+              t.done
+            )}
           </button>
         </div>
       </div>
