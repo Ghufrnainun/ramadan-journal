@@ -35,29 +35,35 @@ const OnboardingPage: React.FC = () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
+    const SYNC_TIMEOUT_MS = 4000;
+
     try {
-      const finalProfile = {
+      const finalProfile: UserProfile = {
         ...profile,
         reminders,
         onboardingCompleted: true,
       };
-      
+
       // Save locally first so user can proceed even if network fails
       saveProfile(finalProfile);
-      
-      // Try to sync to server
-      const success = await saveProfileAndSync(finalProfile, user?.id);
-      
-      if (success) {
-        navigate('/dashboard');
-      } else {
-        // Even if sync fails, allow navigation since we saved locally
+
+      // Try to sync to server, but don't let a hanging request block navigation
+      const success = await Promise.race([
+        saveProfileAndSync(finalProfile, user?.id),
+        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), SYNC_TIMEOUT_MS)),
+      ]);
+
+      if (!success) {
         toast({
           title: lang === 'id' ? 'Data tersimpan lokal' : 'Data saved locally',
-          description: lang === 'id' ? 'Akan sync saat koneksi kembali.' : 'Will sync when connection returns.',
+          description:
+            lang === 'id'
+              ? 'Sync memakan waktu lama. Kamu tetap bisa lanjut—akan sync saat koneksi kembali.'
+              : 'Sync is taking too long. You can continue—will sync when connection returns.',
         });
-        navigate('/dashboard');
       }
+
+      navigate('/dashboard');
     } catch (error) {
       console.error('Onboarding completion error:', error);
       // Still navigate even on error since data is saved locally
