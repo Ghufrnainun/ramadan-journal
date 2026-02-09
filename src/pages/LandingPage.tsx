@@ -22,6 +22,8 @@ import {
   PenLine,
 } from 'lucide-react';
 import { getRamadanInfo } from '@/lib/ramadan-dates';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/runtime-client';
 
 /**
  * =====================================================================
@@ -631,10 +633,44 @@ MockupCard.displayName = 'MockupCard';
  */
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { user, isLoading: authLoading } = useAuth();
   const [lang, setLang] = useState<Lang>('id');
   const [mounted, setMounted] = useState(false);
   const { scrollY } = useScroll();
   const [showSticky, setShowSticky] = useState(false);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    let isCancelled = false;
+
+    const redirectSignedInUser = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (isCancelled) return;
+
+      if (error) {
+        navigate('/onboarding', { replace: true });
+        return;
+      }
+
+      if (data?.onboarding_completed) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/onboarding', { replace: true });
+      }
+    };
+
+    void redirectSignedInUser();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [authLoading, user, navigate]);
   const localized = CONTENT[lang];
 
   // Calculate dynamic badge text

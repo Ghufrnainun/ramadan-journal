@@ -99,13 +99,6 @@ export const saveProfileAndSync = async (
     console.error("Failed to sync profile:", error);
     return false;
   }
-  
-  // Verify profile is readable (RLS check)
-  const { data: verified } = await supabase
-    .from("profiles")
-    .select("onboarding_completed")
-    .eq("user_id", userId)
-    .single();
-    
-  return !!verified;
+
+  return true;
 };

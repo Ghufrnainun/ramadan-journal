@@ -12,9 +12,17 @@ const isCustomDomain = () => {
   const hostname = window.location.hostname;
   return (
     !hostname.includes('lovable.app') &&
-    !hostname.includes('lovableproject.com') &&
-    !hostname.includes('localhost')
+    !hostname.includes('lovableproject.com')
   );
+};
+
+const isValidOAuthRedirectUrl = (url: string) => {
+  const oauthUrl = new URL(url);
+  const isSecure = oauthUrl.protocol === 'https:';
+  const isSupabaseAuthorize = oauthUrl.pathname.startsWith('/auth/v1/authorize');
+  const isGoogleHost = ['accounts.google.com', 'www.google.com'].includes(oauthUrl.hostname);
+
+  return isSecure && (isSupabaseAuthorize || isGoogleHost);
 };
 
 const content = {
@@ -97,7 +105,7 @@ const AuthPage: React.FC = () => {
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${window.location.origin}/onboarding`,
+            redirectTo: `${window.location.origin}/auth`,
             skipBrowserRedirect: true,
           },
         });
@@ -113,9 +121,7 @@ const AuthPage: React.FC = () => {
 
         // Validate and redirect to Google OAuth
         if (data?.url) {
-          const oauthUrl = new URL(data.url);
-          const allowedHosts = ['accounts.google.com', 'www.google.com'];
-          if (allowedHosts.some((host) => oauthUrl.hostname.includes(host))) {
+          if (isValidOAuthRedirectUrl(data.url)) {
             window.location.href = data.url;
           } else {
             throw new Error('Invalid OAuth redirect URL');

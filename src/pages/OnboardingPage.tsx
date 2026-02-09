@@ -9,6 +9,7 @@ import RemindersStep from './onboarding/steps/RemindersStep';
 import { getProfile, UserProfile } from '@/lib/storage';
 import { saveProfileAndSync } from '@/lib/profile-sync';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/hooks/use-toast';
 
 const TOTAL_STEPS = 5;
 
@@ -21,12 +22,7 @@ const OnboardingPage: React.FC = () => {
   useEffect(() => {
     const stored = getProfile();
     setProfile(stored);
-    
-    // If already completed onboarding, redirect to dashboard
-    if (stored.onboardingCompleted) {
-      navigate('/dashboard');
-    }
-  }, [navigate]);
+  }, []);
 
   const lang = profile?.language || 'id';
 
@@ -46,9 +42,11 @@ const OnboardingPage: React.FC = () => {
     if (success) {
       navigate('/dashboard');
     } else {
-      // Retry sekali jika gagal
-      await new Promise(r => setTimeout(r, 500));
-      navigate('/dashboard');
+      toast({
+        title: lang === 'id' ? 'Gagal menyimpan onboarding' : 'Failed to save onboarding',
+        description: lang === 'id' ? 'Coba klik Selesai sekali lagi.' : 'Please tap Done once again.',
+        variant: 'destructive',
+      });
     }
   };
 

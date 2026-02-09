@@ -207,7 +207,7 @@ const RemindersStep: React.FC<RemindersStepProps> = ({
       )}
 
       {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 pb-safe bg-[#020617]/90">
+      <div className="sticky bottom-0 z-20 -mx-6 mt-8 border-t border-slate-800/70 bg-[#020617]/95 px-6 py-6 pb-safe backdrop-blur">
         <div className="flex gap-3 max-w-md mx-auto">
           <button
             onClick={onBack}

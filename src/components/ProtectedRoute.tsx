@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import { getProfile } from '@/lib/storage';
 import { Loader2, Moon } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -39,13 +40,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
         if (error) {
           console.error('Error checking onboarding:', error);
-          setOnboardingCompleted(false);
+          // Fallback ke local profile kalau query gagal, supaya user tidak terkunci di onboarding.
+          setOnboardingCompleted(getProfile().onboardingCompleted);
         } else {
-          setOnboardingCompleted(data?.onboarding_completed ?? false);
+          setOnboardingCompleted(data?.onboarding_completed ?? getProfile().onboardingCompleted);
         }
       } catch (err) {
         console.error('Error checking onboarding:', err);
-        setOnboardingCompleted(false);
+        setOnboardingCompleted(getProfile().onboardingCompleted);
       } finally {
         setIsCheckingOnboarding(false);
       }
