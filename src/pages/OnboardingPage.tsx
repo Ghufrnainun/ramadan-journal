@@ -22,13 +22,18 @@ const OnboardingPage: React.FC = () => {
 
   useEffect(() => {
     const stored = getProfile();
+    // If already completed onboarding, redirect to dashboard
+    if (stored.onboardingCompleted) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
     setProfile(stored);
-  }, []);
+  }, [navigate]);
 
   const lang = profile?.language || 'id';
 
   const updateProfile = (updates: Partial<UserProfile>) => {
-    setProfile(prev => prev ? { ...prev, ...updates } : null);
+    setProfile((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
   const handleComplete = async (reminders: UserProfile['reminders']) => {
@@ -51,7 +56,9 @@ const OnboardingPage: React.FC = () => {
       // Try to sync to server, but don't let a hanging request block navigation
       const success = await Promise.race([
         saveProfileAndSync(finalProfile, user?.id),
-        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), SYNC_TIMEOUT_MS)),
+        new Promise<boolean>((resolve) =>
+          setTimeout(() => resolve(false), SYNC_TIMEOUT_MS),
+        ),
       ]);
 
       if (!success) {
@@ -79,12 +86,7 @@ const OnboardingPage: React.FC = () => {
 
   return (
     <OnboardingLayout step={step} totalSteps={TOTAL_STEPS}>
-      {step === 0 && (
-        <WelcomeStep
-          lang={lang}
-          onNext={() => setStep(1)}
-        />
-      )}
+      {step === 0 && <WelcomeStep lang={lang} onNext={() => setStep(1)} />}
 
       {step === 1 && (
         <LocationStep

@@ -1,8 +1,8 @@
-import { supabase } from "@/integrations/supabase/runtime-client";
-import { getProfile, saveProfile, UserProfile } from "@/lib/storage";
-import { Database } from "@/integrations/supabase/types";
+import { supabase } from '@/integrations/supabase/runtime-client';
+import { getProfile, saveProfile, UserProfile } from '@/lib/storage';
+import { Database } from '@/integrations/supabase/types';
 
-type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"] & {
+type ProfileRow = Database['public']['Tables']['profiles']['Row'] & {
   ramadan_end_date?: string | null;
   silent_mode?: boolean | null;
   hide_streak?: boolean | null;
@@ -26,7 +26,7 @@ const mapProfileToDb = (profile: UserProfile) => ({
 });
 
 const mapDbToProfile = (row: ProfileRow): Partial<UserProfile> => ({
-  language: (row.language === "en" ? "en" : "id") as "en" | "id",
+  language: (row.language === 'en' ? 'en' : 'id') as 'en' | 'id',
   location:
     row.city && row.province
       ? { city: row.city, province: row.province }
@@ -34,11 +34,11 @@ const mapDbToProfile = (row: ProfileRow): Partial<UserProfile> => ({
   ramadanStartDate: row.ramadan_start_date || null,
   ramadanEndDate: row.ramadan_end_date || null,
   focusModules: row.focus_modules || [
-    "prayer",
-    "quran",
-    "dhikr",
-    "tracker",
-    "reflection",
+    'prayer',
+    'quran',
+    'dhikr',
+    'tracker',
+    'reflection',
   ],
   reminders: {
     sahur: !!row.reminders_sahur,
@@ -55,45 +55,49 @@ const mapDbToProfile = (row: ProfileRow): Partial<UserProfile> => ({
 export const syncProfileOnLogin = async (userId: string) => {
   const local = getProfile();
   const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("user_id", userId)
+    .from('profiles')
+    .select('*')
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (error) {
-    console.error("Failed to load profile:", error);
+    console.error('Failed to load profile:', error);
     return;
   }
 
   if (!data) {
     // User baru - insert profile dengan user_id
     const { error: insertError } = await supabase
-      .from("profiles")
+      .from('profiles')
       .insert({ user_id: userId, ...mapProfileToDb(local) });
     if (insertError) {
-      console.error("Failed to create profile:", insertError);
+      console.error('Failed to create profile:', insertError);
     }
     return;
   }
 
   const mappedDbProfile = mapDbToProfile(data);
-  const preserveCompletedOnboarding =
-    local.onboardingCompleted && !mappedDbProfile.onboardingCompleted;
+
+  // CRITICAL: Never downgrade onboardingCompleted from true to false
+  // Local storage is the source of truth for this flag
+  const finalOnboardingCompleted =
+    local.onboardingCompleted || mappedDbProfile.onboardingCompleted;
 
   saveProfile({
     ...mappedDbProfile,
-    onboardingCompleted: preserveCompletedOnboarding
-      ? true
-      : mappedDbProfile.onboardingCompleted,
+    onboardingCompleted: finalOnboardingCompleted,
   });
 
-  // Jika local sudah selesai onboarding tapi DB belum, dorong update supaya sinkron.
-  if (preserveCompletedOnboarding) {
+  // If local completed but DB not yet, push to DB
+  if (local.onboardingCompleted && !mappedDbProfile.onboardingCompleted) {
     void supabase
-      .from("profiles")
+      .from('profiles')
       .upsert(
-        { user_id: userId, ...mapProfileToDb({ ...local, onboardingCompleted: true }) },
-        { onConflict: "user_id" }
+        {
+          user_id: userId,
+          ...mapProfileToDb({ ...local, onboardingCompleted: true }),
+        },
+        { onConflict: 'user_id' },
       );
   }
 };
@@ -105,17 +109,17 @@ export const saveProfileAndSync = async (
   saveProfile(updates);
   if (!userId) return true;
   const profile = getProfile();
-  
+
   // Gunakan upsert untuk handle case profile belum ada
   const { error } = await supabase
-    .from("profiles")
+    .from('profiles')
     .upsert(
       { user_id: userId, ...mapProfileToDb(profile) },
-      { onConflict: "user_id" }
+      { onConflict: 'user_id' },
     );
-  
+
   if (error) {
-    console.error("Failed to sync profile:", error);
+    console.error('Failed to sync profile:', error);
     return false;
   }
 

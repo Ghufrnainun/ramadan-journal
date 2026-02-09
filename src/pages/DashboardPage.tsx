@@ -31,6 +31,22 @@ const DashboardPage: React.FC = () => {
   if (!profile) return null;
 
   const lang = profile.language;
+  const t = {
+    id: {
+      menu: 'Menu',
+      goals: 'Target Ramadan',
+      stats: 'Statistik',
+      home: 'Beranda',
+      more: 'Lainnya',
+    },
+    en: {
+      menu: 'Menu',
+      goals: 'Ramadan Goals',
+      stats: 'Statistics',
+      home: 'Home',
+      more: 'More',
+    },
+  }[lang];
   const quote = getTodayQuote(
     profile.ramadanStartDate ? new Date(profile.ramadanStartDate) : null,
   );
@@ -123,7 +139,7 @@ const DashboardPage: React.FC = () => {
         {/* Quick Actions - Grid Layout for variation */}
         <div>
           <h3 className="text-sm font-medium text-slate-500 mb-3 uppercase pl-1">
-            Menu
+            {t.menu}
           </h3>
           <QuickActions
             lang={lang}
@@ -136,14 +152,14 @@ const DashboardPage: React.FC = () => {
               onClick={() => navigate('/goals')}
               className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:border-amber-400/40 hover:bg-amber-500/10"
             >
-              Ramadan Goals
+              {t.goals}
             </button>
             <button
               type="button"
               onClick={() => navigate('/stats')}
               className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left text-sm text-slate-200 transition-colors hover:border-emerald-400/40 hover:bg-emerald-500/10"
             >
-              Statistik
+              {t.stats}
             </button>
           </div>
         </div>
@@ -183,7 +199,7 @@ const DashboardPage: React.FC = () => {
         <div className="flex items-center justify-around px-2 py-3">
           <button className="flex flex-col items-center gap-1 text-amber-400">
             <Moon className="w-6 h-6 fill-amber-400/20" />
-            <span className="text-[10px] font-medium">Home</span>
+            <span className="text-[10px] font-medium">{t.home}</span>
           </button>
           <button
             onClick={() => navigate('/quran')}
@@ -255,7 +271,7 @@ const DashboardPage: React.FC = () => {
             <motion.div whileTap={{ scale: 0.9 }}>
               <Settings className="w-6 h-6" />
             </motion.div>
-            <span className="text-[10px] font-medium">More</span>
+            <span className="text-[10px] font-medium">{t.more}</span>
           </button>
         </div>
       </nav>

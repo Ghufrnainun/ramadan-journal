@@ -25,7 +25,7 @@ const StatsPage = () => {
   const t = {
     id: {
       title: 'Statistik Ramadan',
-      back: 'Back',
+      back: 'Kembali',
       fasting: 'Puasa Full',
       tarawih: 'Tarawih',
       sedekah: 'Sedekah',
@@ -43,7 +43,7 @@ const StatsPage = () => {
       back: 'Back',
       fasting: 'Fasting',
       tarawih: 'Tarawih',
-      sedekah: 'Sedekah',
+      sedekah: 'Charity',
       goalDone: 'Completed Goals',
       trend: '7-Day Trend',
       streak: 'Streak',
@@ -72,20 +72,21 @@ const StatsPage = () => {
   const hasAnyActivity = summary.fasting > 0 || summary.tarawih > 0 || summary.sedekah > 0 || summary.goalDone > 0;
 
   const weeklyData = useMemo(() => {
+    const locale = lang === 'id' ? 'id-ID' : 'en-US';
     const days = Array.from({ length: 7 }).map((_, idx) => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - idx));
       const key = date.toISOString().split('T')[0];
-      return { key, label: date.toLocaleDateString('id-ID', { weekday: 'short' }) };
+      return { key, label: date.toLocaleDateString(locale, { weekday: 'short' }) };
     });
 
     return days.map((day) => ({
       day: day.label,
-      puasa: (fastingLogs ?? []).some((log) => log.date === day.key && log.status === 'full') ? 1 : 0,
+      fasting: (fastingLogs ?? []).some((log) => log.date === day.key && log.status === 'full') ? 1 : 0,
       tarawih: (tarawihLogs ?? []).some((log) => log.date === day.key && log.tarawih_done) ? 1 : 0,
-      sedekah: (sedekahLogs ?? []).some((log) => log.date === day.key && log.completed) ? 1 : 0,
+      charity: (sedekahLogs ?? []).some((log) => log.date === day.key && log.completed) ? 1 : 0,
     }));
-  }, [fastingLogs, tarawihLogs, sedekahLogs]);
+  }, [fastingLogs, tarawihLogs, sedekahLogs, lang]);
 
   const streak = getStreakSummary(profile.ramadanStartDate);
 
@@ -160,9 +161,9 @@ const StatsPage = () => {
                     borderRadius: 12,
                   }}
                 />
-                <Bar dataKey="puasa" fill="#34d399" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="tarawih" fill="#818cf8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="sedekah" fill="#fbbf24" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="fasting" name={t.fasting} fill="#34d399" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="tarawih" name={t.tarawih} fill="#818cf8" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="charity" name={t.sedekah} fill="#fbbf24" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
