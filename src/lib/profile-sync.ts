@@ -76,7 +76,26 @@ export const syncProfileOnLogin = async (userId: string) => {
     return;
   }
 
-  saveProfile(mapDbToProfile(data));
+  const mappedDbProfile = mapDbToProfile(data);
+  const preserveCompletedOnboarding =
+    local.onboardingCompleted && !mappedDbProfile.onboardingCompleted;
+
+  saveProfile({
+    ...mappedDbProfile,
+    onboardingCompleted: preserveCompletedOnboarding
+      ? true
+      : mappedDbProfile.onboardingCompleted,
+  });
+
+  // Jika local sudah selesai onboarding tapi DB belum, dorong update supaya sinkron.
+  if (preserveCompletedOnboarding) {
+    void supabase
+      .from("profiles")
+      .upsert(
+        { user_id: userId, ...mapProfileToDb({ ...local, onboardingCompleted: true }) },
+        { onConflict: "user_id" }
+      );
+  }
 };
 
 export const saveProfileAndSync = async (

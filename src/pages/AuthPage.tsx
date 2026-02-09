@@ -19,8 +19,11 @@ const isCustomDomain = () => {
 const isValidOAuthRedirectUrl = (url: string) => {
   const oauthUrl = new URL(url);
   const isSecure = oauthUrl.protocol === 'https:';
-  const isSupabaseAuthorize = oauthUrl.pathname.startsWith('/auth/v1/authorize');
-  const isGoogleHost = ['accounts.google.com', 'www.google.com'].includes(oauthUrl.hostname);
+  const isSupabaseAuthorize =
+    oauthUrl.pathname.startsWith('/auth/v1/authorize');
+  const isGoogleHost = ['accounts.google.com', 'www.google.com'].includes(
+    oauthUrl.hostname,
+  );
 
   return isSecure && (isSupabaseAuthorize || isGoogleHost);
 };
@@ -54,7 +57,9 @@ const AuthPage: React.FC = () => {
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    const oauthError = url.searchParams.get('error_description') || url.searchParams.get('error');
+    const oauthError =
+      url.searchParams.get('error_description') ||
+      url.searchParams.get('error');
     if (oauthError) {
       toast({
         title: lang === 'id' ? 'Google OAuth error' : 'Google OAuth error',
@@ -63,24 +68,13 @@ const AuthPage: React.FC = () => {
       });
     }
 
-    // Check if already logged in
+    // Check if already logged in - redirect to dashboard, ProtectedRoute handles routing
     const checkAuth = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
-        // Check if onboarding is completed
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('onboarding_completed')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-
-        if (profile?.onboarding_completed) {
-          navigate('/dashboard');
-        } else {
-          navigate('/onboarding');
-        }
+        navigate('/dashboard');
       }
     };
     checkAuth();
@@ -90,7 +84,7 @@ const AuthPage: React.FC = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate('/onboarding');
+        navigate('/dashboard');
       }
     });
 

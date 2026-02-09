@@ -22,7 +22,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, isLoading: authLoading } = useAuth();
   const location = useLocation();
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
-  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
+  const [onboardingCompleted, setOnboardingCompleted] = useState<
+    boolean | null
+  >(null);
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -31,8 +33,18 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         return;
       }
 
+      // Check local storage first - this is always up-to-date after onboarding completion
+      const localOnboardingCompleted = getProfile().onboardingCompleted;
+
+      // If local storage says onboarding is completed, trust it immediately
+      // This prevents the loop where DB query returns stale data
+      if (localOnboardingCompleted) {
+        setOnboardingCompleted(true);
+        setIsCheckingOnboarding(false);
+        return;
+      }
+
       try {
-        const localOnboardingCompleted = getProfile().onboardingCompleted;
         const { data, error } = await supabase
           .from('profiles')
           .select('onboarding_completed')
@@ -41,15 +53,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
         if (error) {
           console.error('Error checking onboarding:', error);
-          // Fallback ke local profile kalau query gagal, supaya user tidak terkunci di onboarding.
-          setOnboardingCompleted(localOnboardingCompleted);
+          // Fallback: local says false, so keep it false
+          setOnboardingCompleted(false);
         } else {
-          // Anggap selesai kalau DB atau local sudah true.
-          setOnboardingCompleted(Boolean(data?.onboarding_completed || localOnboardingCompleted));
+          // Local is false, rely on DB
+          setOnboardingCompleted(Boolean(data?.onboarding_completed));
         }
       } catch (err) {
         console.error('Error checking onboarding:', err);
-        setOnboardingCompleted(getProfile().onboardingCompleted);
+        setOnboardingCompleted(false);
       } finally {
         setIsCheckingOnboarding(false);
       }
@@ -60,7 +72,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     } else {
       setIsCheckingOnboarding(false);
     }
-  }, [user]);
+  }, [user, location.key]);
 
   // Still loading auth
   if (authLoading) {
