@@ -22,6 +22,8 @@ const DashboardPage: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
+    // ProtectedRoute sudah handle redirect auth + onboarding.
+    // Di sini cukup load profile lokal untuk render UI.
     const stored = getProfile();
     setProfile(stored);
   }, []);
@@ -80,10 +82,7 @@ const DashboardPage: React.FC = () => {
       <main className="px-6 pb-32 space-y-6 md:p-0 md:pb-0">
         {/* Greeting & Location */}
         <div className="space-y-1">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="font-serif text-3xl text-white">
               {greeting.greeting}
             </h1>
