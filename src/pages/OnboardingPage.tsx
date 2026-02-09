@@ -38,8 +38,9 @@ const OnboardingPage: React.FC = () => {
     const SYNC_TIMEOUT_MS = 4000;
 
     try {
+      const baseProfile = profile ?? getProfile();
       const finalProfile: UserProfile = {
-        ...profile,
+        ...baseProfile,
         reminders,
         onboardingCompleted: true,
       };
@@ -63,11 +64,12 @@ const OnboardingPage: React.FC = () => {
         });
       }
 
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     } catch (error) {
       console.error('Onboarding completion error:', error);
-      // Still navigate even on error since data is saved locally
-      navigate('/dashboard');
+      // Force local completion flag so route guards won't bounce back to onboarding
+      saveProfile({ onboardingCompleted: true, reminders });
+      navigate('/dashboard', { replace: true });
     } finally {
       setIsSubmitting(false);
     }

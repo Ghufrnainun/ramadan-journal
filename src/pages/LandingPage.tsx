@@ -24,6 +24,7 @@ import {
 import { getRamadanInfo } from '@/lib/ramadan-dates';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import { getProfile } from '@/lib/storage';
 
 /**
  * =====================================================================
@@ -645,6 +646,7 @@ export default function LandingPage() {
     let isCancelled = false;
 
     const redirectSignedInUser = async () => {
+      const localOnboardingCompleted = getProfile().onboardingCompleted;
       const { data, error } = await supabase
         .from('profiles')
         .select('onboarding_completed')
@@ -654,11 +656,11 @@ export default function LandingPage() {
       if (isCancelled) return;
 
       if (error) {
-        navigate('/onboarding', { replace: true });
+        navigate(localOnboardingCompleted ? '/dashboard' : '/onboarding', { replace: true });
         return;
       }
 
-      if (data?.onboarding_completed) {
+      if (data?.onboarding_completed || localOnboardingCompleted) {
         navigate('/dashboard', { replace: true });
       } else {
         navigate('/onboarding', { replace: true });

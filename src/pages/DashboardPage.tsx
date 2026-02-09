@@ -23,15 +23,8 @@ const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     const stored = getProfile();
-
-    // If not completed onboarding, redirect
-    if (!stored.onboardingCompleted) {
-      navigate('/onboarding');
-      return;
-    }
-
     setProfile(stored);
-  }, [navigate]);
+  }, []);
 
   if (!profile) return null;
 

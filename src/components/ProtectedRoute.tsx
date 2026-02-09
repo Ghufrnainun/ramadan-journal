@@ -32,6 +32,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       }
 
       try {
+        const localOnboardingCompleted = getProfile().onboardingCompleted;
         const { data, error } = await supabase
           .from('profiles')
           .select('onboarding_completed')
@@ -41,9 +42,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         if (error) {
           console.error('Error checking onboarding:', error);
           // Fallback ke local profile kalau query gagal, supaya user tidak terkunci di onboarding.
-          setOnboardingCompleted(getProfile().onboardingCompleted);
+          setOnboardingCompleted(localOnboardingCompleted);
         } else {
-          setOnboardingCompleted(data?.onboarding_completed ?? getProfile().onboardingCompleted);
+          // Anggap selesai kalau DB atau local sudah true.
+          setOnboardingCompleted(Boolean(data?.onboarding_completed || localOnboardingCompleted));
         }
       } catch (err) {
         console.error('Error checking onboarding:', err);
