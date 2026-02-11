@@ -31,7 +31,14 @@ Deno.serve(async (req: Request) => {
     console.log('Fetching:', apiUrl);
 
     const isPost = req.method === 'POST';
-    const body = isPost ? await req.json() : null;
+    let body = null;
+    if (isPost) {
+      try {
+        body = await req.json();
+      } catch {
+        body = null;
+      }
+    }
 
     const response = await fetch(apiUrl, {
       method: isPost ? 'POST' : 'GET',
@@ -40,7 +47,7 @@ Deno.serve(async (req: Request) => {
         ...(isPost ? { 'Content-Type': 'application/json' } : {}),
         'User-Agent': 'MyRamadhan/1.0',
       },
-      body: isPost ? JSON.stringify(body) : undefined,
+      body: isPost && body ? JSON.stringify(body) : undefined,
     });
 
     if (!response.ok) {
