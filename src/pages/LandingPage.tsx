@@ -386,9 +386,9 @@ const StarField = () => {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {stars.map((s, i) => (
+      {stars.map((s) => (
         <motion.div
-          key={i}
+          key={`${s.top}-${s.left}-${s.size}`}
           className="absolute rounded-full bg-white"
           style={{ top: s.top, left: s.left, width: s.size, height: s.size }}
           animate={{ opacity: [0.2, 0.8, 0.2] }}
@@ -472,7 +472,7 @@ const MoonTimeline = React.forwardRef<HTMLDivElement>((_, ref) => (
   <div ref={ref} className="flex items-center justify-center gap-3 py-8">
     {[...Array(8)].map((_, i) => (
       <motion.div
-        key={i}
+        key={`moon-phase-${i}`}
         className="w-3 h-3 rounded-full bg-amber-300"
         style={{ opacity: 0.3 + i * 0.1 }}
         animate={{ scale: [1, 1.2, 1] }}
@@ -483,14 +483,20 @@ const MoonTimeline = React.forwardRef<HTMLDivElement>((_, ref) => (
 ));
 MoonTimeline.displayName = 'MoonTimeline';
 
-const MockupCard = React.forwardRef<HTMLDivElement, { type: 'count' | 'quote' | 'dhikr' }>(({ type }, ref) => {
+const MockupCard = React.forwardRef<
+  HTMLDivElement,
+  { type: 'count' | 'quote' | 'dhikr' }
+>(({ type }, ref) => {
   return (
-    <div ref={ref} className="relative w-64 h-[520px] bg-slate-950 rounded-[2.5rem] border-[6px] border-slate-800/80 shadow-2xl overflow-hidden flex-shrink-0">
+    <div
+      ref={ref}
+      className="relative w-64 h-[520px] bg-slate-950 rounded-[2.5rem] border-[6px] border-slate-800/80 shadow-2xl overflow-hidden flex-shrink-0"
+    >
       {/* Phone Notch */}
       <div className="absolute top-0 inset-x-0 flex justify-center z-20">
         <div className="h-6 w-28 bg-slate-900 rounded-b-2xl" />
       </div>
-      
+
       {/* Status Bar */}
       <div className="absolute top-1.5 inset-x-0 flex justify-between items-center px-5 text-[10px] text-slate-500 font-medium z-10">
         <span>9:41</span>
@@ -524,9 +530,7 @@ const MockupCard = React.forwardRef<HTMLDivElement, { type: 'count' | 'quote' | 
             <p className="text-5xl font-bold text-white font-serif tracking-tight">
               04:32
             </p>
-            <p className="text-sm text-slate-400 mt-2">
-              Menjelang Maghrib
-            </p>
+            <p className="text-sm text-slate-400 mt-2">Menjelang Maghrib</p>
 
             {/* Location Tags */}
             <div className="mt-8 flex gap-2 text-[11px] text-slate-400">
@@ -546,20 +550,20 @@ const MockupCard = React.forwardRef<HTMLDivElement, { type: 'count' | 'quote' | 
             <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center mb-8">
               <BookOpen className="w-5 h-5 text-emerald-400" />
             </div>
-            
+
             {/* Quote Mark */}
             <p className="text-4xl text-emerald-500/30 font-serif absolute top-16 left-0 leading-none">
               "
             </p>
-            
+
             {/* Quote Text */}
             <p className="text-white/90 font-serif italic text-lg leading-relaxed pl-1">
               Maka sesungguhnya bersama kesulitan ada kemudahan.
             </p>
-            
+
             {/* Divider */}
             <div className="h-0.5 w-10 bg-amber-500/50 my-5" />
-            
+
             {/* Source */}
             <p className="text-sm text-amber-400 font-medium">
               QS Al-Insyirah: 5
@@ -585,7 +589,7 @@ const MockupCard = React.forwardRef<HTMLDivElement, { type: 'count' | 'quote' | 
                 <Settings className="w-4 h-4 text-slate-500" />
               </div>
             </div>
-            
+
             {/* Title */}
             <p className="absolute top-4 text-[10px] font-semibold text-slate-400 uppercase tracking-[0.2em]">
               Dzikir Pagi
@@ -600,7 +604,7 @@ const MockupCard = React.forwardRef<HTMLDivElement, { type: 'count' | 'quote' | 
                 33
               </span>
             </motion.div>
-            
+
             {/* Label */}
             <p className="text-white text-base font-medium mt-6">Subhanallah</p>
             <p className="text-slate-500 text-sm mt-1">Target: 33</p>
@@ -608,8 +612,8 @@ const MockupCard = React.forwardRef<HTMLDivElement, { type: 'count' | 'quote' | 
             {/* Progress Bar */}
             <div className="absolute bottom-4 w-full flex justify-center px-8">
               <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                <motion.div 
-                  className="h-full bg-emerald-500 rounded-full" 
+                <motion.div
+                  className="h-full bg-emerald-500 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: '66%' }}
                   transition={{ duration: 1, delay: 0.5 }}
@@ -643,35 +647,13 @@ export default function LandingPage() {
   useEffect(() => {
     if (authLoading || !user) return;
 
-    let isCancelled = false;
-
-    const redirectSignedInUser = async () => {
-      const localOnboardingCompleted = getProfile().onboardingCompleted;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (isCancelled) return;
-
-      if (error) {
-        navigate(localOnboardingCompleted ? '/dashboard' : '/onboarding', { replace: true });
-        return;
-      }
-
-      if (data?.onboarding_completed || localOnboardingCompleted) {
-        navigate('/dashboard', { replace: true });
-      } else {
-        navigate('/onboarding', { replace: true });
-      }
-    };
-
-    void redirectSignedInUser();
-
-    return () => {
-      isCancelled = true;
-    };
+    // Simple redirect: check local profile (single source of truth)
+    const profile = getProfile();
+    if (profile.setup_completed_at || profile.onboardingCompleted) {
+      navigate('/dashboard', { replace: true });
+    } else {
+      navigate('/onboarding', { replace: true });
+    }
   }, [authLoading, user, navigate]);
   const localized = CONTENT[lang];
 
@@ -901,8 +883,8 @@ export default function LandingPage() {
             transition={{ delay: 1 }}
             className="flex items-center justify-center gap-6 mt-12 text-xs text-slate-500"
           >
-            {localized.hero.trust.map((item, i) => (
-              <span key={i} className="flex items-center gap-1.5">
+            {localized.hero.trust.map((item) => (
+              <span key={item} className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-emerald-500/60 rounded-full" />{' '}
                 {item}
               </span>
@@ -943,7 +925,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {localized.problem.points.map((p, i) => (
               <div
-                key={i}
+                key={p.t}
                 className="text-center p-6 rounded-2xl bg-white/[0.02] border border-white/5"
               >
                 <p className="font-serif text-xl text-white mb-2">{p.t}</p>
@@ -1010,7 +992,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto grid md:grid-cols-4 gap-6 mt-8">
           {localized.day_flow.steps.map((step, i) => (
             <motion.div
-              key={i}
+              key={`${step.time}-${step.title}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -1085,7 +1067,7 @@ export default function LandingPage() {
               <div className="flex items-center gap-2 mb-6">
                 {[...Array(7)].map((_, i) => (
                   <div
-                    key={i}
+                    key={`streak-day-${i + 1}`}
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
                       i < 5
                         ? 'bg-amber-500/20 text-amber-400'
@@ -1134,9 +1116,13 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="text-center mb-12 max-w-2xl mx-auto"
         >
-          <p className="text-amber-400/80 text-sm uppercase mb-4">Fitur Tambahan</p>
+          <p className="text-amber-400/80 text-sm uppercase mb-4">
+            Fitur Tambahan
+          </p>
           <p className="font-serif text-3xl text-white">
-            {lang === 'id' ? 'Tracking Lengkap untuk Ramadan Sempurna' : 'Complete Tracking for Perfect Ramadan'}
+            {lang === 'id'
+              ? 'Tracking Lengkap untuk Ramadan Sempurna'
+              : 'Complete Tracking for Perfect Ramadan'}
           </p>
         </motion.div>
 
@@ -1156,8 +1142,8 @@ export default function LandingPage() {
               {lang === 'id' ? 'Progress Quran' : 'Quran Progress'}
             </p>
             <p className="text-sm text-slate-400">
-              {lang === 'id' 
-                ? 'Pantau tadarus juz & halaman dengan visual progress bar yang akurat' 
+              {lang === 'id'
+                ? 'Pantau tadarus juz & halaman dengan visual progress bar yang akurat'
                 : 'Monitor your juz & pages with accurate visual progress'}
             </p>
           </motion.div>
@@ -1177,8 +1163,8 @@ export default function LandingPage() {
               {lang === 'id' ? 'Kalender Puasa' : 'Fasting Calendar'}
             </p>
             <p className="text-sm text-slate-400">
-              {lang === 'id' 
-                ? 'Visualisasi 30 hari puasa dengan status per hari' 
+              {lang === 'id'
+                ? 'Visualisasi 30 hari puasa dengan status per hari'
                 : '30-day fasting calendar with daily status tracking'}
             </p>
           </motion.div>
@@ -1198,8 +1184,8 @@ export default function LandingPage() {
               {lang === 'id' ? 'Target Ramadan' : 'Ramadan Goals'}
             </p>
             <p className="text-sm text-slate-400">
-              {lang === 'id' 
-                ? 'Tentukan target personal & pantau progres selama 30 hari' 
+              {lang === 'id'
+                ? 'Tentukan target personal & pantau progres selama 30 hari'
                 : 'Set personal goals and track progress throughout Ramadan'}
             </p>
           </motion.div>
@@ -1219,8 +1205,8 @@ export default function LandingPage() {
               {lang === 'id' ? 'Tarawih Tracker' : 'Tarawih Tracker'}
             </p>
             <p className="text-sm text-slate-400">
-              {lang === 'id' 
-                ? 'Catat sholat tarawih & witir setiap malam' 
+              {lang === 'id'
+                ? 'Catat sholat tarawih & witir setiap malam'
                 : 'Track nightly Tarawih and Witir prayers'}
             </p>
           </motion.div>
@@ -1240,8 +1226,8 @@ export default function LandingPage() {
               {lang === 'id' ? 'Log Sedekah' : 'Charity Log'}
             </p>
             <p className="text-sm text-slate-400">
-              {lang === 'id' 
-                ? 'Catat sedekah harian & bangun konsistensi berbagi' 
+              {lang === 'id'
+                ? 'Catat sedekah harian & bangun konsistensi berbagi'
                 : 'Log daily charity and build giving consistency'}
             </p>
           </motion.div>
@@ -1261,8 +1247,8 @@ export default function LandingPage() {
               {lang === 'id' ? 'Share Progress' : 'Share Progress'}
             </p>
             <p className="text-sm text-slate-400">
-              {lang === 'id' 
-                ? 'Bagikan progress mingguan ke sosial media' 
+              {lang === 'id'
+                ? 'Bagikan progress mingguan ke sosial media'
                 : 'Share your weekly progress on social media'}
             </p>
           </motion.div>
@@ -1281,9 +1267,9 @@ export default function LandingPage() {
           {t('privacy.title')}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-          {localized.privacy.bullets.map((b, i) => (
+          {localized.privacy.bullets.map((b) => (
             <span
-              key={i}
+              key={b}
               className="px-4 py-2 bg-white/5 rounded-full text-sm text-slate-300 border border-white/5"
             >
               {b}
@@ -1300,7 +1286,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
           {localized.testimonials.map((tm, i) => (
             <motion.div
-              key={i}
+              key={tm.u}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -1325,7 +1311,7 @@ export default function LandingPage() {
         <div className="max-w-2xl mx-auto space-y-4">
           {localized.faq.items.map((item, i) => (
             <details
-              key={i}
+              key={item.q}
               className="group p-6 rounded-2xl bg-white/[0.02] border border-white/5 cursor-pointer"
             >
               <summary className="flex items-center justify-between text-white font-medium list-none">

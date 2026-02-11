@@ -18,15 +18,34 @@ import { getProfile } from '@/lib/storage';
 
 const Sidebar = () => {
   const profile = getProfile();
+  const lang = profile.language === 'en' ? 'en' : 'id';
+  const t = {
+    id: {
+      hadith: 'Hadits',
+      schedule: 'Jadwal',
+      dua: 'Doa',
+      menu: 'Menu',
+      signedInAs: 'Masuk sebagai',
+      guest: 'Tamu',
+    },
+    en: {
+      hadith: 'Hadith',
+      schedule: 'Schedule',
+      dua: 'Dua',
+      menu: 'Menu',
+      signedInAs: 'Signed in as',
+      guest: 'Guest',
+    },
+  }[lang];
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: BookOpen, label: 'Quran', path: '/quran' },
-    { icon: Book, label: 'Hadits', path: '/hadith' },
-    { icon: Calendar, label: 'Jadwal', path: '/calendar' },
+    { icon: Book, label: t.hadith, path: '/hadith' },
+    { icon: Calendar, label: t.schedule, path: '/calendar' },
     { icon: CheckSquare, label: 'Tracker', path: '/tracker' },
     { icon: Repeat, label: 'Dhikr', path: '/dhikr' },
-    { icon: Book, label: 'Doa', path: '/doa' },
+    { icon: Book, label: t.dua, path: '/doa' },
     { icon: Heart, label: 'Reflection', path: '/reflection' },
     { icon: Target, label: 'Goals', path: '/goals' },
     { icon: BarChart3, label: 'Stats', path: '/stats' },
@@ -48,7 +67,7 @@ const Sidebar = () => {
       <div className="flex-1 space-y-2 overflow-y-auto px-4 py-6">
         <div className="mb-4 px-2">
           <p className="mb-2 text-xs font-semibold uppercase text-slate-500">
-            Menu
+            {t.menu}
           </p>
         </div>
 
@@ -84,9 +103,9 @@ const Sidebar = () => {
 
       <div className="border-t border-slate-800/50 p-4">
         <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-          <p className="mb-1 text-xs text-slate-400">Signed in as</p>
+          <p className="mb-1 text-xs text-slate-400">{t.signedInAs}</p>
           <p className="truncate text-sm font-medium text-white">
-            {profile.displayName || 'Guest'}
+            {profile.displayName || t.guest}
           </p>
         </div>
       </div>

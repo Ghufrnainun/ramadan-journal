@@ -22,7 +22,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
       <div className="absolute inset-0 pointer-events-none">
         {[...Array(12)].map((_, i) => (
           <div
-            key={i}
+            key={`star-${i}`}
             className="absolute rounded-full bg-white animate-pulse"
             style={{
               top: `${Math.random() * 60}%`,
@@ -48,7 +48,7 @@ const OnboardingLayout: React.FC<OnboardingLayoutProps> = ({
         <div className="flex items-center gap-1.5">
           {[...Array(totalSteps)].map((_, i) => (
             <div
-              key={i}
+              key={`step-${i}`}
               className={`h-1.5 rounded-full transition-[width,background-color] duration-300 ${
                 i < step
                   ? "w-6 bg-amber-500"

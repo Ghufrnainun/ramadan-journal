@@ -1,70 +1,29 @@
 /**
- * Local Storage Helper for Guest Mode
- * Stores all user preferences and data locally
+ * Local Storage Helper — Legacy compat wrapper.
+ *
+ * All new code should use ProfileStore from profile-store.ts.
+ * This file is kept for backward compat with components that
+ * still import getProfile/saveProfile synchronously.
  */
 
-export interface UserProfile {
-  language: 'id' | 'en';
-  displayName?: string | null;
-  location: {
-    city: string;
-    province: string;
-  } | null;
-  ramadanStartDate: string | null; // ISO date string
-  ramadanEndDate?: string | null;
-  focusModules: string[];
-  reminders: {
-    sahur: boolean;
-    iftar: boolean;
-    prayer: boolean;
-    reflection: boolean;
-  };
-  silentMode: boolean;
-  hideStreak?: boolean;
-  onboardingCompleted: boolean;
-}
+import { getProfileSync, saveProfileSync } from './profile-store';
+import type { UserProfile } from './profile-store';
+
+export type { UserProfile };
 
 const STORAGE_KEY = 'myramadhanku_profile';
 
-const DEFAULT_PROFILE: UserProfile = {
-  language: 'id',
-  displayName: null,
-  location: null,
-  ramadanStartDate: null,
-  ramadanEndDate: null,
-  focusModules: ['prayer', 'quran', 'dhikr', 'tracker', 'reflection'],
-  reminders: {
-    sahur: false,
-    iftar: false,
-    prayer: false,
-    reflection: false,
-  },
-  silentMode: false,
-  hideStreak: false,
-  onboardingCompleted: false,
-};
+/**
+ * @deprecated Use ProfileStore.getProfile() instead.
+ * Synchronous read from localStorage.
+ */
+export const getProfile = getProfileSync;
 
-export const getProfile = (): UserProfile => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return { ...DEFAULT_PROFILE, ...JSON.parse(stored) };
-    }
-  } catch (e) {
-    console.error('Error reading profile:', e);
-  }
-  return DEFAULT_PROFILE;
-};
-
-export const saveProfile = (profile: Partial<UserProfile>): void => {
-  try {
-    const current = getProfile();
-    const updated = { ...current, ...profile };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  } catch (e) {
-    console.error('Error saving profile:', e);
-  }
-};
+/**
+ * @deprecated Use ProfileStore.upsertProfile() instead.
+ * Synchronous write to localStorage.
+ */
+export const saveProfile = saveProfileSync;
 
 export const clearProfile = (): void => {
   try {

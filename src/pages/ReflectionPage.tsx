@@ -33,11 +33,7 @@ const ReflectionPage: React.FC = () => {
     isBookmarked('reflection', `reflection-${today}`),
   );
 
-  useEffect(() => {
-    if (!profile.onboardingCompleted) {
-      navigate('/onboarding');
-    }
-  }, [navigate, profile.onboardingCompleted]);
+  // Onboarding guard removed — AppGate handles this at the route level
 
   useEffect(() => {
     const timer = setTimeout(() => {

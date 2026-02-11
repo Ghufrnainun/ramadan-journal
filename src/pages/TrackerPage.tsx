@@ -8,7 +8,11 @@ import TarawihCard from '@/components/tracker/TarawihCard';
 import SedekahCard from '@/components/tracker/SedekahCard';
 import LailatulQadrCard from '@/components/tracker/LailatulQadrCard';
 import SunnahPrayerCard from '@/components/tracker/SunnahPrayerCard';
-import { generateWeeklySummaryCard, getWeeklySummaryStats, shareImage } from '@/lib/share-card';
+import {
+  generateWeeklySummaryCard,
+  getWeeklySummaryStats,
+  shareImage,
+} from '@/lib/share-card';
 import { toast } from '@/hooks/use-toast';
 
 const TrackerPage = () => {
@@ -35,11 +39,7 @@ const TrackerPage = () => {
     },
   }[lang];
 
-  useEffect(() => {
-    if (!profile.onboardingCompleted) {
-      navigate('/onboarding');
-    }
-  }, [navigate, profile.onboardingCompleted]);
+  // Onboarding guard removed — AppGate handles this at the route level
 
   const handleWeeklyShare = async () => {
     if (isSharing) return;
@@ -79,7 +79,11 @@ const TrackerPage = () => {
           className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-800/50 disabled:cursor-not-allowed disabled:opacity-60"
           aria-label={t.share}
         >
-          {isSharing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Share2 className="h-5 w-5" />}
+          {isSharing ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Share2 className="h-5 w-5" />
+          )}
         </button>
       </header>
 
@@ -92,7 +96,11 @@ const TrackerPage = () => {
             disabled={isSharing}
             className="inline-flex items-center gap-2 rounded-xl border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200 transition-colors hover:bg-amber-500/20 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
+            {isSharing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Share2 className="h-4 w-4" />
+            )}
             {isSharing ? '...' : t.shareWeekly}
           </button>
         </div>

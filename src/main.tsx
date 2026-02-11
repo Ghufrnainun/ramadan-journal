@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import { setupGlobalErrorTelemetry, trackBootError } from "@/lib/telemetry";
 
 declare global {
   interface Window {
@@ -13,6 +14,7 @@ declare global {
 
 const rootEl = document.getElementById("root")!;
 const root = createRoot(rootEl);
+setupGlobalErrorTelemetry();
 
 const BootError = ({ message }: { message: string }) => (
   <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
@@ -107,6 +109,7 @@ async function ensurePublicConfig() {
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    trackBootError(e);
     root.render(<BootError message={msg} />);
   }
 })();
@@ -119,14 +122,24 @@ if ('serviceWorker' in navigator) {
       });
     });
   } else {
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      registrations.forEach((registration) => registration.unregister());
-    });
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => {
+        registrations.forEach((registration) => registration.unregister());
+      })
+      .catch((error) => {
+        console.error('Failed to get service worker registrations:', error);
+      });
 
     if ('caches' in window) {
-      caches.keys().then((keys) => {
-        keys.forEach((key) => caches.delete(key));
-      });
+      caches
+        .keys()
+        .then((keys) => {
+          keys.forEach((key) => void caches.delete(key));
+        })
+        .catch((error) => {
+          console.error('Failed to list cache keys:', error);
+        });
     }
   }
 }

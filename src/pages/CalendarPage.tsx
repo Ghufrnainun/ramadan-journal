@@ -36,10 +36,28 @@ const content = {
   id: {
     tracker: 'Tracker',
     completed: 'Selesai',
+    backToDashboard: 'Kembali ke dashboard',
+    happyDays: 'Hari Bahagia',
+    perfectDays: 'Hari Sempurna',
+    journals: 'Jurnal',
+    dailyJournal: 'Jurnal Harian',
+    mood: 'Mood',
+    noIntention: 'Belum ada niat',
+    noJournalEntry: 'Belum ada entri jurnal untuk hari ini.',
+    noTrackerData: 'Belum ada data tracker untuk hari ini.',
   },
   en: {
     tracker: 'Tracker',
     completed: 'Completed',
+    backToDashboard: 'Back to dashboard',
+    happyDays: 'Happy Days',
+    perfectDays: 'Perfect Days',
+    journals: 'Journals',
+    dailyJournal: 'Daily Journal',
+    mood: 'Mood',
+    noIntention: 'No intention set',
+    noJournalEntry: 'No journal entry for this day.',
+    noTrackerData: 'No tracker data for this day.',
   },
 };
 
@@ -60,16 +78,15 @@ const CalendarPage = () => {
   useEffect(() => {
     const profile = getProfile();
     setLang(profile.language);
-
-    // TEMPORARY: Read from localStorage directly for daily status to avoid breaking changes immediately,
-    // or I can do a quick replace to export it. Let's do a quick replace in the next step.
-    // For this file, I'll assume a `getAllDailyStatuses` exists or similar.
-    // Actually, let's just use what we have and maybe refactor later.
-    // I will access localStorage directly here as a fallback until I update the lib.
-
-    const storedStatus = localStorage.getItem('myramadhanku_daily_status');
-    if (storedStatus) {
-      setDailyStatuses(JSON.parse(storedStatus));
+    try {
+      const storedStatus = localStorage.getItem('myramadhanku_daily_status');
+      if (storedStatus) {
+        const parsed = JSON.parse(storedStatus) as DailyStatusEntry[];
+        setDailyStatuses(Array.isArray(parsed) ? parsed : []);
+      }
+    } catch (error) {
+      console.error('Failed to parse daily status from storage:', error);
+      setDailyStatuses([]);
     }
 
     setDailyProgresses(getAllProgress());
@@ -128,7 +145,7 @@ const CalendarPage = () => {
       <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 backdrop-blur z-20">
         <button
           type="button"
-          aria-label="Back to dashboard"
+          aria-label={t.backToDashboard}
           onClick={() => navigate('/dashboard')}
           className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
         >
@@ -180,7 +197,7 @@ const CalendarPage = () => {
 
             return (
               <motion.button
-                key={i}
+                key={format(date, 'yyyy-MM-dd')}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.02 }}
@@ -235,7 +252,9 @@ const CalendarPage = () => {
                 ).length
               }
             </span>
-            <p className="text-xs text-slate-500 uppercase mt-1">Happy Days</p>
+            <p className="text-xs text-slate-500 uppercase mt-1">
+              {t.happyDays}
+            </p>
           </div>
           <div className="w-px h-10 bg-slate-800" />
           <div className="text-center w-1/3">
@@ -252,9 +271,7 @@ const CalendarPage = () => {
                 }).length
               }
             </span>
-            <p className="text-xs text-slate-500 uppercase mt-1">
-              Perfect Days
-            </p>
+            <p className="text-xs text-slate-500 uppercase mt-1">{t.perfectDays}</p>
           </div>
           <div className="w-px h-10 bg-slate-800" />
           <div className="text-center w-1/3">
@@ -266,7 +283,7 @@ const CalendarPage = () => {
                 ).length
               }
             </span>
-            <p className="text-xs text-slate-500 uppercase mt-1">Journals</p>
+            <p className="text-xs text-slate-500 uppercase mt-1">{t.journals}</p>
           </div>
         </div>
       </div>
@@ -287,12 +304,12 @@ const CalendarPage = () => {
               {getStatusForDate(selectedDate) ? (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-slate-400 uppercase">
-                    Dialy Journal
+                    {t.dailyJournal}
                   </h4>
                   <div className="bg-slate-950/50 rounded-xl p-4 border border-slate-800">
                     {getStatusForDate(selectedDate)?.mood && (
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-slate-400 text-sm">Mood:</span>
+                        <span className="text-slate-400 text-sm">{t.mood}:</span>
                         <span className="capitalize text-white font-medium">
                           {getStatusForDate(selectedDate)?.mood}
                         </span>
@@ -301,14 +318,14 @@ const CalendarPage = () => {
                     <p className="text-slate-300 italic">
                       "
                       {getStatusForDate(selectedDate)?.intention ||
-                        'No intention set'}
+                        t.noIntention}
                       "
                     </p>
                   </div>
                 </div>
               ) : (
                 <p className="text-slate-500 text-sm italic text-center">
-                  No journal entry using for this day.
+                  {t.noJournalEntry}
                 </p>
               )}
 
@@ -347,7 +364,7 @@ const CalendarPage = () => {
                 </div>
               ) : (
                 <p className="text-slate-500 text-sm italic text-center">
-                  No tracker data for this day.
+                  {t.noTrackerData}
                 </p>
               )}
             </div>

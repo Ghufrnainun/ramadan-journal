@@ -196,7 +196,7 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
             <span className="text-amber-400 font-medium">
               {currentPrayer.next}
             </span>{' '}
-            <span className="text-slate-500 mx-1">•</span> {timeUntil}
+            <span className="text-slate-500 mx-1">|</span> {timeUntil}
           </div>
         )}
       </div>
@@ -252,3 +252,4 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
 };
 
 export default PrayerTimesCard;
+

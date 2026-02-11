@@ -68,13 +68,13 @@ const AuthPage: React.FC = () => {
       });
     }
 
-    // Check if already logged in - redirect to dashboard, ProtectedRoute handles routing
+    // If already signed in, redirect — AppGate handles onboarding routing
     const checkAuth = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
       if (session) {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
     };
     checkAuth();
@@ -84,7 +84,7 @@ const AuthPage: React.FC = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
     });
 
@@ -184,9 +184,9 @@ const AuthPage: React.FC = () => {
         transition={{ delay: 0.1 }}
       >
         <div className="space-y-3">
-          {t.benefits.map((benefit, i) => (
+          {t.benefits.map((benefit) => (
             <div
-              key={i}
+              key={benefit}
               className="flex items-center gap-3 px-4 py-3 bg-slate-900/50 border border-slate-800 rounded-xl"
             >
               <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">

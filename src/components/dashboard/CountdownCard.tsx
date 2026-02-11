@@ -148,7 +148,7 @@ const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
                 { value: minutes, label: t.minutes },
                 { value: seconds, label: t.seconds },
               ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center">
+                <div key={item.label} className="flex flex-col items-center">
                   <div className="relative">
                     <span className="font-serif text-3xl md:text-4xl text-white font-medium tabular-nums">
                       {item.value}

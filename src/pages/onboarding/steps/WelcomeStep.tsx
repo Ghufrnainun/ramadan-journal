@@ -88,7 +88,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ lang, onNext }) => {
       >
         {t.features.map((f, i) => (
           <motion.div
-            key={i}
+            key={f.text}
             className="flex items-center gap-3 text-slate-300"
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}

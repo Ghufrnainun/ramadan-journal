@@ -1,4 +1,20 @@
-const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/equran-proxy`;
+declare global {
+  interface Window {
+    __APP_PUBLIC_CONFIG__?: {
+      supabaseUrl?: string;
+      supabaseAnonKey?: string;
+    };
+  }
+}
+
+const envSupabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const runtimeSupabaseUrl =
+  typeof window !== 'undefined' ? window.__APP_PUBLIC_CONFIG__?.supabaseUrl : undefined;
+const supabaseUrl = envSupabaseUrl || runtimeSupabaseUrl;
+
+const FUNCTION_URL = supabaseUrl
+  ? `${supabaseUrl.replace(/\/$/, '')}/functions/v1/equran-proxy`
+  : '/functions/v1/equran-proxy';
 
 // ============ SURAH & QURAN TYPES ============
 export interface Surah {
@@ -104,17 +120,34 @@ interface ApiResponse<T> {
 }
 
 class EQuranApi {
+  private async parseJsonResponse<T>(response: Response): Promise<T> {
+    const contentType = response.headers.get('content-type') || '';
+
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      const preview = text.slice(0, 200);
+      throw new Error(
+        `eQuran proxy returned non-JSON response (${response.status}, ${contentType || 'unknown'}): ${preview}`,
+      );
+    }
+
+    return (await response.json()) as T;
+  }
+
   private async fetchGet<T>(endpoint: string): Promise<T> {
     try {
       const response = await fetch(
         `${FUNCTION_URL}?endpoint=${encodeURIComponent(endpoint)}`,
+        {
+          headers: { Accept: 'application/json' },
+        },
       );
 
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
 
-      const result: ApiResponse<T> = await response.json();
+      const result = await this.parseJsonResponse<ApiResponse<T>>(response);
 
       if (result.code !== 200) {
         throw new Error(result.message || 'API error');
@@ -133,7 +166,10 @@ class EQuranApi {
         `${FUNCTION_URL}?endpoint=${encodeURIComponent(endpoint)}`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(body),
         },
       );
@@ -142,7 +178,7 @@ class EQuranApi {
         throw new Error(`API request failed: ${response.status}`);
       }
 
-      const result: ApiResponse<T> = await response.json();
+      const result = await this.parseJsonResponse<ApiResponse<T>>(response);
 
       if (result.code !== 200) {
         throw new Error(result.message || 'API error');

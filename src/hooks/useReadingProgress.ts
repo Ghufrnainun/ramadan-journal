@@ -16,11 +16,10 @@ export const useReadingProgress = () => {
         .eq('user_id', user.id)
         .order('date', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (error?.code === 'PGRST116') return null; // No rows found
       if (error) throw error;
-      return data;
+      return data ?? null;
     },
   });
 

@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   BookOpen,
@@ -12,62 +12,62 @@ import {
   CheckCircle,
   Search,
   X,
-} from "lucide-react";
-import { getProfile } from "@/lib/storage";
-import { equranApi, Surah, SurahDetail } from "@/lib/api/equran";
+} from 'lucide-react';
+import { getProfile } from '@/lib/storage';
+import { equranApi, Surah, SurahDetail } from '@/lib/api/equran';
 import {
   getReadingProgress,
   getReadingTarget,
   saveReadingProgress,
   saveReadingTarget,
-} from "@/lib/reading-progress";
-import { isBookmarked, toggleBookmark } from "@/lib/bookmarks";
-import { markActiveDay } from "@/lib/streak";
-import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+} from '@/lib/reading-progress';
+import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
+import { markActiveDay } from '@/lib/streak';
+import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const content = {
   id: {
-    title: "Tadarus",
-    subtitle: "Al-Quran Digital",
-    loading: "Memuat...",
-    error: "Gagal memuat data",
-    retry: "Coba Lagi",
-    ayat: "ayat",
-    surah: "Surat",
-    searchPlaceholder: "Cari surat...",
-    markLast: "Tandai Terakhir",
-    continueReading: "Lanjutkan Membaca",
-    lastRead: "Terakhir Dibaca",
-    target: "Target Harian",
-    pages: "halaman",
-    noResults: "Surat tidak ditemukan",
+    title: 'Tadarus',
+    subtitle: 'Al-Quran Digital',
+    loading: 'Memuat...',
+    error: 'Gagal memuat data',
+    retry: 'Coba Lagi',
+    ayat: 'ayat',
+    surah: 'Surat',
+    searchPlaceholder: 'Cari surat...',
+    markLast: 'Tandai Terakhir',
+    continueReading: 'Lanjutkan Membaca',
+    lastRead: 'Terakhir Dibaca',
+    target: 'Target Harian',
+    pages: 'halaman',
+    noResults: 'Surat tidak ditemukan',
   },
   en: {
-    title: "Quran Reading",
-    subtitle: "Digital Quran",
-    loading: "Loading...",
-    error: "Failed to load data",
-    retry: "Try Again",
-    ayat: "verses",
-    surah: "Surah",
-    searchPlaceholder: "Search surah...",
-    markLast: "Mark last read",
-    continueReading: "Continue Reading",
-    lastRead: "Last Read",
-    target: "Daily Target",
-    pages: "pages",
-    noResults: "Surah not found",
+    title: 'Quran Reading',
+    subtitle: 'Digital Quran',
+    loading: 'Loading...',
+    error: 'Failed to load data',
+    retry: 'Try Again',
+    ayat: 'verses',
+    surah: 'Surah',
+    searchPlaceholder: 'Search surah...',
+    markLast: 'Mark last read',
+    continueReading: 'Continue Reading',
+    lastRead: 'Last Read',
+    target: 'Daily Target',
+    pages: 'pages',
+    noResults: 'Surah not found',
   },
 };
 
 const QuranPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [lang, setLang] = useState<"id" | "en">("id");
+  const [lang, setLang] = useState<'id' | 'en'>('id');
   const [surahs, setSurahs] = useState<Surah[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedSurah, setSelectedSurah] = useState<SurahDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSurah, setIsLoadingSurah] = useState(false);
@@ -94,7 +94,7 @@ const QuranPage: React.FC = () => {
       setSurahs(data);
     } catch (err) {
       setError(errorMessage);
-      console.error("Failed to load surahs:", err);
+      console.error('Failed to load surahs:', err);
     } finally {
       setIsLoading(false);
     }
@@ -108,7 +108,7 @@ const QuranPage: React.FC = () => {
         setSelectedSurah(data);
         setSearchParams({ surah: number.toString() });
       } catch (err) {
-        console.error("Failed to load surah:", err);
+        console.error('Failed to load surah:', err);
       } finally {
         setIsLoadingSurah(false);
       }
@@ -133,7 +133,7 @@ const QuranPage: React.FC = () => {
       setSearchParams({});
       stopAudio();
     } else {
-      navigate("/dashboard");
+      navigate('/dashboard');
     }
   };
 
@@ -189,18 +189,15 @@ const QuranPage: React.FC = () => {
   }, [playingAudio, playingFullSurah]);
 
   useEffect(() => {
+    // Onboarding guard removed — AppGate handles this at the route level
     const profile = getProfile();
-    if (!profile.onboardingCompleted) {
-      navigate("/onboarding");
-      return;
-    }
     const nextLang = profile.language;
     setLang(nextLang);
     void loadSurahs(content[nextLang].error);
-  }, [navigate, loadSurahs]);
+  }, [loadSurahs]);
 
   useEffect(() => {
-    const surahParam = searchParams.get("surah");
+    const surahParam = searchParams.get('surah');
     if (surahParam && surahs.length > 0) {
       void loadSurah(parseInt(surahParam, 10));
     }
@@ -303,10 +300,10 @@ const QuranPage: React.FC = () => {
                   <button
                     onClick={toggleFullSurahAudio}
                     className={cn(
-                      "inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-medium transition-colors duration-300 shadow-lg",
+                      'inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-medium transition-colors duration-300 shadow-lg',
                       playingFullSurah
-                        ? "bg-amber-500 text-slate-900 hover:bg-amber-400"
-                        : "bg-emerald-500 text-slate-900 hover:bg-emerald-400",
+                        ? 'bg-amber-500 text-slate-900 hover:bg-amber-400'
+                        : 'bg-emerald-500 text-slate-900 hover:bg-emerald-400',
                     )}
                   >
                     {playingFullSurah ? (
@@ -347,10 +344,10 @@ const QuranPage: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
-                  "rounded-2xl p-5 border transition-colors duration-300",
+                  'rounded-2xl p-5 border transition-colors duration-300',
                   isActive
-                    ? "bg-emerald-900/10 border-emerald-500/30 shadow-lg"
-                    : "bg-slate-900/30 border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/50",
+                    ? 'bg-emerald-900/10 border-emerald-500/30 shadow-lg'
+                    : 'bg-slate-900/30 border-slate-800/50 hover:border-slate-700 hover:bg-slate-900/50',
                 )}
               >
                 {/* Header (Number + Actions) */}
@@ -377,10 +374,10 @@ const QuranPage: React.FC = () => {
                           }
                         }}
                         className={cn(
-                          "p-2 rounded-lg transition-colors",
+                          'p-2 rounded-lg transition-colors',
                           isActive
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : "hover:bg-slate-800 text-slate-400",
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'hover:bg-slate-800 text-slate-400',
                         )}
                       >
                         {isActive ? (
@@ -406,7 +403,7 @@ const QuranPage: React.FC = () => {
                         const bookmarkId = `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`;
                         toggleBookmark({
                           id: bookmarkId,
-                          type: "ayah",
+                          type: 'ayah',
                           title: `${selectedSurah.namaLatin} : ${ayah.nomorAyat}`,
                           subtitle: selectedSurah.arti,
                           content: ayah.teksIndonesia,
@@ -414,13 +411,13 @@ const QuranPage: React.FC = () => {
                         });
                       }}
                       className={cn(
-                        "p-2 rounded-lg hover:bg-slate-800 transition-colors",
+                        'p-2 rounded-lg hover:bg-slate-800 transition-colors',
                         isBookmarked(
-                          "ayah",
+                          'ayah',
                           `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`,
                         )
-                          ? "text-amber-400"
-                          : "text-slate-400 hover:text-amber-400",
+                          ? 'text-amber-400'
+                          : 'text-slate-400 hover:text-amber-400',
                       )}
                     >
                       <Bookmark className="w-4 h-4" />
@@ -518,7 +515,7 @@ const QuranPage: React.FC = () => {
           <button
             type="button"
             aria-label="Back to dashboard"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate('/dashboard')}
             className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-slate-400" />
@@ -544,7 +541,7 @@ const QuranPage: React.FC = () => {
             <button
               type="button"
               aria-label="Clear search"
-              onClick={() => setSearchQuery("")}
+              onClick={() => setSearchQuery('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full bg-slate-800 text-slate-400 hover:text-white"
             >
               <X className="w-3 h-3" />

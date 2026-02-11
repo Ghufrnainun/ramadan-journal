@@ -56,22 +56,26 @@ const GoalsPage = () => {
   const [formError, setFormError] = useState('');
   const pendingUpdateIds = useRef(new Set<string>());
 
-  const { goals, isLoading, error, createGoal, updateGoal, deleteGoal, isUpdating } =
-    useRamadanGoals();
+  const {
+    goals,
+    isLoading,
+    error,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    isUpdating,
+  } = useRamadanGoals();
   const { logs: fastingLogs } = useFastingLog();
   const { logs: tarawihLogs } = useTarawihLog();
   const { logs: sedekahLogs } = useSedekahLog();
   const { progress: readingProgress } = useReadingProgress();
 
-  useEffect(() => {
-    if (!profile.onboardingCompleted) {
-      navigate('/onboarding');
-    }
-  }, [navigate, profile.onboardingCompleted]);
+  // Onboarding guard removed — AppGate handles this at the route level
 
   const computed = useMemo(() => {
     return {
-      fasting_30: (fastingLogs ?? []).filter((log) => log.status === 'full').length,
+      fasting_30: (fastingLogs ?? []).filter((log) => log.status === 'full')
+        .length,
       tarawih_30: (tarawihLogs ?? []).filter((log) => log.tarawih_done).length,
       sedekah_30: (sedekahLogs ?? []).filter((log) => log.completed).length,
       khatam: Math.min(30, readingProgress?.juz_number ?? 0),
@@ -85,7 +89,8 @@ const GoalsPage = () => {
       const current = computed[goal.goal_type as keyof typeof computed];
       const completed = current >= goal.target;
       if (
-        ((goal.current ?? 0) !== current || Boolean(goal.completed) !== completed) &&
+        ((goal.current ?? 0) !== current ||
+          Boolean(goal.completed) !== completed) &&
         !pendingUpdateIds.current.has(goal.id)
       ) {
         pendingUpdateIds.current.add(goal.id);
@@ -162,7 +167,9 @@ const GoalsPage = () => {
               type="number"
               min={1}
               value={target}
-              onChange={(e) => setTarget(Math.max(1, Number(e.target.value || 1)))}
+              onChange={(e) =>
+                setTarget(Math.max(1, Number(e.target.value || 1)))
+              }
               className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm text-white focus:border-amber-500/50 focus:outline-none"
             />
             <button
@@ -177,7 +184,11 @@ const GoalsPage = () => {
                   return;
                 }
                 setFormError('');
-                createGoal({ goal_type: 'custom', title: title.trim(), target });
+                createGoal({
+                  goal_type: 'custom',
+                  title: title.trim(),
+                  target,
+                });
                 setTitle('');
                 setTarget(30);
               }}
@@ -195,7 +206,10 @@ const GoalsPage = () => {
           {error && <p className="text-sm text-rose-300">{t.error}</p>}
           {(goals ?? []).map((goal) => {
             const current = goal.current ?? 0;
-            const pct = Math.min(100, Math.round((current / goal.target) * 100));
+            const pct = Math.min(
+              100,
+              Math.round((current / goal.target) * 100),
+            );
             const completed = Boolean(goal.completed);
             return (
               <motion.div

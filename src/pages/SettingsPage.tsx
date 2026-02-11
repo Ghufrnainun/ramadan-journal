@@ -6,11 +6,13 @@ import {
   Globe,
   MapPin,
   Moon,
+  RotateCcw,
   ShieldCheck,
   User,
 } from 'lucide-react';
-import { getProfile, UserProfile } from '@/lib/storage';
-import { saveProfileAndSync } from '@/lib/profile-sync';
+import { getProfile } from '@/lib/storage';
+import type { UserProfile } from '@/lib/profile-store';
+import { getProfileStore } from '@/lib/profile-store';
 import { useAuth } from '@/hooks/useAuth';
 import { useI18n } from '@/hooks/useI18n';
 import { getProvinces, getCitiesByProvince } from '@/data/indonesia-cities';
@@ -41,8 +43,21 @@ const SettingsPage: React.FC = () => {
   };
 
   const saveChanges = async () => {
-    await saveProfileAndSync(profile, user?.id);
+    const store = getProfileStore(user?.id);
+    await store.upsertProfile(profile);
     navigate('/dashboard');
+  };
+
+  const handleResetOnboarding = async () => {
+    const confirmed = window.confirm(
+      profile.language === 'id'
+        ? 'Reset onboarding? Kamu akan diarahkan ke halaman setup ulang.'
+        : 'Reset onboarding? You will be redirected to setup again.',
+    );
+    if (!confirmed) return;
+    const store = getProfileStore(user?.id);
+    await store.clearSetup();
+    navigate('/onboarding', { replace: true });
   };
 
   const requestNotifications = async () => {
@@ -336,6 +351,15 @@ const SettingsPage: React.FC = () => {
 
         <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-3">
           <p className="text-white font-medium">{dict.settings.data}</p>
+          <button
+            onClick={handleResetOnboarding}
+            className="w-full py-3 rounded-xl border border-amber-500/30 text-amber-300 hover:bg-amber-500/10 transition-colors text-sm flex items-center justify-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            {profile.language === 'id'
+              ? 'Reset Onboarding'
+              : 'Reset Onboarding'}
+          </button>
           <button
             onClick={handleReset}
             className="w-full py-3 rounded-xl border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 transition-colors text-sm"

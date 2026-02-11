@@ -186,9 +186,9 @@ const DemoDashboard: React.FC<DemoDashboardProps> = ({ lang }) => {
             { icon: Heart, label: t.actions.dhikr },
             { icon: Clock, label: t.actions.tracker },
             { icon: Calendar, label: t.actions.calendar },
-          ].map(({ icon: Icon, label }, i) => (
+          ].map(({ icon: Icon, label }) => (
             <div
-              key={i}
+              key={label}
               className="text-center p-3 rounded-xl bg-slate-800/30 border border-slate-700/50 opacity-50 cursor-not-allowed group relative"
             >
               <Icon className="w-5 h-5 mx-auto mb-1 text-slate-500" />

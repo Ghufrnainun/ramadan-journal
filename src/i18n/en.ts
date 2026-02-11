@@ -42,7 +42,7 @@ export const en = {
   reflection: {
     title: 'Night Reflection',
     subtitle: 'A quiet space to close the day',
-    prompt: 'Today’s prompt',
+    prompt: "Today's prompt",
     placeholder: 'Write your reflection here...',
     share: 'Share Reflection Card',
     streak: 'Gentle Streak',

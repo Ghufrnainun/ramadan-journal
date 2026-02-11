@@ -5,7 +5,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/hooks/useAuth';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import AppGate from '@/components/AppGate';
+import AppErrorBoundary from '@/components/AppErrorBoundary';
+import { dictionaries } from '@/i18n';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
@@ -26,75 +28,145 @@ const StatsPage = lazy(() => import('./pages/StatsPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const queryClient = new QueryClient();
+const loadingText = dictionaries.id.common.loading;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense
-            fallback={
-              <div className="min-h-dvh bg-[#020617] text-slate-300 flex items-center justify-center">
-                Loading...
-              </div>
-            }
-          >
-            <Routes>
-              {/* Public routes */}
+    <AppErrorBoundary>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense
+              fallback={
+                <div className="min-h-dvh bg-[#020617] text-slate-300 flex items-center justify-center">
+                  {loadingText}
+                </div>
+              }
+            >
+              <Routes>
+              {/* Public routes - no guard */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/demo" element={<DemoPage />} />
-              
-              {/* Protected routes - require authentication */}
-              <Route path="/onboarding" element={
-                <ProtectedRoute><OnboardingPage /></ProtectedRoute>
-              } />
-              <Route path="/dashboard" element={
-                <ProtectedRoute><DashboardPage /></ProtectedRoute>
-              } />
-              <Route path="/dhikr" element={
-                <ProtectedRoute><DhikrPage /></ProtectedRoute>
-              } />
-              <Route path="/hadith" element={
-                <ProtectedRoute><HadithPage /></ProtectedRoute>
-              } />
-              <Route path="/doa" element={
-                <ProtectedRoute><DoaPage /></ProtectedRoute>
-              } />
-              <Route path="/tracker" element={
-                <ProtectedRoute><TrackerPage /></ProtectedRoute>
-              } />
-              <Route path="/quran" element={
-                <ProtectedRoute><QuranPage /></ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute><SettingsPage /></ProtectedRoute>
-              } />
-              <Route path="/reflection" element={
-                <ProtectedRoute><ReflectionPage /></ProtectedRoute>
-              } />
-              <Route path="/bookmarks" element={
-                <ProtectedRoute><BookmarksPage /></ProtectedRoute>
-              } />
-              <Route path="/calendar" element={
-                <ProtectedRoute><CalendarPage /></ProtectedRoute>
-              } />
-              <Route path="/goals" element={
-                <ProtectedRoute><GoalsPage /></ProtectedRoute>
-              } />
-              <Route path="/stats" element={
-                <ProtectedRoute><StatsPage /></ProtectedRoute>
-              } />
-              
+
+              {/* Onboarding - requires auth but NOT setup completion */}
+              <Route
+                path="/onboarding"
+                element={
+                  <AppGate requireAuth>
+                    <OnboardingPage />
+                  </AppGate>
+                }
+              />
+
+              {/* App routes - require auth AND setup completion */}
+              <Route
+                path="/dashboard"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <DashboardPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/dhikr"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <DhikrPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/hadith"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <HadithPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/doa"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <DoaPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/tracker"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <TrackerPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/quran"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <QuranPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <SettingsPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/reflection"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <ReflectionPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/bookmarks"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <BookmarksPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/calendar"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <CalendarPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/goals"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <GoalsPage />
+                  </AppGate>
+                }
+              />
+              <Route
+                path="/stats"
+                element={
+                  <AppGate requireAuth requireSetup>
+                    <StatsPage />
+                  </AppGate>
+                }
+              />
+
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </AppErrorBoundary>
   </QueryClientProvider>
 );
 

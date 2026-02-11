@@ -6,10 +6,12 @@ import LocationStep from './onboarding/steps/LocationStep';
 import CalendarStep from './onboarding/steps/CalendarStep';
 import FocusStep from './onboarding/steps/FocusStep';
 import RemindersStep from './onboarding/steps/RemindersStep';
-import { getProfile, saveProfile, UserProfile } from '@/lib/storage';
-import { saveProfileAndSync } from '@/lib/profile-sync';
+import { getProfileStore } from '@/lib/profile-store';
+import type { UserProfile } from '@/lib/profile-store';
+import { getProfile } from '@/lib/storage';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { debugAuthSimple } from '@/lib/debug-auth';
 
 const TOTAL_STEPS = 5;
 
@@ -21,14 +23,11 @@ const OnboardingPage: React.FC = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    // AppGate already handles redirect for initialized users.
+    // Just load the current profile for the form.
     const stored = getProfile();
-    // If already completed onboarding, redirect to dashboard
-    if (stored.onboardingCompleted) {
-      navigate('/dashboard', { replace: true });
-      return;
-    }
     setProfile(stored);
-  }, [navigate]);
+  }, []);
 
   const lang = profile?.language || 'id';
 
@@ -36,46 +35,62 @@ const OnboardingPage: React.FC = () => {
     setProfile((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
+  const handleStepSave = async (updates: Partial<UserProfile>) => {
+    // Save intermediate step data via store
+    const store = getProfileStore(user?.id);
+    await store.upsertProfile(updates);
+  };
+
   const handleComplete = async (reminders: UserProfile['reminders']) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const SYNC_TIMEOUT_MS = 4000;
-
     try {
+      debugAuthSimple('OnboardingPage: completing setup');
+
+      const store = getProfileStore(user?.id);
       const baseProfile = profile ?? getProfile();
-      const finalProfile: UserProfile = {
+
+      // 1. Save all profile data
+      await store.upsertProfile({
         ...baseProfile,
         reminders,
-        onboardingCompleted: true,
-      };
+      });
 
-      // Save locally first so user can proceed even if network fails
-      saveProfile(finalProfile);
+      // 2. Atomically mark setup as complete
+      await store.markSetupComplete();
 
-      // Try to sync to server, but don't let a hanging request block navigation
-      const success = await Promise.race([
-        saveProfileAndSync(finalProfile, user?.id),
-        new Promise<boolean>((resolve) =>
-          setTimeout(() => resolve(false), SYNC_TIMEOUT_MS),
-        ),
-      ]);
+      debugAuthSimple(
+        'OnboardingPage: setup complete, navigating to dashboard',
+      );
 
-      if (!success) {
-        toast({
-          title: lang === 'id' ? 'Data tersimpan lokal' : 'Data saved locally',
-          description:
-            lang === 'id'
-              ? 'Sync memakan waktu lama. Kamu tetap bisa lanjut—akan sync saat koneksi kembali.'
-              : 'Sync is taking too long. You can continue—will sync when connection returns.',
-        });
-      }
-
+      // 3. Navigate AFTER writes finish
       navigate('/dashboard', { replace: true });
     } catch (error) {
       console.error('Onboarding completion error:', error);
-      // Force local completion flag so route guards won't bounce back to onboarding
-      saveProfile({ onboardingCompleted: true, reminders });
+
+      // Emergency fallback: force local completion so user doesn't loop
+      const store = getProfileStore(user?.id);
+      try {
+        await store.markSetupComplete();
+      } catch {
+        // Last resort: direct localStorage
+        const { saveProfile: saveLegacy } = await import('@/lib/storage');
+        saveLegacy({
+          setup_completed_at: new Date().toISOString(),
+          onboardingCompleted: true,
+          reminders,
+        });
+      }
+
+      toast({
+        title: lang === 'id' ? 'Data tersimpan lokal' : 'Data saved locally',
+        description:
+          lang === 'id'
+            ? 'Terjadi kesalahan saat menyimpan. Data kamu tetap aman di perangkat.'
+            : 'An error occurred while saving. Your data is safe on this device.',
+      });
+
       navigate('/dashboard', { replace: true });
     } finally {
       setIsSubmitting(false);
@@ -94,7 +109,7 @@ const OnboardingPage: React.FC = () => {
           initialCity={profile.location}
           onNext={(location) => {
             updateProfile({ location });
-            void saveProfileAndSync({ location }, user?.id);
+            void handleStepSave({ location });
             setStep(2);
           }}
           onBack={() => setStep(0)}
@@ -107,7 +122,7 @@ const OnboardingPage: React.FC = () => {
           initialDate={profile.ramadanStartDate}
           onNext={(date) => {
             updateProfile({ ramadanStartDate: date });
-            void saveProfileAndSync({ ramadanStartDate: date }, user?.id);
+            void handleStepSave({ ramadanStartDate: date });
             setStep(3);
           }}
           onBack={() => setStep(1)}
@@ -120,7 +135,7 @@ const OnboardingPage: React.FC = () => {
           initialModules={profile.focusModules}
           onNext={(modules) => {
             updateProfile({ focusModules: modules });
-            void saveProfileAndSync({ focusModules: modules }, user?.id);
+            void handleStepSave({ focusModules: modules });
             setStep(4);
           }}
           onBack={() => setStep(2)}

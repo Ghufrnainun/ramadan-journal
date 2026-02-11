@@ -68,15 +68,12 @@ const DhikrPage: React.FC = () => {
   });
 
   useEffect(() => {
+    // Onboarding guard removed — AppGate handles this at the route level
     const profile = getProfile();
-    if (!profile.onboardingCompleted) {
-      navigate('/onboarding');
-      return;
-    }
     setLang(profile.language);
     setPresets(getDhikrPresets());
     setSessions(getDhikrSessions());
-  }, [navigate]);
+  }, []);
 
   const t = content[lang];
 
@@ -317,7 +314,9 @@ const DhikrPage: React.FC = () => {
         {/* Create New Toggle */}
         <button
           type="button"
-          aria-label={isCreating ? 'Hide custom dzikir form' : 'Show custom dzikir form'}
+          aria-label={
+            isCreating ? 'Hide custom dzikir form' : 'Show custom dzikir form'
+          }
           onClick={() => setIsCreating(!isCreating)}
           className="w-full p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 flex items-center justify-center gap-2 hover:bg-amber-500/20 transition-colors font-medium"
         >

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   RotateCcw,
@@ -9,57 +9,57 @@ import {
   Loader2,
   BookOpen,
   Bookmark,
-} from "lucide-react";
-import { getProfile } from "@/lib/storage";
-import { equranApi, Doa } from "@/lib/api/equran";
+} from 'lucide-react';
+import { getProfile } from '@/lib/storage';
+import { equranApi, Doa } from '@/lib/api/equran';
 import {
   getDoaSessions,
   saveDoaSession,
   getDoaSessionById,
   DoaSession,
-} from "@/lib/doa-storage";
-import { isBookmarked, toggleBookmark } from "@/lib/bookmarks";
-import { markActiveDay } from "@/lib/streak";
-import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
+} from '@/lib/doa-storage';
+import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
+import { markActiveDay } from '@/lib/streak';
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
 const content = {
   id: {
-    title: "Doa Harian",
-    subtitle: "Koleksi Doa dari Al-Quran & Sunnah",
-    selectDoa: "Pilih Doa",
-    target: "Target",
-    completed: "Selesai!",
-    reset: "Ulangi",
-    todayProgress: "Progress Hari Ini",
-    tap: "Ketuk untuk menghitung",
-    loading: "Memuat doa...",
-    error: "Gagal memuat doa",
-    retry: "Coba Lagi",
-    readMode: "Mode Baca",
-    counterMode: "Mode Hitung",
+    title: 'Doa Harian',
+    subtitle: 'Koleksi Doa dari Al-Quran & Sunnah',
+    selectDoa: 'Pilih Doa',
+    target: 'Target',
+    completed: 'Selesai!',
+    reset: 'Ulangi',
+    todayProgress: 'Progress Hari Ini',
+    tap: 'Ketuk untuk menghitung',
+    loading: 'Memuat doa...',
+    error: 'Gagal memuat doa',
+    retry: 'Coba Lagi',
+    readMode: 'Mode Baca',
+    counterMode: 'Mode Hitung',
   },
   en: {
-    title: "Daily Dua",
-    subtitle: "Collection of Duas from Quran & Sunnah",
-    selectDoa: "Select Dua",
-    target: "Target",
-    completed: "Completed!",
-    reset: "Reset",
+    title: 'Daily Dua',
+    subtitle: 'Collection of Duas from Quran & Sunnah',
+    selectDoa: 'Select Dua',
+    target: 'Target',
+    completed: 'Completed!',
+    reset: 'Reset',
     todayProgress: "Today's Progress",
-    tap: "Tap to count",
-    loading: "Loading duas...",
-    error: "Failed to load duas",
-    retry: "Try Again",
-    readMode: "Read Mode",
-    counterMode: "Counter Mode",
+    tap: 'Tap to count',
+    loading: 'Loading duas...',
+    error: 'Failed to load duas',
+    retry: 'Try Again',
+    readMode: 'Read Mode',
+    counterMode: 'Counter Mode',
   },
 };
 
 const DoaPage: React.FC = () => {
   const navigate = useNavigate();
-  const [lang, setLang] = useState<"id" | "en">("id");
+  const [lang, setLang] = useState<'id' | 'en'>('id');
   const [doaList, setDoaList] = useState<Doa[]>([]);
   const [selectedDoa, setSelectedDoa] = useState<Doa | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +68,7 @@ const DoaPage: React.FC = () => {
   const [target, setTarget] = useState(3);
   const [showRipple, setShowRipple] = useState(false);
   const [sessions, setSessions] = useState<DoaSession[]>(getDoaSessions());
-  const [mode, setMode] = useState<"read" | "counter">("read");
+  const [mode, setMode] = useState<'read' | 'counter'>('read');
   const [isBookmarkedDoa, setIsBookmarkedDoa] = useState(false);
 
   const t = content[lang];
@@ -81,26 +81,23 @@ const DoaPage: React.FC = () => {
       setDoaList(data);
     } catch (err) {
       setError(errorMessage);
-      console.error("Failed to load doa:", err);
+      console.error('Failed to load doa:', err);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // Onboarding guard removed — AppGate handles this at the route level
     const profile = getProfile();
-    if (!profile.onboardingCompleted) {
-      navigate("/onboarding");
-      return;
-    }
     const nextLang = profile.language;
     setLang(nextLang);
     void loadDoaList(content[nextLang].error);
-  }, [navigate, loadDoaList]);
+  }, [loadDoaList]);
 
   const handleSelectDoa = (doa: Doa) => {
     setSelectedDoa(doa);
-    setIsBookmarkedDoa(isBookmarked("doa", `doa-${doa.id}`));
+    setIsBookmarkedDoa(isBookmarked('doa', `doa-${doa.id}`));
     const existing = getDoaSessionById(doa.id);
     if (existing) {
       setCount(existing.count);
@@ -112,7 +109,7 @@ const DoaPage: React.FC = () => {
   };
 
   const handleTap = useCallback(() => {
-    if (!selectedDoa || mode !== "counter") return;
+    if (!selectedDoa || mode !== 'counter') return;
 
     const newCount = count + 1;
     setCount(newCount);
@@ -123,7 +120,7 @@ const DoaPage: React.FC = () => {
       navigator.vibrate(10);
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split('T')[0];
     saveDoaSession({
       doaId: selectedDoa.id,
       count: newCount,
@@ -137,7 +134,7 @@ const DoaPage: React.FC = () => {
   const handleReset = () => {
     if (!selectedDoa) return;
     setCount(0);
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split('T')[0];
     saveDoaSession({
       doaId: selectedDoa.id,
       count: 0,
@@ -174,9 +171,9 @@ const DoaPage: React.FC = () => {
               onClick={() => {
                 const next = toggleBookmark({
                   id: `doa-${selectedDoa.id}`,
-                  type: "doa",
+                  type: 'doa',
                   title: selectedDoa.nama,
-                  subtitle: selectedDoa.tentang || selectedDoa.grup || "Doa",
+                  subtitle: selectedDoa.tentang || selectedDoa.grup || 'Doa',
                   content: selectedDoa.idn,
                   createdAt: new Date().toISOString(),
                 });
@@ -185,10 +182,10 @@ const DoaPage: React.FC = () => {
               className="p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
             >
               <Bookmark
-                className={`w-5 h-5 ${isBookmarkedDoa ? "text-amber-400" : "text-slate-400"}`}
+                className={`w-5 h-5 ${isBookmarkedDoa ? 'text-amber-400' : 'text-slate-400'}`}
               />
             </button>
-            {mode === "counter" && (
+            {mode === 'counter' && (
               <button
                 type="button"
                 aria-label="Reset doa counter"
@@ -219,9 +216,9 @@ const DoaPage: React.FC = () => {
               onClick={() => {
                 const next = toggleBookmark({
                   id: `doa-${selectedDoa.id}`,
-                  type: "doa",
+                  type: 'doa',
                   title: selectedDoa.nama,
-                  subtitle: selectedDoa.tentang || selectedDoa.grup || "Doa",
+                  subtitle: selectedDoa.tentang || selectedDoa.grup || 'Doa',
                   content: selectedDoa.idn,
                   createdAt: new Date().toISOString(),
                 });
@@ -230,10 +227,10 @@ const DoaPage: React.FC = () => {
               className="p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
             >
               <Bookmark
-                className={`w-5 h-5 ${isBookmarkedDoa ? "text-amber-400" : "text-slate-400"}`}
+                className={`w-5 h-5 ${isBookmarkedDoa ? 'text-amber-400' : 'text-slate-400'}`}
               />
             </button>
-            {mode === "counter" && (
+            {mode === 'counter' && (
               <button
                 type="button"
                 aria-label="Reset doa counter"
@@ -249,29 +246,29 @@ const DoaPage: React.FC = () => {
         {/* Mode Toggle */}
         <div className="flex justify-center gap-2 px-6 py-3">
           <button
-            onClick={() => setMode("read")}
+            onClick={() => setMode('read')}
             className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-              mode === "read"
-                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                : "bg-slate-800/50 text-slate-400"
+              mode === 'read'
+                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                : 'bg-slate-800/50 text-slate-400'
             }`}
           >
             <BookOpen className="w-4 h-4 inline mr-2" />
             {t.readMode}
           </button>
           <button
-            onClick={() => setMode("counter")}
+            onClick={() => setMode('counter')}
             className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-              mode === "counter"
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : "bg-slate-800/50 text-slate-400"
+              mode === 'counter'
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                : 'bg-slate-800/50 text-slate-400'
             }`}
           >
             {t.counterMode}
           </button>
         </div>
 
-        {mode === "read" ? (
+        {mode === 'read' ? (
           // Read Mode
           <ScrollArea className="flex-1 px-6 py-4">
             <div className="space-y-6 pb-24">
@@ -280,7 +277,7 @@ const DoaPage: React.FC = () => {
                 <p
                   className="text-3xl text-amber-400 leading-loose"
                   dir="rtl"
-                  style={{ fontFamily: "serif", lineHeight: 2.2 }}
+                  style={{ fontFamily: 'serif', lineHeight: 2.2 }}
                 >
                   {selectedDoa.ar}
                 </p>
@@ -310,10 +307,10 @@ const DoaPage: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               dir="rtl"
-              style={{ fontFamily: "serif", lineHeight: 1.8 }}
+              style={{ fontFamily: 'serif', lineHeight: 1.8 }}
             >
               {selectedDoa.ar.slice(0, 100)}
-              {selectedDoa.ar.length > 100 ? "..." : ""}
+              {selectedDoa.ar.length > 100 ? '...' : ''}
             </motion.p>
 
             <p className="text-slate-400 text-sm mb-8 text-center max-w-xs">
@@ -340,7 +337,7 @@ const DoaPage: React.FC = () => {
                   cy="128"
                   r="120"
                   fill="none"
-                  stroke={isCompleted ? "#22c55e" : "#10b981"}
+                  stroke={isCompleted ? '#22c55e' : '#10b981'}
                   strokeWidth="8"
                   strokeLinecap="round"
                   strokeDasharray={2 * Math.PI * 120}
@@ -355,7 +352,7 @@ const DoaPage: React.FC = () => {
 
               <div
                 className={`w-56 h-56 rounded-full flex flex-col items-center justify-center transition-colors ${
-                  isCompleted ? "bg-green-500/10" : "bg-slate-800/50"
+                  isCompleted ? 'bg-green-500/10' : 'bg-slate-800/50'
                 }`}
               >
                 {isCompleted ? (
@@ -438,7 +435,7 @@ const DoaPage: React.FC = () => {
         <button
           type="button"
           aria-label="Back to dashboard"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate('/dashboard')}
           className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-slate-400" />
@@ -472,15 +469,15 @@ const DoaPage: React.FC = () => {
                   key={session.doaId}
                   className={`flex-shrink-0 px-3 py-2 rounded-lg border ${
                     isComplete
-                      ? "bg-green-500/10 border-green-500/30"
-                      : "bg-slate-800/50 border-slate-700"
+                      ? 'bg-green-500/10 border-green-500/30'
+                      : 'bg-slate-800/50 border-slate-700'
                   }`}
                 >
                   <p className="text-xs text-slate-400 truncate max-w-[100px]">
                     {doa.nama}
                   </p>
                   <p
-                    className={`text-sm font-medium ${isComplete ? "text-green-400" : "text-white"}`}
+                    className={`text-sm font-medium ${isComplete ? 'text-green-400' : 'text-white'}`}
                   >
                     {session.count}/{session.target}
                   </p>
@@ -508,8 +505,8 @@ const DoaPage: React.FC = () => {
                 <Card
                   className={`border cursor-pointer transition-colors hover:border-emerald-500/50 ${
                     isComplete
-                      ? "bg-green-500/5 border-green-500/30"
-                      : "bg-slate-800/30 border-slate-700"
+                      ? 'bg-green-500/5 border-green-500/30'
+                      : 'bg-slate-800/30 border-slate-700'
                   }`}
                   onClick={() => handleSelectDoa(doa)}
                 >
@@ -528,7 +525,7 @@ const DoaPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       {session && (
                         <span
-                          className={`text-sm ${isComplete ? "text-green-400" : "text-slate-400"}`}
+                          className={`text-sm ${isComplete ? 'text-green-400' : 'text-slate-400'}`}
                         >
                           {session.count}/{session.target}
                         </span>
