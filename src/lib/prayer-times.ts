@@ -49,7 +49,12 @@ const setPrayerTimesCache = (
 // Province mapping for common cities
 const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> =
   {
-    Jakarta: { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta Pusat' },
+    Jakarta: { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta' },
+    'Jakarta Pusat': { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta' },
+    'Jakarta Selatan': { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta' },
+    'Jakarta Barat': { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta' },
+    'Jakarta Timur': { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta' },
+    'Jakarta Utara': { provinsi: 'DKI Jakarta', kabkota: 'Kota Jakarta' },
     Surabaya: { provinsi: 'Jawa Timur', kabkota: 'Kota Surabaya' },
     Bandung: { provinsi: 'Jawa Barat', kabkota: 'Kota Bandung' },
     Medan: { provinsi: 'Sumatera Utara', kabkota: 'Kota Medan' },
