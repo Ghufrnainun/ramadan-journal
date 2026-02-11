@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Sunrise, Moon, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { equranApi, ImsakiyahItem } from '@/lib/api/equran';
-import { getCityMapping } from '@/lib/prayer-times';
+import { resolveCityMapping } from '@/lib/prayer-times';
 import { getLocalDateKey } from '@/lib/date';
 
 interface ImsakiyahCardProps {
@@ -55,7 +55,7 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
         const tahun = now.getFullYear();
 
         // Use mapping to ensure correct city name for API
-        const mapping = getCityMapping(kabkota);
+        const mapping = await resolveCityMapping(kabkota, provinsi);
 
         // Fetch Ramadan schedule for the current year
         const schedule = await equranApi.getJadwalImsakiyah(

@@ -116,9 +116,12 @@ export interface ImsakiyahData {
 }
 
 interface ApiResponse<T> {
-  code: number;
-  message: string;
-  data: T;
+  code?: number;
+  message?: string;
+  data?: T;
+  status?: string;
+  success?: boolean;
+  error?: string;
 }
 
 export class EQuranApi {
@@ -149,13 +152,8 @@ export class EQuranApi {
         throw new Error(`API request failed: ${response.status}`);
       }
 
-      const result = await this.parseJsonResponse<ApiResponse<T>>(response);
-
-      if (result.code !== 200) {
-        throw new Error(result.message || 'API error');
-      }
-
-      return result.data;
+      const result = await this.parseJsonResponse<ApiResponse<T> | T>(response);
+      return this.unwrapResponseData<T>(result);
     } catch (error) {
       console.error('eQuran API error:', error);
       throw error;
@@ -180,17 +178,47 @@ export class EQuranApi {
         throw new Error(`API request failed: ${response.status}`);
       }
 
-      const result = await this.parseJsonResponse<ApiResponse<T>>(response);
-
-      if (result.code !== 200) {
-        throw new Error(result.message || 'API error');
-      }
-
-      return result.data;
+      const result = await this.parseJsonResponse<ApiResponse<T> | T>(response);
+      return this.unwrapResponseData<T>(result);
     } catch (error) {
       console.error('eQuran API error:', error);
       throw error;
     }
+  }
+
+  private unwrapResponseData<T>(payload: ApiResponse<T> | T): T {
+    if (Array.isArray(payload)) {
+      return payload as T;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const wrapped = payload as ApiResponse<T>;
+
+      if (wrapped.success === false) {
+        throw new Error(wrapped.error || wrapped.message || 'API error');
+      }
+
+      if (typeof wrapped.code === 'number') {
+        if (wrapped.code !== 200) {
+          throw new Error(wrapped.message || 'API error');
+        }
+        if (wrapped.data === undefined) {
+          throw new Error('API response missing data');
+        }
+        return wrapped.data;
+      }
+
+      // Some eQuran endpoints (e.g. doa) use { status: "success", data: [...] }.
+      if (wrapped.status === 'success' && wrapped.data !== undefined) {
+        return wrapped.data;
+      }
+
+      if (wrapped.data !== undefined) {
+        return wrapped.data;
+      }
+    }
+
+    return payload as T;
   }
 
   // ============ QURAN METHODS ============

@@ -60,9 +60,11 @@ const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> =
     Bandung: { provinsi: 'Jawa Barat', kabkota: 'Kota Bandung' },
     Medan: { provinsi: 'Sumatera Utara', kabkota: 'Kota Medan' },
     Semarang: { provinsi: 'Jawa Tengah', kabkota: 'Kota Semarang' },
+    Solo: { provinsi: 'Jawa Tengah', kabkota: 'Kota Surakarta' },
+    Purwokerto: { provinsi: 'Jawa Tengah', kabkota: 'Kab. Banyumas' },
     Makassar: { provinsi: 'Sulawesi Selatan', kabkota: 'Kota Makassar' },
     Palembang: { provinsi: 'Sumatera Selatan', kabkota: 'Kota Palembang' },
-    Yogyakarta: { provinsi: 'DI Yogyakarta', kabkota: 'Kota Yogyakarta' },
+    Yogyakarta: { provinsi: 'D.I. Yogyakarta', kabkota: 'Kota Yogyakarta' },
     Denpasar: { provinsi: 'Bali', kabkota: 'Kota Denpasar' },
     Malang: { provinsi: 'Jawa Timur', kabkota: 'Kota Malang' },
     Bekasi: { provinsi: 'Jawa Barat', kabkota: 'Kota Bekasi' },
@@ -71,23 +73,150 @@ const CITY_PROVINCE_MAP: Record<string, { provinsi: string; kabkota: string }> =
     Bogor: { provinsi: 'Jawa Barat', kabkota: 'Kota Bogor' },
   };
 
+const PROVINCE_ALIASES: Record<string, string> = {
+  'DI Yogyakarta': 'D.I. Yogyakarta',
+  'Daerah Istimewa Yogyakarta': 'D.I. Yogyakarta',
+};
+
+const kabkotaCache: Record<string, string[]> = {};
+const resolvedCityCache: Record<string, { provinsi: string; kabkota: string }> = {};
+
+const normalizeName = (value: string): string =>
+  value
+    .toLowerCase()
+    .replace(/\./g, '')
+    .replace(/^kab\s*/g, '')
+    .replace(/^kabupaten\s*/g, '')
+    .replace(/^kota\s*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const normalizeProvince = (province?: string): string | null => {
+  if (!province) return null;
+  return PROVINCE_ALIASES[province] || province;
+};
+
+const pickBestKabkotaCandidate = (
+  cityName: string,
+  candidates: string[],
+): string | null => {
+  const normalizedCity = normalizeName(cityName);
+  if (!normalizedCity) return null;
+
+  const exact = candidates.find(
+    (candidate) => normalizeName(candidate) === normalizedCity,
+  );
+  if (exact) return exact;
+
+  const contains = candidates.filter((candidate) => {
+    const normalizedCandidate = normalizeName(candidate);
+    return (
+      normalizedCandidate.includes(normalizedCity) ||
+      normalizedCity.includes(normalizedCandidate)
+    );
+  });
+  if (contains.length > 0) {
+    return contains.sort((a, b) => a.length - b.length)[0];
+  }
+
+  return null;
+};
+
+const getKabkotaByProvince = async (province: string): Promise<string[]> => {
+  if (kabkotaCache[province]) return kabkotaCache[province];
+  const list = await equranApi.getKabKota(province);
+  kabkotaCache[province] = list;
+  return list;
+};
+
 /**
  * Get province and city mapping
  */
 export const getCityMapping = (
   cityName: string,
+  province?: string,
 ): { provinsi: string; kabkota: string } => {
+  const canonicalProvince = normalizeProvince(province);
+
+  if (canonicalProvince) {
+    const exactMatch = Object.entries(CITY_PROVINCE_MAP).find(
+      ([key]) =>
+        cityName.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(cityName.toLowerCase()),
+    );
+    if (exactMatch) {
+      return {
+        provinsi: canonicalProvince,
+        kabkota: exactMatch[1].kabkota,
+      };
+    }
+  }
+
   // Check direct mapping
   for (const [key, value] of Object.entries(CITY_PROVINCE_MAP)) {
     if (
       cityName.toLowerCase().includes(key.toLowerCase()) ||
       key.toLowerCase().includes(cityName.toLowerCase())
     ) {
+      if (canonicalProvince) {
+        return { provinsi: canonicalProvince, kabkota: value.kabkota };
+      }
       return value;
     }
   }
+
+  if (canonicalProvince) {
+    return { provinsi: canonicalProvince, kabkota: cityName };
+  }
+
   // Default to Jakarta
   return CITY_PROVINCE_MAP['Jakarta'];
+};
+
+export const resolveCityMapping = async (
+  cityName: string,
+  province?: string,
+): Promise<{ provinsi: string; kabkota: string }> => {
+  const cacheKey = `${province || ''}|${cityName}`;
+  if (resolvedCityCache[cacheKey]) return resolvedCityCache[cacheKey];
+
+  const fallback = getCityMapping(cityName, province);
+  const candidateProvinces = Array.from(
+    new Set(
+      [normalizeProvince(province), normalizeProvince(fallback.provinsi)].filter(
+        (value): value is string => Boolean(value),
+      ),
+    ),
+  );
+
+  for (const candidateProvince of candidateProvinces) {
+    try {
+      const kabkotaList = await getKabkotaByProvince(candidateProvince);
+      const bestCandidate = pickBestKabkotaCandidate(cityName, kabkotaList);
+      if (bestCandidate) {
+        const resolved = {
+          provinsi: candidateProvince,
+          kabkota: bestCandidate,
+        };
+        resolvedCityCache[cacheKey] = resolved;
+        return resolved;
+      }
+
+      if (kabkotaList.includes(fallback.kabkota)) {
+        const resolved = {
+          provinsi: candidateProvince,
+          kabkota: fallback.kabkota,
+        };
+        resolvedCityCache[cacheKey] = resolved;
+        return resolved;
+      }
+    } catch (error) {
+      console.error('Failed to resolve kabkota list:', error);
+    }
+  }
+
+  resolvedCityCache[cacheKey] = fallback;
+  return fallback;
 };
 
 /**
@@ -96,9 +225,10 @@ export const getCityMapping = (
 export const getPrayerTimesFromApi = async (
   city: string,
   date: Date = new Date(),
+  province?: string,
 ): Promise<PrayerTimes> => {
   const dateStr = getLocalDateKey(date);
-  const cacheKey = `${city}-${dateStr}`;
+  const cacheKey = `${province || ''}-${city}-${dateStr}`;
 
   // Check cache
   if (
@@ -114,7 +244,7 @@ export const getPrayerTimesFromApi = async (
   }
 
   try {
-    const mapping = getCityMapping(city);
+    const mapping = await resolveCityMapping(city, province);
     const bulan = date.getMonth() + 1;
     const tahun = date.getFullYear();
     const jadwalList = await equranApi.getJadwalShalat(

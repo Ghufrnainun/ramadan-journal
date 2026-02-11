@@ -5,7 +5,7 @@ import { getLocalDateKey } from "@/lib/date";
 import {
   getPrayerTimesFromApi,
   PrayerTimes,
-  getCityMapping,
+  resolveCityMapping,
 } from "@/lib/prayer-times";
 
 interface RemindersBannerProps {
@@ -81,7 +81,11 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
     let isMounted = true;
     const loadTimes = async () => {
       try {
-        const times = await getPrayerTimesFromApi(location.city);
+        const times = await getPrayerTimesFromApi(
+          location.city,
+          new Date(),
+          location.province,
+        );
         if (isMounted) setPrayerTimes(times);
       } catch (e) {
         console.error("Failed to load prayer times for reminders", e);
@@ -90,7 +94,10 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
       if (reminders.sahur || reminders.iftar) {
         try {
           const year = new Date().getFullYear();
-          const mapping = getCityMapping(location.city);
+          const mapping = await resolveCityMapping(
+            location.city,
+            location.province,
+          );
           const schedule = await equranApi.getJadwalImsakiyah(
             mapping.provinsi,
             mapping.kabkota,

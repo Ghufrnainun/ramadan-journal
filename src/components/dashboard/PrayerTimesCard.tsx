@@ -13,6 +13,7 @@ import {
 interface PrayerTimesCardProps {
   lang: 'id' | 'en';
   city: string;
+  province?: string;
 }
 
 const content = {
@@ -46,7 +47,11 @@ const content = {
   },
 };
 
-const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
+const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({
+  lang,
+  city,
+  province,
+}) => {
   const t = content[lang];
   const [times, setTimes] = useState<PrayerTimes>(() => getFallbackTimes(city));
   const [currentPrayer, setCurrentPrayer] = useState(() =>
@@ -95,7 +100,7 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
     const loadPrayerTimes = async () => {
       setIsLoading(true);
       try {
-        const newTimes = await getPrayerTimesFromApi(city);
+        const newTimes = await getPrayerTimesFromApi(city, new Date(), province);
         setTimes(newTimes);
         setCurrentPrayer(getCurrentPrayer(newTimes));
       } catch (error) {
@@ -106,7 +111,7 @@ const PrayerTimesCard: React.FC<PrayerTimesCardProps> = ({ lang, city }) => {
     };
 
     loadPrayerTimes();
-  }, [city]);
+  }, [city, province]);
 
   // Update countdown every minute
   useEffect(() => {
