@@ -17,6 +17,7 @@ import { useSedekahLog } from '@/hooks/useSedekahLog';
 import { useRamadanGoals } from '@/hooks/useRamadanGoals';
 import { getStreakSummary } from '@/lib/streak';
 import { getProfile } from '@/lib/storage';
+import { getLocalDateKey } from '@/lib/date';
 
 const StatsPage = () => {
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ const StatsPage = () => {
     const days = Array.from({ length: 7 }).map((_, idx) => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - idx));
-      const key = date.toISOString().split('T')[0];
+      const key = getLocalDateKey(date);
       return { key, label: date.toLocaleDateString(locale, { weekday: 'short' }) };
     });
 

@@ -1,3 +1,5 @@
+import { getLocalDateKey } from '@/lib/date';
+
 export interface ReflectionEntry {
   date: string; // YYYY-MM-DD
   promptId: string;
@@ -11,7 +13,7 @@ export interface ReflectionEntry {
 
 const STORAGE_KEY = 'myramadhanku_reflections';
 
-const getTodayDate = (): string => new Date().toISOString().split('T')[0];
+const getTodayDate = (): string => getLocalDateKey();
 
 const readAll = (): ReflectionEntry[] => {
   try {

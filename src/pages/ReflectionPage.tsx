@@ -1,14 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Share2, Bookmark } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/runtime-client';
 import { getProfile } from '@/lib/storage';
 import { useI18n } from '@/hooks/useI18n';
 import { getPromptForDate } from '@/data/reflection-prompts';
-import {
-  getAllReflections,
-  getReflectionByDate,
-  upsertReflection,
-} from '@/lib/reflection-storage';
 import {
   markReflectionDay,
   markActiveDay,
@@ -17,50 +14,84 @@ import {
 import { generateShareCard, shareImage } from '@/lib/share-card';
 import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
 import { toast } from '@/hooks/use-toast';
+import { getLocalDateKey } from '@/lib/date';
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
+import { useReflections } from '@/hooks/useReflections';
+
+interface RecentReflection {
+  id: string;
+  date: string;
+  content: string | null;
+}
 
 const ReflectionPage: React.FC = () => {
   const navigate = useNavigate();
   const profile = getProfile();
   const dict = useI18n(profile.language);
   const prompt = useMemo(() => getPromptForDate(new Date()), []);
-  const today = new Date().toISOString().split('T')[0];
-  const existing = getReflectionByDate(today);
+  const today = getLocalDateKey();
 
-  const [content, setContent] = useState(existing?.content || '');
-  const [isSaving, setIsSaving] = useState(false);
+  const {
+    reflections,
+    isLoading: reflectionsLoading,
+    error: reflectionsError,
+    upsertReflection,
+    isUpdating,
+  } = useReflections(today);
+  const todayReflection = reflections?.[0] ?? null;
+
+  const [content, setContent] = useState('');
+  const [isHydrated, setIsHydrated] = useState(false);
   const [saved, setSaved] = useState(
     isBookmarked('reflection', `reflection-${today}`),
   );
 
-  // Onboarding guard removed — AppGate handles this at the route level
+  // Onboarding guard removed. AppGate handles this at the route level.
 
   useEffect(() => {
+    if (reflectionsLoading || isHydrated) return;
+    setContent(todayReflection?.content || '');
+    setIsHydrated(true);
+  }, [isHydrated, reflectionsLoading, todayReflection]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (!content.trim()) return;
+
+    const serverContent = todayReflection?.content || '';
+    if (content === serverContent) return;
+
     const timer = setTimeout(() => {
-      if (!content.trim()) return;
-      setIsSaving(true);
       upsertReflection({
-        date: today,
-        promptId: prompt.id,
-        promptText: prompt.text,
+        prompt_id: prompt.id,
+        prompt_text: prompt.text,
         content,
-        completed: false,
+        completed: todayReflection?.completed ?? false,
       });
-      setIsSaving(false);
     }, 500);
+
     return () => clearTimeout(timer);
-  }, [content, prompt, today]);
+  }, [
+    content,
+    isHydrated,
+    prompt.id,
+    prompt.text,
+    todayReflection?.completed,
+    todayReflection?.content,
+    upsertReflection,
+  ]);
 
   const handleComplete = () => {
-    const entry = upsertReflection({
-      date: today,
-      promptId: prompt.id,
-      promptText: prompt.text,
+    if (!content.trim()) return;
+
+    upsertReflection({
+      prompt_id: prompt.id,
+      prompt_text: prompt.text,
       content,
       completed: true,
     });
-    markReflectionDay(entry.date);
-    markActiveDay(entry.date);
+    markReflectionDay(today);
+    markActiveDay(today);
     toast({ title: dict.reflection.saved });
   };
 
@@ -89,7 +120,33 @@ const ReflectionPage: React.FC = () => {
   };
 
   const streak = getStreakSummary(profile.ramadanStartDate);
-  const recent = getAllReflections().slice(0, 4);
+  const {
+    data: recent = [],
+    error: recentError,
+  } = useQuery<RecentReflection[]>({
+    queryKey: ['reflectionsRecent'],
+    queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('reflections')
+        .select('id, date, content')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+        .limit(4);
+
+      if (error) throw error;
+      return (data as RecentReflection[]) ?? [];
+    },
+  });
+
+  const reflectionErrorMessage =
+    profile.language === 'id'
+      ? 'Gagal memuat refleksi. Coba lagi nanti.'
+      : 'Failed to load reflections. Please try again later.';
 
   return (
     <ResponsiveLayout className="pb-24">
@@ -140,7 +197,6 @@ const ReflectionPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Desktop Header */}
       <div className="hidden md:flex items-center justify-between mb-8">
         <div>
           <h1 className="font-serif text-3xl text-white">
@@ -172,6 +228,9 @@ const ReflectionPage: React.FC = () => {
               </p>
             </div>
           </div>
+          {reflectionsError && (
+            <p className="mb-3 text-xs text-rose-300">{reflectionErrorMessage}</p>
+          )}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -180,18 +239,20 @@ const ReflectionPage: React.FC = () => {
           />
           <div className="flex items-center justify-between mt-4 text-xs text-slate-500">
             <span>
-              {isSaving ? dict.common.loading : dict.reflection.autosave}
+              {reflectionsLoading || isUpdating
+                ? dict.common.loading
+                : dict.reflection.autosave}
             </span>
             <span>
               {content.length} {dict.common.characters}
             </span>
           </div>
 
-          {/* Desktop Save/Done Button inline */}
           <div className="hidden md:flex justify-end mt-4">
             <button
               onClick={handleComplete}
-              className="px-6 py-2 rounded-xl bg-amber-500 text-slate-900 font-medium hover:bg-amber-400 transition-colors"
+              disabled={!content.trim()}
+              className="px-6 py-2 rounded-xl bg-amber-500 text-slate-900 font-medium hover:bg-amber-400 transition-colors disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
             >
               {dict.common.done}
             </button>
@@ -228,17 +289,20 @@ const ReflectionPage: React.FC = () => {
             {dict.reflection.recent}
           </p>
           <div className="space-y-3">
-            {recent.length === 0 && (
+            {recentError && (
+              <p className="text-sm text-rose-300">{reflectionErrorMessage}</p>
+            )}
+            {!recentError && recent.length === 0 && (
               <p className="text-sm text-slate-500">{dict.reflection.empty}</p>
             )}
             {recent.map((entry) => (
               <div
-                key={entry.date}
+                key={entry.id}
                 className="p-4 rounded-2xl bg-slate-800/50 border border-slate-800"
               >
                 <p className="text-xs text-amber-400 mb-2">{entry.date}</p>
                 <p className="text-sm text-slate-300 line-clamp-2">
-                  {entry.content}
+                  {entry.content || '-'}
                 </p>
               </div>
             ))}
@@ -249,7 +313,8 @@ const ReflectionPage: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 p-6 pb-safe bg-[#020617]/90 md:hidden">
         <button
           onClick={handleComplete}
-          className="w-full py-4 rounded-2xl bg-amber-500 text-slate-900 font-semibold text-base hover:bg-amber-400 transition-colors"
+          disabled={!content.trim()}
+          className="w-full py-4 rounded-2xl bg-amber-500 text-slate-900 font-semibold text-base hover:bg-amber-400 transition-colors disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
         >
           {dict.common.done}
         </button>

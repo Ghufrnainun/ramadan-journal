@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import { getLocalDateKey } from '@/lib/date';
 
 export const useDhikrSessions = (date?: string) => {
   const queryClient = useQueryClient();
-  const targetDate = date || new Date().toISOString().split('T')[0];
+  const targetDate = date || getLocalDateKey();
 
   const { data: sessions, isLoading, error } = useQuery({
     queryKey: ['dhikrSessions', targetDate],

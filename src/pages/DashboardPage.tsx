@@ -79,7 +79,7 @@ const DashboardPage: React.FC = () => {
             <span className="font-serif text-xl text-white block leading-none">
               MyRamadhan
             </span>
-            <span className="text-[10px] text-slate-500 uppercase">
+            <span className="text-[10px] text-slate-400 uppercase">
               Journal
             </span>
           </div>
@@ -88,7 +88,7 @@ const DashboardPage: React.FC = () => {
           type="button"
           aria-label="Open settings"
           onClick={() => navigate('/settings')}
-          className="w-10 h-10 rounded-full bg-slate-900/50 border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition-colors"
+          className="w-12 h-12 rounded-full bg-slate-900/50 border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition-colors"
         >
           <Settings className="w-5 h-5 text-slate-400" />
         </button>
@@ -98,7 +98,10 @@ const DashboardPage: React.FC = () => {
       <main className="px-6 pb-32 space-y-6 md:p-0 md:pb-0">
         {/* Greeting & Location */}
         <div className="space-y-1">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
             <h1 className="font-serif text-3xl text-white">
               {greeting.greeting}
             </h1>
@@ -138,7 +141,7 @@ const DashboardPage: React.FC = () => {
 
         {/* Quick Actions - Grid Layout for variation */}
         <div>
-          <h3 className="text-sm font-medium text-slate-500 mb-3 uppercase pl-1">
+          <h3 className="text-sm font-medium text-slate-400 mb-3 uppercase pl-1">
             {t.menu}
           </h3>
           <QuickActions
@@ -197,13 +200,18 @@ const DashboardPage: React.FC = () => {
       {/* Bottom Navigation - Mobile Only */}
       <nav className="fixed bottom-0 z-50 w-full md:hidden bg-[#020617]/80 backdrop-blur-xl border-t border-slate-800/50 pb-safe">
         <div className="flex items-center justify-around px-2 py-3">
-          <button className="flex flex-col items-center gap-1 text-amber-400">
+          <button
+            type="button"
+            aria-current="page"
+            disabled
+            className="flex flex-col items-center gap-1 text-amber-400 cursor-default"
+          >
             <Moon className="w-6 h-6 fill-amber-400/20" />
-            <span className="text-[10px] font-medium">{t.home}</span>
+            <span className="text-[11px] font-medium">{t.home}</span>
           </button>
           <button
             onClick={() => navigate('/quran')}
-            className="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-300 transition-colors"
           >
             <motion.div whileTap={{ scale: 0.9 }}>
               <svg
@@ -220,11 +228,11 @@ const DashboardPage: React.FC = () => {
                 />
               </svg>
             </motion.div>
-            <span className="text-[10px] font-medium">Quran</span>
+            <span className="text-[11px] font-medium">Quran</span>
           </button>
           <button
             onClick={() => navigate('/dhikr')}
-            className="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-300 transition-colors"
           >
             <motion.div whileTap={{ scale: 0.9 }}>
               <svg
@@ -241,11 +249,11 @@ const DashboardPage: React.FC = () => {
                 />
               </svg>
             </motion.div>
-            <span className="text-[10px] font-medium">Dzikir</span>
+            <span className="text-[11px] font-medium">Dzikir</span>
           </button>
           <button
             onClick={() => navigate('/tracker')}
-            className="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-300 transition-colors"
           >
             <motion.div whileTap={{ scale: 0.9 }}>
               <svg
@@ -262,16 +270,16 @@ const DashboardPage: React.FC = () => {
                 />
               </svg>
             </motion.div>
-            <span className="text-[10px] font-medium">Tracker</span>
+            <span className="text-[11px] font-medium">Tracker</span>
           </button>
           <button
             onClick={() => navigate('/settings')}
-            className="flex flex-col items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-300 transition-colors"
           >
             <motion.div whileTap={{ scale: 0.9 }}>
               <Settings className="w-6 h-6" />
             </motion.div>
-            <span className="text-[10px] font-medium">{t.more}</span>
+            <span className="text-[11px] font-medium">{t.more}</span>
           </button>
         </div>
       </nav>

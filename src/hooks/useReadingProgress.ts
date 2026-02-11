@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import { getLocalDateKey } from '@/lib/date';
 
 export const useReadingProgress = () => {
   const queryClient = useQueryClient();
@@ -39,7 +40,7 @@ export const useReadingProgress = () => {
         .from('reading_progress')
         .insert({
           user_id: user.id,
-          date: entry.date || new Date().toISOString().split('T')[0],
+          date: entry.date || getLocalDateKey(),
           surah_number: entry.surah_number,
           ayah_number: entry.ayah_number,
           page_number: entry.page_number,

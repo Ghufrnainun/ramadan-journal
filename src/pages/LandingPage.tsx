@@ -498,7 +498,7 @@ const MockupCard = React.forwardRef<
       </div>
 
       {/* Status Bar */}
-      <div className="absolute top-1.5 inset-x-0 flex justify-between items-center px-5 text-[10px] text-slate-500 font-medium z-10">
+      <div className="absolute top-1.5 inset-x-0 flex justify-between items-center px-5 text-[11px] text-slate-400 font-medium z-10">
         <span>9:41</span>
         <div className="flex gap-1 items-center">
           <div className="w-2.5 h-2.5 bg-slate-700 rounded-full" />
@@ -607,7 +607,7 @@ const MockupCard = React.forwardRef<
 
             {/* Label */}
             <p className="text-white text-base font-medium mt-6">Subhanallah</p>
-            <p className="text-slate-500 text-sm mt-1">Target: 33</p>
+            <p className="text-slate-400 text-sm mt-1">Target: 33</p>
 
             {/* Progress Bar */}
             <div className="absolute bottom-4 w-full flex justify-center px-8">
@@ -726,7 +726,7 @@ export default function LandingPage() {
       >
         {mounted ? formatNumber(value) : '--'}
       </motion.div>
-      <span className="text-[10px] sm:text-xs text-slate-400 uppercase mt-1">
+      <span className="text-xs sm:text-xs text-slate-400 uppercase mt-1">
         {label}
       </span>
     </div>
@@ -760,7 +760,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             onClick={() => setLang((l) => (l === 'id' ? 'en' : 'id'))}
-            className="text-[10px] font-bold border border-white/10 bg-black/20 backdrop-blur-sm rounded-full px-4 py-2 hover:bg-white/10 transition-colors uppercase"
+            className="text-xs font-bold border border-white/10 bg-black/20 backdrop-blur-sm rounded-full px-4 py-2 hover:bg-white/10 transition-colors uppercase"
             aria-label={
               lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'
             }
@@ -1275,9 +1275,14 @@ export default function LandingPage() {
             </span>
           ))}
         </div>
-        <button className="text-sm text-amber-400 hover:underline">
+        <a
+          href="https://github.com/Ghufrnainun/ramadan-journal"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-amber-400 hover:underline"
+        >
           {t('privacy.cta')}
-        </button>
+        </a>
       </section>
 
       {/* --- TESTIMONIALS --- */}
@@ -1362,7 +1367,7 @@ export default function LandingPage() {
             </button>
           </div>
 
-          <p className="text-xs text-slate-500 mt-6 flex items-center justify-center gap-2">
+          <p className="text-xs text-slate-400 mt-6 flex items-center justify-center gap-2">
             <Smartphone className="w-4 h-4" /> {t('final.micro')}
           </p>
         </motion.div>
@@ -1371,7 +1376,7 @@ export default function LandingPage() {
       {/* --- FOOTER --- */}
       <footer className="relative z-10 py-8 px-6 border-t border-slate-800/50 mt-24">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-400 text-sm">
             © 2026 MyRamadhanKu. Open Source Project.
           </p>
           <div className="flex items-center gap-6">
@@ -1379,7 +1384,7 @@ export default function LandingPage() {
               href="https://github.com/Ghufrnainun/ramadan-journal"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-500 hover:text-amber-400 transition-colors flex items-center gap-2"
+              className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-2"
             >
               <Github className="w-5 h-5" />
               <span className="text-sm font-medium">GitHub</span>

@@ -3,6 +3,8 @@
  * Stores daily checklist progress locally
  */
 
+import { getLocalDateKey } from '@/lib/date';
+
 export interface TrackerItem {
   id: string;
   label: { id: string; en: string };
@@ -63,7 +65,7 @@ const STORAGE_KEY = 'myramadhanku_tracker';
 const CUSTOM_ITEMS_KEY = 'myramadhanku_tracker_items';
 
 const getTodayDate = (): string => {
-  return new Date().toISOString().split('T')[0];
+  return getLocalDateKey();
 };
 
 export const getAllProgress = (): DailyProgress[] => {

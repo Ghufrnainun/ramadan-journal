@@ -43,6 +43,14 @@ const SettingsPage: React.FC = () => {
   };
 
   const saveChanges = async () => {
+    if (profile.location?.province && !profile.location.city.trim()) {
+      window.alert(
+        profile.language === 'id'
+          ? 'Pilih kota/kabupaten dulu sebelum menyimpan lokasi.'
+          : 'Please select a city before saving location.',
+      );
+      return;
+    }
     const store = getProfileStore(user?.id);
     await store.upsertProfile(profile);
     navigate('/dashboard');
@@ -79,7 +87,7 @@ const SettingsPage: React.FC = () => {
           type="button"
           aria-label="Back to dashboard"
           onClick={() => navigate('/dashboard')}
-          className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+          className="p-3 -ml-3 rounded-lg hover:bg-slate-800/50 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-slate-400" />
         </button>
@@ -87,7 +95,7 @@ const SettingsPage: React.FC = () => {
           <span className="font-serif text-lg text-white">
             {dict.settings.title}
           </span>
-          <p className="text-xs text-slate-500">{dict.settings.subtitle}</p>
+          <p className="text-xs text-slate-400">{dict.settings.subtitle}</p>
         </div>
         <div className="w-9" />
       </header>
@@ -110,7 +118,7 @@ const SettingsPage: React.FC = () => {
             </div>
             <div>
               <p className="text-white font-medium">{dict.settings.profile}</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 {user?.email || dict.settings.guest}
               </p>
             </div>
@@ -120,7 +128,7 @@ const SettingsPage: React.FC = () => {
             value={profile.displayName || ''}
             onChange={(e) => updateProfile({ displayName: e.target.value })}
             placeholder={dict.settings.displayNamePlaceholder}
-            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-base text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all"
           />
         </section>
 
@@ -149,7 +157,7 @@ const SettingsPage: React.FC = () => {
             </div>
             <div>
               <p className="text-white font-medium">{dict.settings.language}</p>
-              <p className="text-xs text-slate-500">ID / EN</p>
+              <p className="text-xs text-slate-400">ID / EN</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -183,7 +191,7 @@ const SettingsPage: React.FC = () => {
             </div>
             <div>
               <p className="text-white font-medium">{dict.settings.location}</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 {profile.location
                   ? `${profile.location.city}, ${profile.location.province}`
                   : dict.settings.locationUnset}
@@ -220,7 +228,7 @@ const SettingsPage: React.FC = () => {
             }
             disabled={!profile.location?.province}
           >
-            <SelectTrigger className="w-full h-12 bg-slate-800/60 border-slate-700 text-slate-200">
+            <SelectTrigger className="w-full h-12 bg-slate-800/60 border-slate-700 text-slate-200 text-base">
               <SelectValue placeholder={dict.settings.selectCity} />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700 text-white max-h-[300px]">
@@ -240,7 +248,7 @@ const SettingsPage: React.FC = () => {
             </div>
             <div>
               <p className="text-white font-medium">{dict.settings.ramadan}</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 {dict.settings.ramadanNote}
               </p>
             </div>
@@ -251,13 +259,13 @@ const SettingsPage: React.FC = () => {
             onChange={(e) =>
               updateProfile({ ramadanStartDate: e.target.value || null })
             }
-            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-base text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all"
           />
           <div className="pt-3 border-t border-slate-800/70">
             <p className="text-white font-medium text-sm">
               {dict.settings.ramadanEnd}
             </p>
-            <p className="text-xs text-slate-500 mb-3">
+            <p className="text-xs text-slate-400 mb-3">
               {dict.settings.ramadanEndNote}
             </p>
             <input
@@ -266,7 +274,7 @@ const SettingsPage: React.FC = () => {
               onChange={(e) =>
                 updateProfile({ ramadanEndDate: e.target.value || null })
               }
-              className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-base text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all"
             />
           </div>
         </section>
@@ -280,7 +288,7 @@ const SettingsPage: React.FC = () => {
               <p className="text-white font-medium">
                 {dict.settings.reminders}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 {dict.settings.remindersNote}
               </p>
             </div>
@@ -336,7 +344,7 @@ const SettingsPage: React.FC = () => {
               <p className="text-white font-medium">
                 {dict.settings.notifications}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 {dict.settings.notificationNote}
               </p>
             </div>

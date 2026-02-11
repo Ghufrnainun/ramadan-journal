@@ -21,6 +21,7 @@ import {
   saveReadingProgress,
   saveReadingTarget,
 } from '@/lib/reading-progress';
+import { useReadingProgress } from '@/hooks/useReadingProgress';
 import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
 import { markActiveDay } from '@/lib/streak';
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
@@ -76,10 +77,9 @@ const QuranPage: React.FC = () => {
     null,
   );
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
-  const [readingTarget, setReadingTarget] = useState(
-    getReadingTarget().dailyTargetPages,
-  );
+  const [readingTarget] = useState(getReadingTarget().dailyTargetPages);
   const [readingProgress, setReadingProgress] = useState(getReadingProgress());
+  const { recordProgress } = useReadingProgress();
 
   const [playingFullSurah, setPlayingFullSurah] =
     useState<HTMLAudioElement | null>(null);
@@ -124,6 +124,11 @@ const QuranPage: React.FC = () => {
       pageNumber: undefined,
     });
     setReadingProgress(updated);
+    recordProgress({
+      surah_number: selectedSurah.nomor,
+      ayah_number: ayahNumber,
+      daily_target_pages: readingTarget,
+    });
     markActiveDay();
   };
 
@@ -263,7 +268,7 @@ const QuranPage: React.FC = () => {
               type="button"
               aria-label="Back to surah list"
               onClick={handleBack}
-              className="p-2 -ml-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+              className="p-3 -ml-3 rounded-lg hover:bg-slate-800/50 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-slate-400" />
             </button>
@@ -271,7 +276,7 @@ const QuranPage: React.FC = () => {
               <span className="font-serif text-lg text-white block leading-tight">
                 {selectedSurah.namaLatin}
               </span>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-400">
                 {selectedSurah.arti}
               </span>
             </div>
@@ -374,7 +379,7 @@ const QuranPage: React.FC = () => {
                           }
                         }}
                         className={cn(
-                          'p-2 rounded-lg transition-colors',
+                          'p-3 rounded-lg transition-colors',
                           isActive
                             ? 'bg-emerald-500/20 text-emerald-400'
                             : 'hover:bg-slate-800 text-slate-400',
@@ -391,7 +396,7 @@ const QuranPage: React.FC = () => {
                       type="button"
                       aria-label={`Mark ayah ${ayah.nomorAyat} as last read`}
                       onClick={() => handleMarkProgress(ayah.nomorAyat)}
-                      className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors"
+                      className="p-3 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-emerald-400 transition-colors"
                       title={t.markLast}
                     >
                       <CheckCircle className="w-4 h-4" />
@@ -411,7 +416,7 @@ const QuranPage: React.FC = () => {
                         });
                       }}
                       className={cn(
-                        'p-2 rounded-lg hover:bg-slate-800 transition-colors',
+                        'p-3 rounded-lg hover:bg-slate-800 transition-colors',
                         isBookmarked(
                           'ayah',
                           `ayah-${selectedSurah.nomor}-${ayah.nomorAyat}`,
@@ -476,7 +481,7 @@ const QuranPage: React.FC = () => {
                     type="button"
                     aria-label="Pause audio playback"
                     onClick={stopAudio}
-                    className="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center transition-colors shadow-lg"
+                    className="w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center transition-colors shadow-lg"
                   >
                     <Pause className="w-4 h-4 fill-current" />
                   </button>
@@ -484,7 +489,7 @@ const QuranPage: React.FC = () => {
                     type="button"
                     aria-label="Close audio player"
                     onClick={stopAudio}
-                    className="p-2 text-slate-400 hover:text-white transition-colors"
+                    className="p-3 text-slate-400 hover:text-white transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -535,7 +540,7 @@ const QuranPage: React.FC = () => {
             placeholder={t.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-colors"
+            className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-base text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-colors"
           />
           {searchQuery && (
             <button
@@ -631,7 +636,7 @@ const QuranPage: React.FC = () => {
                         {surah.nama}
                       </span>
                     </div>
-                    <p className="text-slate-500 text-xs mt-0.5 truncate">
+                    <p className="text-slate-400 text-xs mt-0.5 truncate">
                       {surah.arti} • {surah.jumlahAyat} {t.ayat}
                     </p>
                   </div>

@@ -4,6 +4,7 @@ import { Sunrise, Moon, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { equranApi, ImsakiyahItem } from '@/lib/api/equran';
 import { getCityMapping } from '@/lib/prayer-times';
+import { getLocalDateKey } from '@/lib/date';
 
 interface ImsakiyahCardProps {
   lang: 'id' | 'en';
@@ -69,11 +70,8 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
         }
 
         // Find today's schedule
-        const today = now.toISOString().split('T')[0];
-        const todayData = schedule.find((item) => {
-          const itemDate = new Date(item.tanggal).toISOString().split('T')[0];
-          return itemDate === today;
-        });
+        const today = getLocalDateKey(now);
+        const todayData = schedule.find((item) => item.tanggal === today);
 
         if (todayData) {
           setTodaySchedule(todayData);

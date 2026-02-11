@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Bell } from "lucide-react";
 import { equranApi } from "@/lib/api/equran";
+import { getLocalDateKey } from "@/lib/date";
 import {
   getPrayerTimesFromApi,
   PrayerTimes,
@@ -95,7 +96,7 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
             mapping.kabkota,
             year,
           );
-          const todayStr = new Date().toISOString().split("T")[0];
+          const todayStr = getLocalDateKey();
           const today = schedule.find((item) => item.tanggal === todayStr);
           if (today && isMounted) {
             setImsakTime(today.imsak);

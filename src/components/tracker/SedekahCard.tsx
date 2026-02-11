@@ -7,7 +7,8 @@ import { getProfile } from '@/lib/storage';
 const today = getLocalDateKey();
 
 const SedekahCard = () => {
-  const { logs, isLoading, error, upsertSedekahLog, isUpdating } = useSedekahLog();
+  const { logs, isLoading, error, upsertSedekahLog, isUpdating } =
+    useSedekahLog();
   const lang = getProfile().language === 'en' ? 'en' : 'id';
   const t = {
     id: {
@@ -79,28 +80,32 @@ const SedekahCard = () => {
           <HandHeart className="h-5 w-5 text-emerald-300" />
           <h3 className="font-serif text-lg text-white">{t.title}</h3>
         </div>
-        {isUpdating && <span className="text-xs text-slate-400">{t.saving}</span>}
+        {isUpdating && (
+          <span className="text-xs text-slate-400">{t.saving}</span>
+        )}
       </div>
 
-      <label className="mb-3 flex cursor-pointer items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2">
-        <span className="text-sm text-slate-200">{t.done}</span>
-        <input
-          type="checkbox"
-          checked={form.completed}
-          onChange={(e) => save({ completed: e.target.checked })}
-          className="h-4 w-4 accent-emerald-500"
-        />
-      </label>
+      <div className="space-y-4">
+        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-3 transition-colors hover:bg-slate-900/60">
+          <span className="text-sm font-medium text-slate-200">{t.done}</span>
+          <input
+            type="checkbox"
+            checked={form.completed}
+            onChange={(e) => save({ completed: e.target.checked })}
+            className="h-5 w-5 accent-emerald-500"
+          />
+        </label>
 
-      <label className="block space-y-1">
-        <span className="text-xs text-slate-400">{t.notes}</span>
-        <textarea
-          value={form.notes}
-          onChange={(e) => save({ notes: e.target.value })}
-          placeholder={t.placeholder}
-          className="min-h-[86px] w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-amber-500/50 focus:outline-none"
-        />
-      </label>
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-slate-300">{t.notes}</span>
+          <textarea
+            value={form.notes}
+            onChange={(e) => save({ notes: e.target.value })}
+            placeholder={t.placeholder}
+            className="min-h-[86px] w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-3 text-base text-white placeholder:text-slate-500 transition-all focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+          />
+        </label>
+      </div>
     </section>
   );
 };

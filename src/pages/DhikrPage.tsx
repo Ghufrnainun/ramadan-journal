@@ -14,6 +14,7 @@ import {
 } from '@/lib/dhikr-storage';
 import { cn } from '@/lib/utils';
 import { markActiveDay } from '@/lib/streak';
+import { getLocalDateKey } from '@/lib/date';
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
 const content = {
@@ -103,7 +104,7 @@ const DhikrPage: React.FC = () => {
     setTimeout(() => setShowRipple(false), 300);
 
     // Save session
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey();
     saveDhikrSession({
       presetId: selectedPreset.id,
       count: newCount,
@@ -117,7 +118,7 @@ const DhikrPage: React.FC = () => {
   const handleReset = () => {
     if (!selectedPreset) return;
     setCount(0);
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey();
     saveDhikrSession({
       presetId: selectedPreset.id,
       count: 0,

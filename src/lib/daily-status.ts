@@ -1,3 +1,5 @@
+import { getLocalDateKey } from '@/lib/date';
+
 export interface DailyStatusEntry {
   date: string;
   intention: string;
@@ -6,7 +8,7 @@ export interface DailyStatusEntry {
 
 const STORAGE_KEY = 'myramadhanku_daily_status';
 
-const getTodayDate = (): string => new Date().toISOString().split('T')[0];
+const getTodayDate = (): string => getLocalDateKey();
 
 const readAll = (): DailyStatusEntry[] => {
   try {

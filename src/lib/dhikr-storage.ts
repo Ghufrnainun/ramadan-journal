@@ -3,6 +3,8 @@
  * Stores dhikr counts and sessions locally
  */
 
+import { getLocalDateKey } from '@/lib/date';
+
 export interface DhikrPreset {
   id: string;
   arabic: string;
@@ -68,7 +70,7 @@ const STORAGE_KEY = 'myramadhanku_dhikr';
 const PRESETS_KEY = 'myramadhanku_dhikr_presets';
 
 const getTodayDate = (): string => {
-  return new Date().toISOString().split('T')[0];
+  return getLocalDateKey();
 };
 
 export const getDhikrSessions = (): DhikrSession[] => {

@@ -20,6 +20,7 @@ import {
 } from '@/lib/doa-storage';
 import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
 import { markActiveDay } from '@/lib/streak';
+import { getLocalDateKey } from '@/lib/date';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
@@ -120,7 +121,7 @@ const DoaPage: React.FC = () => {
       navigator.vibrate(10);
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey();
     saveDoaSession({
       doaId: selectedDoa.id,
       count: newCount,
@@ -134,7 +135,7 @@ const DoaPage: React.FC = () => {
   const handleReset = () => {
     if (!selectedDoa) return;
     setCount(0);
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateKey();
     saveDoaSession({
       doaId: selectedDoa.id,
       count: 0,

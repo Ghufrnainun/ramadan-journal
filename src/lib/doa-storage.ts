@@ -3,6 +3,8 @@
  * Stores user progress for doa/dhikr from API
  */
 
+import { getLocalDateKey } from '@/lib/date';
+
 export interface DoaSession {
   doaId: number;
   count: number;
@@ -13,7 +15,7 @@ export interface DoaSession {
 const STORAGE_KEY = 'myramadhanku_doa';
 
 const getTodayDate = (): string => {
-  return new Date().toISOString().split('T')[0];
+  return getLocalDateKey();
 };
 
 export const getDoaSessions = (): DoaSession[] => {

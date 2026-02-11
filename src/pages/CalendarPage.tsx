@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   format,
@@ -10,11 +10,12 @@ import {
   addMonths,
   subMonths,
   isToday,
+  parseISO,
 } from 'date-fns';
 import { ArrowLeft, ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -22,15 +23,18 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { getDailyStatus, DailyStatusEntry } from '@/lib/daily-status';
-import {
-  getAllProgress,
-  DailyProgress,
-  getTrackerItems,
-  TrackerItem,
-} from '@/lib/tracker-storage';
 import { cn } from '@/lib/utils';
 import { getProfile } from '@/lib/storage';
+import { useFastingLog } from '@/hooks/useFastingLog';
+import { useTarawihLog } from '@/hooks/useTarawihLog';
+import { useSedekahLog } from '@/hooks/useSedekahLog';
+import { supabase } from '@/integrations/supabase/runtime-client';
+
+interface DailyStatusCalendarEntry {
+  date: string;
+  intention: string;
+  mood: string | null;
+}
 
 const content = {
   id: {
@@ -45,6 +49,11 @@ const content = {
     noIntention: 'Belum ada niat',
     noJournalEntry: 'Belum ada entri jurnal untuk hari ini.',
     noTrackerData: 'Belum ada data tracker untuk hari ini.',
+    loadingTracker: 'Memuat data tracker...',
+    trackerError: 'Gagal memuat data tracker.',
+    fasting: 'Puasa Full',
+    tarawih: 'Tarawih',
+    sedekah: 'Sedekah',
   },
   en: {
     tracker: 'Tracker',
@@ -58,39 +67,64 @@ const content = {
     noIntention: 'No intention set',
     noJournalEntry: 'No journal entry for this day.',
     noTrackerData: 'No tracker data for this day.',
+    loadingTracker: 'Loading tracker data...',
+    trackerError: 'Failed to load tracker data.',
+    fasting: 'Full Fasting',
+    tarawih: 'Tarawih',
+    sedekah: 'Charity',
   },
 };
 
 const CalendarPage = () => {
   const navigate = useNavigate();
   const [lang, setLang] = useState<'id' | 'en'>('id');
-
-  // Use local content until we have a proper provider
-  const t = content[lang];
-
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [dailyStatuses, setDailyStatuses] = useState<DailyStatusEntry[]>([]);
-  const [dailyProgresses, setDailyProgresses] = useState<DailyProgress[]>([]);
-  const [trackerItems, setTrackerItems] = useState<TrackerItem[]>([]);
 
-  // Load data
+  const { logs: fastingLogs, isLoading: fastingLoading, error: fastingError } = useFastingLog();
+  const { logs: tarawihLogs, isLoading: tarawihLoading, error: tarawihError } = useTarawihLog();
+  const { logs: sedekahLogs, isLoading: sedekahLoading, error: sedekahError } = useSedekahLog();
+  const monthStart = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
+  const monthEnd = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
+  const {
+    data: dailyStatuses = [],
+    isLoading: dailyStatusLoading,
+    error: dailyStatusError,
+  } = useQuery<DailyStatusCalendarEntry[]>({
+    queryKey: ['dailyStatusMonth', monthStart, monthEnd],
+    queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('daily_status')
+        .select('date, intention, mood')
+        .eq('user_id', user.id)
+        .gte('date', monthStart)
+        .lte('date', monthEnd);
+
+      if (error) throw error;
+      return (
+        data?.map((row) => ({
+          date: row.date,
+          intention: row.intention || '',
+          mood: row.mood || null,
+        })) ?? []
+      );
+    },
+  });
+
+  const isTrackerLoading =
+    fastingLoading || tarawihLoading || sedekahLoading || dailyStatusLoading;
+  const trackerError = fastingError || tarawihError || sedekahError || dailyStatusError;
+
+  const t = content[lang];
+
   useEffect(() => {
     const profile = getProfile();
     setLang(profile.language);
-    try {
-      const storedStatus = localStorage.getItem('myramadhanku_daily_status');
-      if (storedStatus) {
-        const parsed = JSON.parse(storedStatus) as DailyStatusEntry[];
-        setDailyStatuses(Array.isArray(parsed) ? parsed : []);
-      }
-    } catch (error) {
-      console.error('Failed to parse daily status from storage:', error);
-      setDailyStatuses([]);
-    }
-
-    setDailyProgresses(getAllProgress());
-    setTrackerItems(getTrackerItems());
   }, []);
 
   const days = eachDayOfInterval({
@@ -101,47 +135,72 @@ const CalendarPage = () => {
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
-  const getStatusForDate = (date: Date) => {
+  const getStatusForDate = useCallback((date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     return dailyStatuses.find((s) => s.date === dateStr);
-  };
+  }, [dailyStatuses]);
 
-  const getProgressForDate = (date: Date) => {
+  const getTrackerSummaryForDate = useCallback((date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return dailyProgresses.find((p) => p.date === dateStr);
-  };
+    const fastingDone = (fastingLogs ?? []).some(
+      (log) => log.date === dateStr && log.status === 'full',
+    );
+    const tarawihDone = (tarawihLogs ?? []).some(
+      (log) => log.date === dateStr && log.tarawih_done,
+    );
+    const sedekahDone = (sedekahLogs ?? []).some(
+      (log) => log.date === dateStr && log.completed,
+    );
+    const completedCount = [fastingDone, tarawihDone, sedekahDone].filter(Boolean).length;
+    const totalItems = 3;
+    const progressPercent = (completedCount / totalItems) * 100;
 
-  const getDayContent = (date: Date) => {
-    const status = getStatusForDate(date);
-    const progress = getProgressForDate(date);
+    return {
+      fastingDone,
+      tarawihDone,
+      sedekahDone,
+      completedCount,
+      totalItems,
+      progressPercent,
+    };
+  }, [fastingLogs, tarawihLogs, sedekahLogs]);
 
-    // Logic for indicators
-    // Mood: dot color
-    // Progress: ring or bar?
+  const dayContentByDate = useMemo(() => {
+    const map = new Map<string, { moodColor: string | null; progressPercent: number }>();
 
-    // Mood Colors
     const moodColors: Record<string, string> = {
+      calm: 'bg-emerald-500',
+      okay: 'bg-amber-500',
+      heavy: 'bg-rose-500',
       happy: 'bg-emerald-500',
       neutral: 'bg-amber-500',
       sad: 'bg-rose-500',
     };
 
-    const moodColor = status?.mood ? moodColors[status.mood] : null;
+    days.forEach((date) => {
+      const key = format(date, 'yyyy-MM-dd');
+      const status = getStatusForDate(date);
+      const trackerSummary = getTrackerSummaryForDate(date);
+      map.set(key, {
+        moodColor: status?.mood ? moodColors[status.mood] : null,
+        progressPercent: trackerSummary.progressPercent,
+      });
+    });
 
-    // Tracker Completion
-    const completedCount = progress
-      ? Object.values(progress.items).filter(Boolean).length
-      : 0;
-    const totalItems = trackerItems.length;
-    const progressPercent =
-      totalItems > 0 ? (completedCount / totalItems) * 100 : 0;
+    return map;
+  }, [days, getStatusForDate, getTrackerSummaryForDate]);
 
-    return { moodColor, progressPercent, completedCount, totalItems };
-  };
+  const perfectDaysCount = useMemo(
+    () =>
+      days.filter((date) => {
+        const summary = getTrackerSummaryForDate(date);
+        return summary.completedCount === summary.totalItems;
+      }).length,
+    [days, getTrackerSummaryForDate],
+  );
 
   return (
     <ResponsiveLayout className="pb-24">
-      {/* Header - Mobile Only? Keep it for now or adapt */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800/50 sticky top-0 bg-[#020617]/80 backdrop-blur z-20">
         <button
           type="button"
@@ -170,7 +229,18 @@ const CalendarPage = () => {
         </div>
       </header>
 
-      {/* Calendar Grid */}
+      {isTrackerLoading && (
+        <div className="px-6 pt-4">
+          <p className="text-sm text-slate-400">{t.loadingTracker}</p>
+        </div>
+      )}
+
+      {trackerError && (
+        <div className="px-6 pt-4">
+          <p className="text-sm text-rose-300">{t.trackerError}</p>
+        </div>
+      )}
+
       <div className="px-6 py-6">
         <div className="grid grid-cols-7 gap-2 mb-2">
           {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
@@ -183,7 +253,6 @@ const CalendarPage = () => {
           ))}
         </div>
         <div className="grid grid-cols-7 gap-2">
-          {/* Padding for start of month - simplified for now, can use date-fns properly later if needed to align weekdays */}
           {Array.from({ length: startOfMonth(currentMonth).getDay() }).map(
             (_, i) => (
               <div key={`empty-${i}`} />
@@ -191,13 +260,14 @@ const CalendarPage = () => {
           )}
 
           {days.map((date, i) => {
-            const { moodColor, progressPercent } = getDayContent(date);
+            const key = format(date, 'yyyy-MM-dd');
+            const contentByDay = dayContentByDate.get(key);
             const isSelected = selectedDate && isSameDay(date, selectedDate);
             const isTodayDate = isToday(date);
 
             return (
               <motion.button
-                key={format(date, 'yyyy-MM-dd')}
+                key={key}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.02 }}
@@ -215,18 +285,17 @@ const CalendarPage = () => {
                   {format(date, 'd')}
                 </span>
 
-                {/* Indicators */}
                 <div className="absolute bottom-2 flex gap-1">
-                  {moodColor && (
+                  {contentByDay?.moodColor && (
                     <div
-                      className={cn('w-1.5 h-1.5 rounded-full', moodColor)}
+                      className={cn('w-1.5 h-1.5 rounded-full', contentByDay.moodColor)}
                     />
                   )}
-                  {progressPercent > 0 && (
+                  {(contentByDay?.progressPercent ?? 0) > 0 && (
                     <div
                       className={cn(
                         'w-1.5 h-1.5 rounded-full',
-                        progressPercent === 100
+                        contentByDay?.progressPercent === 100
                           ? 'bg-emerald-400'
                           : 'bg-slate-600',
                       )}
@@ -239,7 +308,6 @@ const CalendarPage = () => {
         </div>
       </div>
 
-      {/* Stats Summary for Month */}
       <div className="px-6">
         <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 flex justify-between items-center">
           <div className="text-center w-1/3">
@@ -247,8 +315,8 @@ const CalendarPage = () => {
               {
                 dailyStatuses.filter(
                   (s) =>
-                    s.mood === 'happy' &&
-                    isSameMonth(new Date(s.date), currentMonth),
+                    ['calm', 'happy'].includes(s.mood || '') &&
+                    isSameMonth(parseISO(s.date), currentMonth),
                 ).length
               }
             </span>
@@ -259,17 +327,7 @@ const CalendarPage = () => {
           <div className="w-px h-10 bg-slate-800" />
           <div className="text-center w-1/3">
             <span className="text-2xl font-serif text-emerald-400">
-              {
-                dailyProgresses.filter((p) => {
-                  const completed = Object.values(p.items).filter(
-                    Boolean,
-                  ).length;
-                  return (
-                    completed === trackerItems.length &&
-                    isSameMonth(new Date(p.date), currentMonth)
-                  );
-                }).length
-              }
+              {perfectDaysCount}
             </span>
             <p className="text-xs text-slate-500 uppercase mt-1">{t.perfectDays}</p>
           </div>
@@ -279,7 +337,7 @@ const CalendarPage = () => {
               {
                 dailyStatuses.filter(
                   (s) =>
-                    s.intention && isSameMonth(new Date(s.date), currentMonth),
+                    s.intention && isSameMonth(parseISO(s.date), currentMonth),
                 ).length
               }
             </span>
@@ -288,7 +346,6 @@ const CalendarPage = () => {
         </div>
       </div>
 
-      {/* Details Dialog */}
       <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
         <DialogContent className="bg-slate-900 border-slate-800 text-slate-200 max-w-[360px] rounded-2xl">
           <DialogHeader>
@@ -300,7 +357,6 @@ const CalendarPage = () => {
 
           {selectedDate && (
             <div className="space-y-6 pt-2">
-              {/* Status Section */}
               {getStatusForDate(selectedDate) ? (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-slate-400 uppercase">
@@ -329,44 +385,53 @@ const CalendarPage = () => {
                 </p>
               )}
 
-              {/* Tracker Section */}
-              {getProgressForDate(selectedDate) ? (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-slate-400 uppercase">
-                    Tracker
-                  </h4>
+              {(() => {
+                const summary = getTrackerSummaryForDate(selectedDate);
+                const trackerItems = [
+                  { label: t.fasting, done: summary.fastingDone },
+                  { label: t.tarawih, done: summary.tarawihDone },
+                  { label: t.sedekah, done: summary.sedekahDone },
+                ];
+                const hasAnyData = trackerItems.some((item) => item.done);
+
+                if (!hasAnyData) {
+                  return (
+                    <p className="text-slate-500 text-sm italic text-center">
+                      {t.noTrackerData}
+                    </p>
+                  );
+                }
+
+                return (
                   <div className="space-y-2">
-                    {trackerItems.map((item) => {
-                      const progress = getProgressForDate(selectedDate);
-                      const isDone = progress?.items[item.id];
-                      return (
+                    <h4 className="text-sm font-medium text-slate-400 uppercase">
+                      {t.tracker}
+                    </h4>
+                    <div className="space-y-2">
+                      {trackerItems.map((item) => (
                         <div
-                          key={item.id}
+                          key={item.label}
                           className="flex items-center justify-between p-2 rounded-lg bg-slate-800/20"
                         >
                           <span
                             className={cn(
                               'text-sm',
-                              isDone ? 'text-emerald-400' : 'text-slate-500',
+                              item.done ? 'text-emerald-400' : 'text-slate-500',
                             )}
                           >
-                            {item.label[lang]}
+                            {item.label}
                           </span>
-                          {isDone ? (
+                          {item.done ? (
                             <Check className="w-4 h-4 text-emerald-400" />
                           ) : (
                             <X className="w-4 h-4 text-slate-700" />
                           )}
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <p className="text-slate-500 text-sm italic text-center">
-                  {t.noTrackerData}
-                </p>
-              )}
+                );
+              })()}
             </div>
           )}
         </DialogContent>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Smile, Meh, Frown } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getDailyStatus, saveDailyStatus } from '@/lib/daily-status';
+import { useDailyStatus } from '@/hooks/useDailyStatus';
 import { cn } from '@/lib/utils';
 
 interface DailyStatusCardProps {
@@ -16,6 +16,8 @@ const content = {
     calm: 'Tenang',
     okay: 'Biasa',
     heavy: 'Berat',
+    saving: 'Menyimpan...',
+    saveError: 'Gagal menyimpan niat hari ini.',
   },
   en: {
     title: "Today's Intention",
@@ -24,21 +26,39 @@ const content = {
     calm: 'Calm',
     okay: 'Okay',
     heavy: 'Heavy',
+    saving: 'Saving...',
+    saveError: "Failed to save today's intention.",
   },
 };
 
 const DailyStatusCard: React.FC<DailyStatusCardProps> = ({ lang }) => {
   const t = content[lang];
-  const initial = getDailyStatus();
-  const [intention, setIntention] = useState(initial.intention);
-  const [mood, setMood] = useState<string | null>(initial.mood);
+  const { status, isLoading, error, upsertDailyStatus, isUpdating } =
+    useDailyStatus();
+  const [intention, setIntention] = useState('');
+  const [mood, setMood] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    if (isLoading || isHydrated) return;
+    setIntention(status?.intention || '');
+    setMood(status?.mood || null);
+    setIsHydrated(true);
+  }, [isLoading, isHydrated, status]);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const serverIntention = status?.intention || '';
+    const serverMood = status?.mood || null;
+    if (intention === serverIntention && mood === serverMood) return;
+
     const timer = setTimeout(() => {
-      saveDailyStatus({ date: initial.date, intention, mood });
+      upsertDailyStatus({ intention, mood });
     }, 400);
+
     return () => clearTimeout(timer);
-  }, [intention, mood, initial.date]);
+  }, [intention, isHydrated, mood, status, upsertDailyStatus]);
 
   return (
     <motion.div
@@ -49,12 +69,18 @@ const DailyStatusCard: React.FC<DailyStatusCardProps> = ({ lang }) => {
       <div className="rounded-2xl bg-slate-900/60 p-1">
         <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-5 border border-slate-800/50">
           <p className="text-amber-400 font-serif text-lg mb-3">{t.title}</p>
+          {error && (
+            <p className="mb-2 text-xs text-rose-300">{t.saveError}</p>
+          )}
           <textarea
             value={intention}
             onChange={(e) => setIntention(e.target.value)}
             placeholder={t.placeholder}
             className="w-full h-24 bg-transparent border-b border-slate-700 focus:border-amber-500/50 transition-colors resize-none text-slate-200 placeholder:text-slate-600 focus:outline-none text-base leading-relaxed"
           />
+          {(isLoading || isUpdating) && (
+            <p className="mt-2 text-xs text-slate-500">{t.saving}</p>
+          )}
         </div>
       </div>
 

@@ -7,7 +7,8 @@ import { getProfile } from '@/lib/storage';
 const today = getLocalDateKey();
 
 const TarawihCard = () => {
-  const { logs, isLoading, error, upsertTarawihLog, isUpdating } = useTarawihLog();
+  const { logs, isLoading, error, upsertTarawihLog, isUpdating } =
+    useTarawihLog();
   const lang = getProfile().language === 'en' ? 'en' : 'id';
   const t = {
     id: {
@@ -109,62 +110,74 @@ const TarawihCard = () => {
           <Moon className="h-5 w-5 text-indigo-300" />
           <h3 className="font-serif text-lg text-white">{t.title}</h3>
         </div>
-        {isUpdating && <span className="text-xs text-slate-400">{t.saving}</span>}
+        {isUpdating && (
+          <span className="text-xs text-slate-400">{t.saving}</span>
+        )}
       </div>
 
-      <div className="space-y-3">
-        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2">
-          <span className="text-sm text-slate-200">{t.tarawih}</span>
+      <div className="space-y-4">
+        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-3 transition-colors hover:bg-slate-900/60">
+          <span className="text-sm font-medium text-slate-200">
+            {t.tarawih}
+          </span>
           <input
             type="checkbox"
             checked={form.tarawih_done}
             onChange={(e) => save({ tarawih_done: e.target.checked })}
-            className="h-4 w-4 accent-emerald-500"
+            className="h-5 w-5 accent-emerald-500"
           />
         </label>
 
-        <label className="block space-y-1">
-          <span className="text-xs text-slate-400">{t.tarawihRakaat}</span>
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-slate-300">
+            {t.tarawihRakaat}
+          </span>
           <input
             type="number"
             min={0}
             max={36}
             value={form.rakaat_count}
-            onChange={(e) => save({ rakaat_count: Number(e.target.value || 0) })}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm text-white focus:border-amber-500/50 focus:outline-none"
+            onChange={(e) =>
+              save({ rakaat_count: Number(e.target.value || 0) })
+            }
+            className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-3 text-base text-white transition-all focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           />
         </label>
 
-        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2">
-          <span className="text-sm text-slate-200">{t.witir}</span>
+        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-3 transition-colors hover:bg-slate-900/60">
+          <span className="text-sm font-medium text-slate-200">{t.witir}</span>
           <input
             type="checkbox"
             checked={form.witir_done}
             onChange={(e) => save({ witir_done: e.target.checked })}
-            className="h-4 w-4 accent-emerald-500"
+            className="h-5 w-5 accent-emerald-500"
           />
         </label>
 
-        <label className="block space-y-1">
-          <span className="text-xs text-slate-400">{t.witirRakaat}</span>
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-slate-300">
+            {t.witirRakaat}
+          </span>
           <input
             type="number"
             min={0}
             max={11}
             value={form.witir_rakaat}
-            onChange={(e) => save({ witir_rakaat: Number(e.target.value || 0) })}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm text-white focus:border-amber-500/50 focus:outline-none"
+            onChange={(e) =>
+              save({ witir_rakaat: Number(e.target.value || 0) })
+            }
+            className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-3 text-base text-white transition-all focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           />
         </label>
 
-        <label className="block space-y-1">
-          <span className="text-xs text-slate-400">{t.mosque}</span>
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-slate-300">{t.mosque}</span>
           <input
             type="text"
             value={form.mosque_name}
             onChange={(e) => save({ mosque_name: e.target.value })}
             placeholder={t.mosquePlaceholder}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-amber-500/50 focus:outline-none"
+            className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-3 text-base text-white placeholder:text-slate-500 transition-all focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           />
         </label>
       </div>

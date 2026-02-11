@@ -13,7 +13,8 @@ const sunnahItems = [
 ];
 
 const SunnahPrayerCard = () => {
-  const { tracker, isLoading, error, upsertTracker, isUpdating } = useDailyTracker();
+  const { tracker, isLoading, error, upsertTracker, isUpdating } =
+    useDailyTracker();
   const lang = getProfile().language === 'en' ? 'en' : 'id';
   const t = {
     id: {
@@ -74,23 +75,29 @@ const SunnahPrayerCard = () => {
           <Moon className="h-5 w-5 text-sky-300" />
           <h3 className="font-serif text-lg text-white">{t.title}</h3>
         </div>
-        <span className="text-xs text-slate-400">{isUpdating ? t.saving : `${completed}/${sunnahItems.length} ${t.today}`}</span>
+        <span className="text-xs text-slate-400">
+          {isUpdating
+            ? t.saving
+            : `${completed}/${sunnahItems.length} ${t.today}`}
+        </span>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {sunnahItems.map((item) => (
           <label
             key={item.key}
-            className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2"
+            className="flex cursor-pointer items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-3 transition-colors hover:bg-slate-900/60"
           >
-            <span className="text-sm text-slate-200">{item.label}</span>
+            <span className="text-sm font-medium text-slate-200">
+              {item.label}
+            </span>
             <div className="flex items-center gap-3">
-              <span className="text-xs text-slate-500">{item.rakaat}</span>
+              <span className="text-xs text-slate-400">{item.rakaat}</span>
               <input
                 type="checkbox"
                 checked={Boolean(items[`sunnah_${item.key}`])}
                 onChange={() => toggle(item.key)}
-                className="h-4 w-4 accent-emerald-500"
+                className="h-5 w-5 accent-emerald-500"
               />
             </div>
           </label>

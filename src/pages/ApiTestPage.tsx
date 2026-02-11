@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getDhikr, getHadithList } from '@/lib/api/muslim-data';
 import { EQuranApi } from '@/lib/api/equran';
 
@@ -9,6 +9,9 @@ interface TestResult {
   duration?: number;
 }
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
+
 const ApiTestPage: React.FC = () => {
   const [results, setResults] = useState<TestResult[]>([
     { name: 'Muslim API - Dhikr', status: 'pending' },
@@ -18,7 +21,7 @@ const ApiTestPage: React.FC = () => {
     { name: 'eQuran Proxy - Shalat Schedule', status: 'pending' },
   ]);
 
-  const updateResult = (
+  const updateResult = useCallback((
     name: string,
     status: 'success' | 'error',
     message?: string,
@@ -29,9 +32,9 @@ const ApiTestPage: React.FC = () => {
         r.name === name ? { ...r, status, message, duration } : r,
       ),
     );
-  };
+  }, []);
 
-  const runTests = async () => {
+  const runTests = useCallback(async () => {
     // Reset all to pending
     setResults((prev) =>
       prev.map((r) => ({
@@ -58,11 +61,11 @@ const ApiTestPage: React.FC = () => {
         'Fetched morning dhikr',
         endMeasure('dhikr'),
       );
-    } catch (e: any) {
+    } catch (error: unknown) {
       updateResult(
         'Muslim API - Dhikr',
         'error',
-        e.message,
+        getErrorMessage(error),
         endMeasure('dhikr'),
       );
     }
@@ -77,11 +80,11 @@ const ApiTestPage: React.FC = () => {
         'Fetched hadith list',
         endMeasure('hadith'),
       );
-    } catch (e: any) {
+    } catch (error: unknown) {
       updateResult(
         'Muslim API - Hadith',
         'error',
-        e.message,
+        getErrorMessage(error),
         endMeasure('hadith'),
       );
     }
@@ -100,11 +103,11 @@ const ApiTestPage: React.FC = () => {
         'Geocoded Jakarta',
         endMeasure('nominatim'),
       );
-    } catch (e: any) {
+    } catch (error: unknown) {
       updateResult(
         'Nominatim (OpenStreetMap)',
         'error',
-        e.message,
+        getErrorMessage(error),
         endMeasure('nominatim'),
       );
     }
@@ -120,11 +123,11 @@ const ApiTestPage: React.FC = () => {
         'Fetched surah list',
         endMeasure('surah'),
       );
-    } catch (e: any) {
+    } catch (error: unknown) {
       updateResult(
         'eQuran Proxy - Surah List',
         'error',
-        e.message,
+        getErrorMessage(error),
         endMeasure('surah'),
       );
     }
@@ -147,19 +150,19 @@ const ApiTestPage: React.FC = () => {
         'Fetched schedule',
         endMeasure('shalat'),
       );
-    } catch (e: any) {
+    } catch (error: unknown) {
       updateResult(
         'eQuran Proxy - Shalat Schedule',
         'error',
-        e.message,
+        getErrorMessage(error),
         endMeasure('shalat'),
       );
     }
-  };
+  }, [updateResult]);
 
   useEffect(() => {
-    runTests();
-  }, []);
+    void runTests();
+  }, [runTests]);
 
   return (
     <div className="min-h-screen bg-slate-950 p-8 text-white font-sans">

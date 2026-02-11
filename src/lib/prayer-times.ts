@@ -4,6 +4,7 @@
  */
 
 import { equranApi, JadwalShalatItem } from '@/lib/api/equran';
+import { getLocalDateKey } from '@/lib/date';
 
 export interface PrayerTimes {
   imsak: string;
@@ -96,7 +97,7 @@ export const getPrayerTimesFromApi = async (
   city: string,
   date: Date = new Date(),
 ): Promise<PrayerTimes> => {
-  const dateStr = date.toISOString().split('T')[0];
+  const dateStr = getLocalDateKey(date);
   const cacheKey = `${city}-${dateStr}`;
 
   // Check cache
@@ -116,8 +117,6 @@ export const getPrayerTimesFromApi = async (
     const mapping = getCityMapping(city);
     const bulan = date.getMonth() + 1;
     const tahun = date.getFullYear();
-    const hari = date.getDate();
-
     const jadwalList = await equranApi.getJadwalShalat(
       mapping.provinsi,
       mapping.kabkota,
@@ -126,11 +125,7 @@ export const getPrayerTimesFromApi = async (
     );
 
     // Find today's schedule
-    const todayJadwal =
-      jadwalList.find((j) => {
-        const jadwalDate = new Date(j.tanggal);
-        return jadwalDate.getDate() === hari;
-      }) || jadwalList[0];
+    const todayJadwal = jadwalList.find((j) => j.tanggal === dateStr) || jadwalList[0];
 
     if (!todayJadwal) {
       return getFallbackPrayerTimes();
