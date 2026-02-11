@@ -110,7 +110,7 @@ const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      <main className="px-6 py-6 space-y-6 pb-32 md:p-0 md:pb-12">
+      <main className="px-6 py-6 space-y-6 pb-32 md:p-0 md:pb-12 max-w-2xl mx-auto w-full">
         <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
