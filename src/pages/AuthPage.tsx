@@ -148,7 +148,7 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <MobileContainer className="flex flex-col items-center justify-center px-6 text-slate-200">
+    <MobileContainer className="flex flex-col items-center justify-center min-h-dvh px-6 py-8 pb-safe text-slate-200">
       {/* Back Button */}
       <motion.button
         onClick={() => navigate('/')}

@@ -704,7 +704,6 @@ export default function LandingPage() {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
   const info = getRamadanInfo(now);
 
   const formatNumber = (num: number) => num.toString().padStart(2, '0');
@@ -725,7 +724,7 @@ export default function LandingPage() {
         exit={{ y: -10, opacity: 0 }}
         className="text-2xl sm:text-3xl font-bold text-white font-serif"
       >
-        {formatNumber(value)}
+        {mounted ? formatNumber(value) : '--'}
       </motion.div>
       <span className="text-[10px] sm:text-xs text-slate-400 uppercase mt-1">
         {label}

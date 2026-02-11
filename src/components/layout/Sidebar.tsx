@@ -23,33 +23,49 @@ const Sidebar = () => {
     id: {
       hadith: 'Hadits',
       schedule: 'Jadwal',
+      tracker: 'Mutabaah',
+      dhikr: 'Dzikir',
       dua: 'Doa',
+      reflection: 'Refleksi',
+      goals: 'Target',
+      stats: 'Statistik',
+      settings: 'Pengaturan',
       menu: 'Menu',
       signedInAs: 'Masuk sebagai',
       guest: 'Tamu',
+      dashboard: 'Beranda',
+      quran: 'Quran',
     },
     en: {
       hadith: 'Hadith',
       schedule: 'Schedule',
+      tracker: 'Tracker',
+      dhikr: 'Dhikr',
       dua: 'Dua',
+      reflection: 'Reflection',
+      goals: 'Goals',
+      stats: 'Stats',
+      settings: 'Settings',
       menu: 'Menu',
       signedInAs: 'Signed in as',
       guest: 'Guest',
+      dashboard: 'Dashboard',
+      quran: 'Quran',
     },
   }[lang];
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: BookOpen, label: 'Quran', path: '/quran' },
+    { icon: LayoutDashboard, label: t.dashboard, path: '/dashboard' },
+    { icon: BookOpen, label: t.quran, path: '/quran' },
     { icon: Book, label: t.hadith, path: '/hadith' },
     { icon: Calendar, label: t.schedule, path: '/calendar' },
-    { icon: CheckSquare, label: 'Tracker', path: '/tracker' },
-    { icon: Repeat, label: 'Dhikr', path: '/dhikr' },
+    { icon: CheckSquare, label: t.tracker, path: '/tracker' },
+    { icon: Repeat, label: t.dhikr, path: '/dhikr' },
     { icon: Book, label: t.dua, path: '/doa' },
-    { icon: Heart, label: 'Reflection', path: '/reflection' },
-    { icon: Target, label: 'Goals', path: '/goals' },
-    { icon: BarChart3, label: 'Stats', path: '/stats' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: Heart, label: t.reflection, path: '/reflection' },
+    { icon: Target, label: t.goals, path: '/goals' },
+    { icon: BarChart3, label: t.stats, path: '/stats' },
+    { icon: Settings, label: t.settings, path: '/settings' },
   ];
 
   return (
@@ -77,7 +93,7 @@ const Sidebar = () => {
             to={item.path}
             className={({ isActive }) =>
               cn(
-                'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-slate-400 transition-colors duration-200',
+                'group flex items-center gap-3 rounded-xl px-3 py-3 text-slate-400 transition-colors duration-200',
                 isActive
                   ? 'bg-emerald-500/10 font-medium text-emerald-400'
                   : 'hover:bg-slate-800/50 hover:text-slate-200',

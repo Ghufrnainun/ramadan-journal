@@ -9,7 +9,9 @@ declare global {
 
 const envSupabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const runtimeSupabaseUrl =
-  typeof window !== 'undefined' ? window.__APP_PUBLIC_CONFIG__?.supabaseUrl : undefined;
+  typeof window !== 'undefined'
+    ? window.__APP_PUBLIC_CONFIG__?.supabaseUrl
+    : undefined;
 const supabaseUrl = envSupabaseUrl || runtimeSupabaseUrl;
 
 const FUNCTION_URL = supabaseUrl
@@ -119,7 +121,7 @@ interface ApiResponse<T> {
   data: T;
 }
 
-class EQuranApi {
+export class EQuranApi {
   private async parseJsonResponse<T>(response: Response): Promise<T> {
     const contentType = response.headers.get('content-type') || '';
 
