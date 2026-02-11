@@ -17,9 +17,8 @@ export const useDailyStatus = (date?: string) => {
         .select('*')
         .eq('user_id', user.id)
         .eq('date', targetDate)
-        .single();
+        .maybeSingle();
 
-      if (error?.code === 'PGRST116') return null; // No rows found
       if (error) throw error;
       return data;
     },
