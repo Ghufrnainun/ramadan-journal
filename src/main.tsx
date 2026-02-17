@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { setupGlobalErrorTelemetry, trackBootError } from "@/lib/telemetry";
+import { initMonitoring } from "@/lib/monitoring";
 
 declare global {
   interface Window {
@@ -15,6 +16,7 @@ declare global {
 const rootEl = document.getElementById("root")!;
 const root = createRoot(rootEl);
 setupGlobalErrorTelemetry();
+initMonitoring();
 
 const BootError = ({ message }: { message: string }) => (
   <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">

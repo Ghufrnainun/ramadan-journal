@@ -8,6 +8,7 @@ import { AuthProvider } from '@/hooks/useAuth';
 import AppGate from '@/components/AppGate';
 import AppErrorBoundary from '@/components/AppErrorBoundary';
 import { dictionaries } from '@/i18n';
+import SyncStatusPill from '@/components/SyncStatusPill';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
@@ -38,6 +39,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <SyncStatusPill />
           <BrowserRouter>
             <Suspense
               fallback={

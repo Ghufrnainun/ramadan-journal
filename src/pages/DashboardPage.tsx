@@ -22,6 +22,7 @@ import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     // ProtectedRoute sudah handle redirect auth + onboarding.
@@ -56,8 +57,6 @@ const DashboardPage: React.FC = () => {
   // Get dynamic greeting based on Ramadan status
   const ramadanInfo = getRamadanInfo(new Date(), profile.ramadanStartDate, profile.ramadanEndDate);
   const greeting = getRamadanGreeting(lang, ramadanInfo.status);
-
-  const [sharing, setSharing] = useState(false);
 
   const handleShareProgress = async () => {
     if (sharing) return;

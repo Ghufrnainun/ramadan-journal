@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/runtime-client';
 
 type SyncOperation = 'insert' | 'upsert' | 'update' | 'delete';
 
-interface QueuedMutation {
+export interface QueuedMutation {
   id: string;
   userId: string;
   table: string;
@@ -13,6 +13,7 @@ interface QueuedMutation {
   createdAt: string;
   retryCount: number;
   lastError?: string;
+  dedupeKey: string;
 }
 
 interface QueueMutationInput {
@@ -25,15 +26,71 @@ interface QueueMutationInput {
   lastError?: string;
 }
 
+export interface SyncQueueStats {
+  total: number;
+  pending: number;
+  failed: number;
+  maxRetryReached: number;
+  isOnline: boolean;
+}
+
 const CACHE_PREFIX = 'myramadhanku_cache';
 const QUEUE_KEY = 'myramadhanku_sync_queue';
 const MAX_RETRY = 8;
+const MAX_QUEUE_ITEMS = 500;
+const SYNC_EVENT = 'myramadhanku:sync-queue-changed';
 
 let drainInFlight = false;
 let drainTimer: ReturnType<typeof setTimeout> | null = null;
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
+
+const stableStringify = (value: unknown): string => {
+  if (!isObject(value)) return JSON.stringify(value);
+  const sorted: Record<string, unknown> = {};
+  for (const key of Object.keys(value).sort()) {
+    sorted[key] = value[key];
+  }
+  return JSON.stringify(sorted);
+};
+
+const buildDedupeKey = (input: QueueMutationInput): string => {
+  const match = stableStringify(input.match ?? {});
+  const onConflict = input.onConflict ?? '';
+  let identity = '';
+
+  if (input.operation === 'upsert') {
+    const payload = input.payload ?? {};
+    const conflictColumns = onConflict
+      .split(',')
+      .map((column) => column.trim())
+      .filter(Boolean);
+    const conflictValues = conflictColumns.map((column) => ({
+      column,
+      value: payload[column],
+    }));
+    identity = `${onConflict}|${stableStringify(conflictValues)}|${match}`;
+  } else if (input.operation === 'update') {
+    identity = `${onConflict}|${match}`;
+  } else if (input.operation === 'delete') {
+    identity = match;
+  } else {
+    const payload = input.payload ?? {};
+    if (typeof payload.id === 'string') {
+      identity = `id:${payload.id}`;
+    } else {
+      identity = stableStringify(payload);
+    }
+  }
+
+  return `${input.userId}|${input.table}|${input.operation}|${identity}`;
+};
+
+const emitQueueChanged = () => {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(SYNC_EVENT));
+};
 
 export const getScopedCacheKey = (resource: string, userId?: string | null) =>
   `${CACHE_PREFIX}:${userId ?? 'guest'}:${resource}`;
@@ -56,7 +113,7 @@ export const writeOfflineCache = <T>(key: string, value: T): void => {
   }
 };
 
-const readQueue = (): QueuedMutation[] => {
+export const getSyncQueueSnapshot = (): QueuedMutation[] => {
   try {
     const raw = localStorage.getItem(QUEUE_KEY);
     if (!raw) return [];
@@ -72,11 +129,30 @@ const writeQueue = (queue: QueuedMutation[]) => {
     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch {
     // Ignore storage quota errors.
+  } finally {
+    emitQueueChanged();
   }
 };
 
+const compactQueue = (queue: QueuedMutation[]): QueuedMutation[] => {
+  const dedupeMap = new Map<string, QueuedMutation>();
+  for (const item of queue) {
+    const existing = dedupeMap.get(item.dedupeKey);
+    if (!existing || existing.createdAt <= item.createdAt) {
+      dedupeMap.set(item.dedupeKey, item);
+    }
+  }
+  return [...dedupeMap.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+};
+
+const pruneQueue = (queue: QueuedMutation[]): QueuedMutation[] => {
+  if (queue.length <= MAX_QUEUE_ITEMS) return queue;
+  return queue.slice(queue.length - MAX_QUEUE_ITEMS);
+};
+
 export const queueMutation = (input: QueueMutationInput): void => {
-  const queue = readQueue();
+  const dedupeKey = buildDedupeKey(input);
+  const queue = getSyncQueueSnapshot();
   queue.push({
     id: crypto.randomUUID(),
     userId: input.userId,
@@ -88,8 +164,9 @@ export const queueMutation = (input: QueueMutationInput): void => {
     createdAt: new Date().toISOString(),
     retryCount: 0,
     lastError: input.lastError,
+    dedupeKey,
   });
-  writeQueue(queue);
+  writeQueue(pruneQueue(compactQueue(queue)));
 };
 
 const applyMatch = (
@@ -150,6 +227,33 @@ const executeMutation = async (task: QueuedMutation): Promise<void> => {
   }
 };
 
+export const getSyncQueueStats = (userId?: string | null): SyncQueueStats => {
+  const queue = getSyncQueueSnapshot();
+  const filtered = userId ? queue.filter((item) => item.userId === userId) : queue;
+  const failed = filtered.filter((item) => !!item.lastError).length;
+  const maxRetryReached = filtered.filter((item) => item.retryCount >= MAX_RETRY).length;
+  return {
+    total: filtered.length,
+    pending: filtered.length - maxRetryReached,
+    failed,
+    maxRetryReached,
+    isOnline: typeof navigator === 'undefined' ? true : navigator.onLine,
+  };
+};
+
+export const subscribeSyncQueue = (handler: () => void): (() => void) => {
+  if (typeof window === 'undefined') return () => {};
+  const wrapped = () => handler();
+  window.addEventListener(SYNC_EVENT, wrapped);
+  window.addEventListener('online', wrapped);
+  window.addEventListener('offline', wrapped);
+  return () => {
+    window.removeEventListener(SYNC_EVENT, wrapped);
+    window.removeEventListener('online', wrapped);
+    window.removeEventListener('offline', wrapped);
+  };
+};
+
 export const drainSyncQueue = async (): Promise<void> => {
   if (drainInFlight) return;
   if (typeof navigator !== 'undefined' && !navigator.onLine) return;
@@ -161,7 +265,7 @@ export const drainSyncQueue = async (): Promise<void> => {
 
   drainInFlight = true;
   try {
-    const queue = readQueue();
+    const queue = getSyncQueueSnapshot();
     if (queue.length === 0) return;
 
     const keep: QueuedMutation[] = [];
@@ -171,7 +275,10 @@ export const drainSyncQueue = async (): Promise<void> => {
         continue;
       }
 
-      if (task.retryCount >= MAX_RETRY) continue;
+      if (task.retryCount >= MAX_RETRY) {
+        keep.push(task);
+        continue;
+      }
 
       try {
         await executeMutation(task);
@@ -184,16 +291,14 @@ export const drainSyncQueue = async (): Promise<void> => {
       }
     }
 
-    writeQueue(keep);
+    writeQueue(pruneQueue(compactQueue(keep)));
   } finally {
     drainInFlight = false;
   }
 };
 
 export const scheduleSyncQueueDrain = (delayMs = 700): void => {
-  if (drainTimer) {
-    clearTimeout(drainTimer);
-  }
+  if (drainTimer) clearTimeout(drainTimer);
   drainTimer = setTimeout(() => {
     void drainSyncQueue();
   }, delayMs);
