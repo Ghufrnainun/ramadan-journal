@@ -832,7 +832,7 @@ export default function LandingPage() {
             </button>
           </motion.div>
 
-          {/* NEW COUNTDOWN SECTION */}
+          {/* COUNTDOWN / RAMADAN STATUS SECTION */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -840,23 +840,78 @@ export default function LandingPage() {
             className="mt-16 flex flex-col items-center"
           >
             {info.status === 'before' && info.countdown ? (
-              <div className="flex gap-3 sm:gap-4">
-                <CountdownUnit
-                  value={info.countdown.days}
-                  label={lang === 'id' ? 'Hari' : 'Days'}
-                />
-                <CountdownUnit
-                  value={info.countdown.hours}
-                  label={lang === 'id' ? 'Jam' : 'Hours'}
-                />
-                <CountdownUnit
-                  value={info.countdown.minutes}
-                  label={lang === 'id' ? 'Menit' : 'Mins'}
-                />
-                <CountdownUnit
-                  value={info.countdown.seconds}
-                  label={lang === 'id' ? 'Detik' : 'Secs'}
-                />
+              <>
+                <div className="flex gap-3 sm:gap-4">
+                  <CountdownUnit
+                    value={info.countdown.days}
+                    label={lang === 'id' ? 'Hari' : 'Days'}
+                  />
+                  <CountdownUnit
+                    value={info.countdown.hours}
+                    label={lang === 'id' ? 'Jam' : 'Hours'}
+                  />
+                  <CountdownUnit
+                    value={info.countdown.minutes}
+                    label={lang === 'id' ? 'Menit' : 'Mins'}
+                  />
+                  <CountdownUnit
+                    value={info.countdown.seconds}
+                    label={lang === 'id' ? 'Detik' : 'Secs'}
+                  />
+                </div>
+                <p className="mt-6 text-sm text-slate-500 flex items-center gap-2">
+                  <Moon className="w-4 h-4 text-amber-500/60" />
+                  {lang === 'id'
+                    ? 'Menuju Maghrib Ramadan 1447H'
+                    : 'Countdown to Maghrib Ramadan 1447H'}
+                </p>
+              </>
+            ) : info.status === 'during' ? (
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex items-center gap-3 px-6 py-3 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
+                  <Moon className="w-5 h-5 text-emerald-400" />
+                  <span className="text-emerald-400 font-medium text-sm">
+                    {lang === 'id' ? 'Ramadan Sedang Berlangsung' : 'Ramadan is Here'}
+                  </span>
+                </div>
+                <div className="flex gap-3 sm:gap-4">
+                  <div className="flex flex-col items-center p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl backdrop-blur-md w-24">
+                    <span className="text-3xl font-bold text-amber-400 font-serif">
+                      {info.currentDay}
+                    </span>
+                    <span className="text-xs text-slate-400 uppercase mt-1">
+                      {lang === 'id' ? 'Hari ke' : 'Day'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center p-4 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md w-24">
+                    <span className="text-3xl font-bold text-white font-serif">
+                      {info.daysRemaining}
+                    </span>
+                    <span className="text-xs text-slate-400 uppercase mt-1">
+                      {lang === 'id' ? 'Tersisa' : 'Left'}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-500 mt-2">
+                  {lang === 'id'
+                    ? 'Jangan lewatkan hari ini. Mulai tracking sekarang!'
+                    : "Don't miss today. Start tracking now!"}
+                </p>
+              </div>
+            ) : info.status === 'after-eid' ? (
+              <div className="flex flex-col items-center gap-4">
+                <motion.div
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="text-4xl sm:text-5xl font-serif text-amber-400"
+                >
+                  {lang === 'id' ? '🌙 Selamat Idul Fitri' : '🌙 Eid Mubarak'}
+                </motion.div>
+                <p className="text-slate-400 text-sm">
+                  {lang === 'id'
+                    ? 'Taqabbalallahu minna wa minkum'
+                    : 'May Allah accept from us and from you'}
+                </p>
               </div>
             ) : (
               <div className="px-8 py-4 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
@@ -864,15 +919,6 @@ export default function LandingPage() {
                   {getBadgeText()}
                 </span>
               </div>
-            )}
-
-            {info.status === 'before' && (
-              <p className="mt-6 text-sm text-slate-500 flex items-center gap-2">
-                <Moon className="w-4 h-4 text-amber-500/60" />
-                {lang === 'id'
-                  ? 'Menuju Maghrib Ramadan 1446H'
-                  : 'Countdown to Maghrib Ramadan 1446H'}
-              </p>
             )}
           </motion.div>
 
