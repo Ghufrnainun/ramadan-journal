@@ -173,9 +173,9 @@ const DashboardPage: React.FC = () => {
 
         {/* Quick Actions - Grid Layout for variation */}
         <div>
-          <h3 className="text-sm font-medium text-slate-400 mb-3 uppercase pl-1">
+          <h2 className="text-sm font-medium text-slate-400 mb-3 uppercase pl-1">
             {t.menu}
-          </h3>
+          </h2>
           <QuickActions
             lang={lang}
             focusModules={profile.focusModules}

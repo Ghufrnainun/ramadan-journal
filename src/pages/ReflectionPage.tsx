@@ -129,17 +129,21 @@ const ReflectionPage: React.FC = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('reflections')
-        .select('id, date, content')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false })
-        .limit(4);
+      try {
+        const { data, error } = await supabase
+          .from('reflections')
+          .select('id, date, content')
+          .eq('user_id', user.id)
+          .order('date', { ascending: false })
+          .limit(4);
 
-      if (error) throw error;
-      return (data as RecentReflection[]) ?? [];
+        if (error) throw error;
+        return (data as RecentReflection[]) ?? [];
+      } catch {
+        return [];
+      }
     },
   });
 
@@ -231,7 +235,11 @@ const ReflectionPage: React.FC = () => {
           {reflectionsError && (
             <p className="mb-3 text-xs text-rose-300">{reflectionErrorMessage}</p>
           )}
+          <label htmlFor="reflection-content" className="sr-only">
+            {dict.reflection.prompt}
+          </label>
           <textarea
+            id="reflection-content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={dict.reflection.placeholder}

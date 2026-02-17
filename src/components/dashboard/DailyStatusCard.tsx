@@ -72,7 +72,11 @@ const DailyStatusCard: React.FC<DailyStatusCardProps> = ({ lang }) => {
           {error && (
             <p className="mb-2 text-xs text-rose-300">{t.saveError}</p>
           )}
+          <label htmlFor="daily-intention" className="sr-only">
+            {t.title}
+          </label>
           <textarea
+            id="daily-intention"
             value={intention}
             onChange={(e) => setIntention(e.target.value)}
             placeholder={t.placeholder}

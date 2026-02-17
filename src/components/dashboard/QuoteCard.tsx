@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Quote as QuoteIcon, Bookmark } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,10 +32,13 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ lang, quote }) => {
                 "{text}"
               </p>
               <p className="text-amber-400/70 text-xs mt-3 font-medium">
-                — {quote.source}
+                &mdash; {quote.source}
               </p>
             </div>
             <button
+              type="button"
+              aria-label={saved ? 'Remove bookmark quote' : 'Bookmark quote'}
+              aria-pressed={saved}
               onClick={() => {
                 const next = toggleBookmark({
                   id: bookmarkId,
@@ -48,7 +51,7 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ lang, quote }) => {
                 });
                 setSaved(next);
               }}
-              className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors flex-shrink-0"
+              className="h-11 w-11 flex items-center justify-center rounded-lg transition-colors hover:bg-slate-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 flex-shrink-0"
             >
               <Bookmark className={`w-4 h-4 ${saved ? 'text-amber-400' : 'text-slate-500 hover:text-amber-400'}`} />
             </button>
@@ -60,3 +63,4 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ lang, quote }) => {
 };
 
 export default QuoteCard;
+

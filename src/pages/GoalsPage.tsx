@@ -157,13 +157,21 @@ const GoalsPage = () => {
         <section className="rounded-2xl border border-slate-800/70 bg-slate-900/50 p-5">
           <h2 className="mb-3 font-serif text-lg text-white">{t.customGoal}</h2>
           <div className="space-y-2">
+            <label htmlFor="custom-goal-title" className="block text-xs font-medium text-slate-400">
+              {t.placeholder}
+            </label>
             <input
+              id="custom-goal-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t.placeholder}
               className="w-full rounded-xl border border-slate-700 bg-slate-950/40 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-amber-500/50 focus:outline-none"
             />
+            <label htmlFor="custom-goal-target" className="block text-xs font-medium text-slate-400">
+              {lang === 'id' ? 'Target' : 'Target'}
+            </label>
             <input
+              id="custom-goal-target"
               type="number"
               min={1}
               value={target}

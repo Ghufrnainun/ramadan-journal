@@ -335,7 +335,11 @@ const DhikrPage: React.FC = () => {
               className="overflow-hidden"
             >
               <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800 space-y-3">
+                <label htmlFor="custom-dhikr-name" className="sr-only">
+                  {lang === 'id' ? 'Nama dzikir' : 'Dhikr name'}
+                </label>
                 <input
+                  id="custom-dhikr-name"
                   value={customForm.transliteration}
                   onChange={(e) =>
                     setCustomForm({
@@ -353,10 +357,11 @@ const DhikrPage: React.FC = () => {
                 />
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
-                    <label className="text-xs text-slate-500 mb-1 block">
+                    <label htmlFor="custom-dhikr-target" className="text-xs text-slate-500 mb-1 block">
                       {t.target}
                     </label>
                     <input
+                      id="custom-dhikr-target"
                       type="number"
                       min={1}
                       value={customForm.target}

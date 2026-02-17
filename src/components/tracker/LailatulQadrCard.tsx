@@ -6,6 +6,13 @@ import { cn } from '@/lib/utils';
 import { getRamadanInfo } from '@/lib/ramadan-dates';
 import { getLocalDateKey } from '@/lib/date';
 import { getProfile } from '@/lib/storage';
+import {
+  getScopedCacheKey,
+  queueMutation,
+  readOfflineCache,
+  scheduleSyncQueueDrain,
+  writeOfflineCache,
+} from '@/lib/offline-sync';
 
 const keys = ['qiyam', 'quran', 'itikaf'] as const;
 type WorshipKey = (typeof keys)[number];
@@ -66,15 +73,28 @@ const LailatulQadrCard = () => {
       if (!nights.length) return [];
       const { data: userRes } = await supabase.auth.getUser();
       const user = userRes.user;
-      if (!user) throw new Error('Not authenticated');
-      const { data, error } = await supabase
-        .from('daily_tracker')
-        .select('id, date, items')
-        .eq('user_id', user.id)
-        .gte('date', nights[0].date)
-        .lte('date', nights[nights.length - 1].date);
-      if (error) throw error;
-      return data ?? [];
+      const cacheKey = getScopedCacheKey(
+        `lailatul_qadr:${nights[0].date}:${nights[nights.length - 1].date}`,
+        user?.id,
+      );
+      const cached = readOfflineCache<Array<{ id?: string; date: string; items?: Record<string, boolean> }>>(cacheKey, []);
+      if (!user) return cached;
+
+      try {
+        const { data, error } = await supabase
+          .from('daily_tracker')
+          .select('id, date, items')
+          .eq('user_id', user.id)
+          .gte('date', nights[0].date)
+          .lte('date', nights[nights.length - 1].date);
+        if (error) throw error;
+        const next = (data as Array<{ id?: string; date: string; items?: Record<string, boolean> }>) ?? [];
+        writeOfflineCache(cacheKey, next);
+        scheduleSyncQueueDrain();
+        return next;
+      } catch {
+        return cached;
+      }
     },
     enabled: isVisible && nights.length > 0,
   });
@@ -83,8 +103,13 @@ const LailatulQadrCard = () => {
     mutationFn: async (key: WorshipKey) => {
       const { data: userRes } = await supabase.auth.getUser();
       const user = userRes.user;
-      if (!user) throw new Error('Not authenticated');
+      if (!user) return;
 
+      const cacheKey = getScopedCacheKey(
+        `lailatul_qadr:${nights[0].date}:${nights[nights.length - 1].date}`,
+        user.id,
+      );
+      const currentRows = readOfflineCache<Array<{ id?: string; date: string; items?: Record<string, boolean> }>>(cacheKey, data ?? []);
       const existingRow = data?.find((row) => row.date === today);
       const currentItems =
         (existingRow?.items as Record<string, boolean> | null) ?? {};
@@ -92,16 +117,46 @@ const LailatulQadrCard = () => {
         ...currentItems,
         [`lailatul_qadr_${key}`]: !currentItems[`lailatul_qadr_${key}`],
       };
-      const { error } = await supabase.from('daily_tracker').upsert(
-        {
-          id: existingRow?.id,
-          user_id: user.id,
-          date: today,
-          items: nextItems,
-        },
-        { onConflict: 'user_id,date' },
-      );
-      if (error) throw error;
+      const optimisticRow = {
+        id: existingRow?.id ?? crypto.randomUUID(),
+        date: today,
+        items: nextItems,
+      };
+      const optimisticRows = [
+        optimisticRow,
+        ...currentRows.filter((row) => row.date !== today),
+      ];
+      writeOfflineCache(cacheKey, optimisticRows);
+      queryClient.setQueryData(['lailatulQadr', nights[0]?.date, nights[nights.length - 1]?.date], optimisticRows);
+
+      try {
+        const { error } = await supabase.from('daily_tracker').upsert(
+          {
+            id: existingRow?.id,
+            user_id: user.id,
+            date: today,
+            items: nextItems,
+          },
+          { onConflict: 'user_id,date' },
+        );
+        if (error) throw error;
+        scheduleSyncQueueDrain();
+      } catch (error) {
+        queueMutation({
+          userId: user.id,
+          table: 'daily_tracker',
+          operation: 'upsert',
+          payload: {
+            id: existingRow?.id ?? optimisticRow.id,
+            user_id: user.id,
+            date: today,
+            items: nextItems,
+          },
+          onConflict: 'user_id,date',
+          lastError: error instanceof Error ? error.message : 'Failed to update lailatul qadr',
+        });
+        scheduleSyncQueueDrain(1500);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lailatulQadr'] });

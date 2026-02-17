@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { deriveAppState, getRedirectTarget, AppState } from '@/lib/app-state';
 import { getProfileStore, LocalProfileStore } from '@/lib/profile-store';
 import { debugAuth, debugAuthSimple } from '@/lib/debug-auth';
+import { drainSyncQueue, scheduleSyncQueueDrain } from '@/lib/offline-sync';
 
 interface AppGateProps {
   children: ReactNode;
@@ -130,6 +131,16 @@ const AppGate: React.FC<AppGateProps> = ({
       setupCompletedAt,
     });
   }, [authLoading, user, profileResolved, setupCompletedAt, location.pathname]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    void drainSyncQueue();
+    const onOnline = () => {
+      scheduleSyncQueueDrain(150);
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [user?.id]);
 
   // Handle redirects
   useEffect(() => {

@@ -10,6 +10,7 @@
 
 import { supabase } from '@/integrations/supabase/runtime-client';
 import { debugAuthSimple } from './debug-auth';
+import { queueMutation, scheduleSyncQueueDrain } from './offline-sync';
 
 // ─── Profile Shape ──────────────────────────────────────────────────
 export interface UserProfile {
@@ -250,6 +251,17 @@ export class SupabaseProfileStore implements ProfileStore {
 
     if (error) {
       console.error('Failed to sync profile to DB:', error);
+      queueMutation({
+        userId: this.userId,
+        table: 'profiles',
+        operation: 'upsert',
+        payload: { user_id: this.userId, ...dbData },
+        onConflict: 'user_id',
+        lastError: error.message,
+      });
+      scheduleSyncQueueDrain(1500);
+    } else {
+      scheduleSyncQueueDrain();
     }
   }
 
@@ -277,6 +289,17 @@ export class SupabaseProfileStore implements ProfileStore {
     if (error) {
       console.error('Failed to mark setup complete in DB:', error);
       // Local is already updated, so user won't loop
+      queueMutation({
+        userId: this.userId,
+        table: 'profiles',
+        operation: 'upsert',
+        payload: { user_id: this.userId, ...dbData },
+        onConflict: 'user_id',
+        lastError: error.message,
+      });
+      scheduleSyncQueueDrain(1500);
+    } else {
+      scheduleSyncQueueDrain();
     }
 
     debugAuthSimple('SupabaseProfileStore: setup marked complete');
@@ -301,6 +324,20 @@ export class SupabaseProfileStore implements ProfileStore {
 
     if (error) {
       console.error('Failed to clear setup in DB:', error);
+      queueMutation({
+        userId: this.userId,
+        table: 'profiles',
+        operation: 'update',
+        payload: {
+          setup_completed_at: null,
+          onboarding_completed: false,
+        },
+        match: { user_id: this.userId },
+        lastError: error.message,
+      });
+      scheduleSyncQueueDrain(1500);
+    } else {
+      scheduleSyncQueueDrain();
     }
 
     debugAuthSimple('SupabaseProfileStore: setup cleared');

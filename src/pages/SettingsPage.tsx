@@ -136,7 +136,11 @@ const SettingsPage: React.FC = () => {
               </p>
             </div>
           </div>
+          <label htmlFor="display-name" className="mb-2 block text-sm text-slate-300">
+            {dict.settings.profile}
+          </label>
           <input
+            id="display-name"
             type="text"
             value={profile.displayName || ''}
             onChange={(e) => updateProfile({ displayName: e.target.value })}
@@ -266,7 +270,11 @@ const SettingsPage: React.FC = () => {
               </p>
             </div>
           </div>
+          <label htmlFor="ramadan-start-date" className="text-sm font-medium text-slate-300">
+            {dict.settings.ramadan}
+          </label>
           <input
+            id="ramadan-start-date"
             type="date"
             value={profile.ramadanStartDate || ''}
             onChange={(e) =>
@@ -275,13 +283,14 @@ const SettingsPage: React.FC = () => {
             className="w-full bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 text-base text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all"
           />
           <div className="pt-3 border-t border-slate-800/70">
-            <p className="text-white font-medium text-sm">
+            <label htmlFor="ramadan-end-date" className="text-white font-medium text-sm">
               {dict.settings.ramadanEnd}
-            </p>
+            </label>
             <p className="text-xs text-slate-400 mb-3">
               {dict.settings.ramadanEndNote}
             </p>
             <input
+              id="ramadan-end-date"
               type="date"
               value={profile.ramadanEndDate || ''}
               onChange={(e) =>

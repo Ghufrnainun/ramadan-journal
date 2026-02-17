@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, AnimatePresence } from 'framer-motion';
 import {
@@ -43,7 +43,7 @@ const CONTENT = {
       cta_primary: 'Mulai Tracking',
       cta_secondary: 'Lihat Demo',
       trust: ['Track Progress', 'Gratis Selamanya', 'Tanpa Iklan'],
-      countdown: 'Ramadan dimulai dalam ±32 hari',
+      countdown: 'Ramadan dimulai dalam Â±32 hari',
     },
     whisper: {
       text: 'Malam ini, izinkan dirimu istirahat. Tidak perlu mengejar angka, cukup hadir dengan hati.',
@@ -170,7 +170,7 @@ const CONTENT = {
       title: 'Siap Raih Ramadan Terbaikmu?',
       sub: 'Mulai tracking progress harianmu hari ini. Gratis, selamanya.',
       cta: 'Daftar Sekarang',
-      micro: 'Gratis • Tanpa Iklan • Open Source',
+      micro: 'Gratis â€¢ Tanpa Iklan â€¢ Open Source',
     },
     sticky: {
       text: 'Mulai Jurnal Ramadan (Gratis)',
@@ -200,7 +200,7 @@ const CONTENT = {
       cta_primary: 'Start Ramadan Journal',
       cta_secondary: 'Preview App',
       trust: ['Data Stored Locally', 'Ad-Free', 'Open Source'],
-      countdown: 'Ramadan starts in ±32 days',
+      countdown: 'Ramadan starts in Â±32 days',
     },
     whisper: {
       text: 'Tonight, give yourself permission to rest. No need to chase numbers, just be present.',
@@ -222,7 +222,7 @@ const CONTENT = {
     },
     promise: {
       title: 'Our Promise to You',
-      text: 'A silent digital space. We don’t track your data, sell your attention, or judge your progress.',
+      text: 'A silent digital space. We donâ€™t track your data, sell your attention, or judge your progress.',
       badge: 'Judgment-Free Zone',
     },
     day_flow: {
@@ -278,7 +278,7 @@ const CONTENT = {
     },
     streak: {
       title: 'Consistency',
-      desc: 'Missed a day? It’s okay. Start again tomorrow. We won’t break your chain.',
+      desc: 'Missed a day? Itâ€™s okay. Start again tomorrow. We wonâ€™t break your chain.',
       label: '30 Days Journey',
     },
     reminders: {
@@ -316,7 +316,7 @@ const CONTENT = {
         },
         {
           q: 'Is my data sold?',
-          a: 'No. We don’t even have analytics servers to track you.',
+          a: 'No. We donâ€™t even have analytics servers to track you.',
         },
       ],
     },
@@ -324,7 +324,7 @@ const CONTENT = {
       title: 'Ready for Your Best Ramadan?',
       sub: 'Start tracking your progress today. Free, forever.',
       cta: 'Sign Up Now',
-      micro: 'Free • No Ads • Open Source',
+      micro: 'Free â€¢ No Ads â€¢ Open Source',
     },
     sticky: {
       text: 'Start Tracking Your Ramadan',
@@ -571,10 +571,18 @@ const MockupCard = React.forwardRef<
 
             {/* Action Buttons */}
             <div className="mt-auto pt-8 flex gap-3">
-              <button className="p-2.5 rounded-full bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 transition-colors">
+              <button
+                type="button"
+                aria-label="Share quote"
+                className="h-11 w-11 flex items-center justify-center rounded-full bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60"
+              >
                 <Share2 className="w-4 h-4" />
               </button>
-              <button className="p-2.5 rounded-full bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 transition-colors">
+              <button
+                type="button"
+                aria-label="Like quote"
+                className="h-11 w-11 flex items-center justify-center rounded-full bg-slate-800/50 text-slate-400 transition-colors hover:bg-slate-700/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60"
+              >
                 <Heart className="w-4 h-4" />
               </button>
             </div>
@@ -820,7 +828,7 @@ export default function LandingPage() {
                 animate={{ x: [0, 4, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                →
+                â†’
               </motion.span>
             </button>
             <button
@@ -1011,7 +1019,7 @@ export default function LandingPage() {
           <p className="text-amber-400/80 text-sm uppercase mb-2">
             Experience Peace
           </p>
-          <p className="text-slate-400 text-sm">Swipe to explore →</p>
+          <p className="text-slate-400 text-sm">Swipe to explore â†’</p>
         </motion.div>
 
         {/* Horizontal Scroll Gallery */}
@@ -1347,7 +1355,7 @@ export default function LandingPage() {
               <p className="text-white/80 text-sm leading-relaxed mb-4">
                 {tm.t}
               </p>
-              <p className="text-xs text-slate-500">— {tm.u}</p>
+              <p className="text-xs text-slate-500">&mdash; {tm.u}</p>
             </motion.div>
           ))}
         </div>
@@ -1423,7 +1431,7 @@ export default function LandingPage() {
       <footer className="relative z-10 py-8 px-6 border-t border-slate-800/50 mt-24">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-400 text-sm">
-            © 2026 MyRamadhanKu. Open Source Project.
+            &copy; 2026 MyRamadhanKu. Open Source Project.
           </p>
           <div className="flex items-center gap-6">
             <a
@@ -1463,3 +1471,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

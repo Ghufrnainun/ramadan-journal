@@ -3,6 +3,7 @@ import { getProfile } from '@/lib/storage';
 import { getRamadanInfo } from '@/lib/ramadan-dates';
 import { getStreakSummary } from '@/lib/streak';
 import { getLocalDateKey } from '@/lib/date';
+import { getScopedCacheKey, readOfflineCache } from '@/lib/offline-sync';
 
 interface ShareCardOptions {
   title: string;
@@ -122,7 +123,7 @@ export const generateShareCard = async (
 export const getWeeklySummaryStats = async (): Promise<WeeklySummaryStats> => {
   const { data: authData } = await supabase.auth.getUser();
   const user = authData.user;
-  if (!user) throw new Error('Not authenticated');
+  const userId = user?.id ?? 'guest';
 
   const now = new Date();
   const weekStart = new Date(now);
@@ -130,38 +131,70 @@ export const getWeeklySummaryStats = async (): Promise<WeeklySummaryStats> => {
   const start = getLocalDateKey(weekStart);
   const end = getLocalDateKey(now);
 
-  const [fastingRes, tarawihRes, sedekahRes, readingRes] = await Promise.all([
-    supabase
-      .from('fasting_log')
-      .select('date,status')
-      .eq('user_id', user.id)
-      .gte('date', start)
-      .lte('date', end),
-    supabase
-      .from('tarawih_log')
-      .select('date,tarawih_done')
-      .eq('user_id', user.id)
-      .gte('date', start)
-      .lte('date', end),
-    supabase
-      .from('sedekah_log')
-      .select('date,completed')
-      .eq('user_id', user.id)
-      .gte('date', start)
-      .lte('date', end),
-    supabase
-      .from('reading_progress')
-      .select('juz_number')
-      .eq('user_id', user.id)
-      .order('date', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+  const cachedFasting = readOfflineCache<Array<{ date?: string; status?: string }>>(
+    getScopedCacheKey('fasting_log', userId),
+    [],
+  );
+  const cachedTarawih = readOfflineCache<Array<{ date?: string; tarawih_done?: boolean }>>(
+    getScopedCacheKey('tarawih_log', userId),
+    [],
+  );
+  const cachedSedekah = readOfflineCache<Array<{ date?: string; completed?: boolean }>>(
+    getScopedCacheKey('sedekah_log', userId),
+    [],
+  );
+  const cachedReading = readOfflineCache<{ juz_number?: number } | null>(
+    getScopedCacheKey('reading_progress', userId),
+    null,
+  );
 
-  if (fastingRes.error) throw fastingRes.error;
-  if (tarawihRes.error) throw tarawihRes.error;
-  if (sedekahRes.error) throw sedekahRes.error;
-  if (readingRes.error) throw readingRes.error;
+  let fastingData = cachedFasting;
+  let tarawihData = cachedTarawih;
+  let sedekahData = cachedSedekah;
+  let readingData = cachedReading;
+
+  try {
+    if (!user) throw new Error('No auth user');
+    const [fastingRes, tarawihRes, sedekahRes, readingRes] = await Promise.all([
+      supabase
+        .from('fasting_log')
+        .select('date,status')
+        .eq('user_id', userId)
+        .gte('date', start)
+        .lte('date', end),
+      supabase
+        .from('tarawih_log')
+        .select('date,tarawih_done')
+        .eq('user_id', userId)
+        .gte('date', start)
+        .lte('date', end),
+      supabase
+        .from('sedekah_log')
+        .select('date,completed')
+        .eq('user_id', userId)
+        .gte('date', start)
+        .lte('date', end),
+      supabase
+        .from('reading_progress')
+        .select('juz_number')
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    if (fastingRes.error) throw fastingRes.error;
+    if (tarawihRes.error) throw tarawihRes.error;
+    if (sedekahRes.error) throw sedekahRes.error;
+    if (readingRes.error) throw readingRes.error;
+
+    fastingData = (fastingRes.data as Array<{ date?: string; status?: string }>) ?? cachedFasting;
+    tarawihData = (tarawihRes.data as Array<{ date?: string; tarawih_done?: boolean }>) ?? cachedTarawih;
+    sedekahData = (sedekahRes.data as Array<{ date?: string; completed?: boolean }>) ?? cachedSedekah;
+    readingData = (readingRes.data as { juz_number?: number } | null) ?? cachedReading;
+  } catch {
+    // Use local cache fallback.
+  }
 
   const profile = getProfile();
   const ramadanInfo = getRamadanInfo();
@@ -181,10 +214,10 @@ export const getWeeklySummaryStats = async (): Promise<WeeklySummaryStats> => {
 
   return {
     weekNumber,
-    fastingDays: (fastingRes.data ?? []).filter((log) => log.status === 'full').length,
-    tarawihNights: (tarawihRes.data ?? []).filter((log) => log.tarawih_done).length,
-    sedekahCount: (sedekahRes.data ?? []).filter((log) => log.completed).length,
-    quranJuz: readingRes.data?.juz_number ?? 0,
+    fastingDays: (fastingData ?? []).filter((log) => log.status === 'full').length,
+    tarawihNights: (tarawihData ?? []).filter((log) => log.tarawih_done).length,
+    sedekahCount: (sedekahData ?? []).filter((log) => log.completed).length,
+    quranJuz: readingData?.juz_number ?? 0,
     streakDays: streak.currentActiveStreak,
   };
 };

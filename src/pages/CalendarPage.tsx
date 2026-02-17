@@ -29,6 +29,7 @@ import { useFastingLog } from '@/hooks/useFastingLog';
 import { useTarawihLog } from '@/hooks/useTarawihLog';
 import { useSedekahLog } from '@/hooks/useSedekahLog';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import { getScopedCacheKey, readOfflineCache, writeOfflineCache } from '@/lib/offline-sync';
 
 interface DailyStatusCalendarEntry {
   date: string;
@@ -96,23 +97,34 @@ const CalendarPage = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase
-        .from('daily_status')
-        .select('date, intention, mood')
-        .eq('user_id', user.id)
-        .gte('date', monthStart)
-        .lte('date', monthEnd);
-
-      if (error) throw error;
-      return (
-        data?.map((row) => ({
-          date: row.date,
-          intention: row.intention || '',
-          mood: row.mood || null,
-        })) ?? []
+      const cacheKey = getScopedCacheKey(
+        `daily_status_month:${monthStart}:${monthEnd}`,
+        user?.id,
       );
+      const cached = readOfflineCache<DailyStatusCalendarEntry[]>(cacheKey, []);
+      if (!user) return cached;
+
+      try {
+        const { data, error } = await supabase
+          .from('daily_status')
+          .select('date, intention, mood')
+          .eq('user_id', user.id)
+          .gte('date', monthStart)
+          .lte('date', monthEnd);
+
+        if (error) throw error;
+        const normalized = (
+          data?.map((row) => ({
+            date: row.date,
+            intention: row.intention || '',
+            mood: row.mood || null,
+          })) ?? []
+        );
+        writeOfflineCache(cacheKey, normalized);
+        return normalized;
+      } catch {
+        return cached;
+      }
     },
   });
 
@@ -215,14 +227,18 @@ const CalendarPage = () => {
         </span>
         <div className="flex gap-1">
           <button
+            type="button"
+            aria-label="Previous month"
             onClick={prevMonth}
-            className="p-2 rounded-lg hover:bg-slate-800/50 text-slate-400"
+            className="h-11 w-11 flex items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
+            type="button"
+            aria-label="Next month"
             onClick={nextMonth}
-            className="p-2 rounded-lg hover:bg-slate-800/50 text-slate-400"
+            className="h-11 w-11 flex items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60"
           >
             <ChevronRight className="w-5 h-5" />
           </button>

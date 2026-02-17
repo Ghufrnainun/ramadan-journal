@@ -144,6 +144,7 @@ const LocationStep: React.FC<LocationStepProps> = ({ lang, initialCity, onNext, 
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 z-10" />
         <input
           type="text"
+          aria-label={t.searchPlaceholder}
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder={t.searchPlaceholder}

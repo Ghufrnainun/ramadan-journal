@@ -2,6 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
 import type { Json } from '@/integrations/supabase/types';
 import { getLocalDateKey } from '@/lib/date';
+import {
+  getScopedCacheKey,
+  queueMutation,
+  readOfflineCache,
+  scheduleSyncQueueDrain,
+  writeOfflineCache,
+} from '@/lib/offline-sync';
 
 export const useDailyTracker = (date?: string) => {
   const queryClient = useQueryClient();
@@ -11,17 +18,26 @@ export const useDailyTracker = (date?: string) => {
     queryKey: ['dailyTracker', targetDate],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const cacheKey = getScopedCacheKey(`daily_tracker:${targetDate}`, user?.id);
+      const cached = readOfflineCache<Record<string, unknown> | null>(cacheKey, null);
+      if (!user) return cached;
 
-      const { data, error } = await supabase
-        .from('daily_tracker')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('date', targetDate)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('daily_tracker')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', targetDate)
+          .maybeSingle();
 
-      if (error) throw error;
-      return data ?? null;
+        if (error) throw error;
+        const next = data ?? null;
+        writeOfflineCache(cacheKey, next);
+        scheduleSyncQueueDrain();
+        return next;
+      } catch {
+        return cached;
+      }
     },
   });
 
@@ -32,19 +48,47 @@ export const useDailyTracker = (date?: string) => {
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+      const cacheKey = getScopedCacheKey(`daily_tracker:${targetDate}`, user.id);
+      const optimistic = {
+        ...(readOfflineCache<Record<string, unknown> | null>(cacheKey, null) ?? {}),
+        user_id: user.id,
+        date: targetDate,
+        ...update,
+      };
+      writeOfflineCache(cacheKey, optimistic);
+      queryClient.setQueryData(['dailyTracker', targetDate], optimistic);
 
-      const { data, error } = await supabase
-        .from('daily_tracker')
-        .upsert({
-          user_id: user.id,
-          date: targetDate,
-          ...update,
-        }, { onConflict: 'user_id,date' })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('daily_tracker')
+          .upsert({
+            user_id: user.id,
+            date: targetDate,
+            ...update,
+          }, { onConflict: 'user_id,date' })
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        writeOfflineCache(cacheKey, data);
+        scheduleSyncQueueDrain();
+        return data;
+      } catch (error) {
+        queueMutation({
+          userId: user.id,
+          table: 'daily_tracker',
+          operation: 'upsert',
+          payload: {
+            user_id: user.id,
+            date: targetDate,
+            ...update,
+          },
+          onConflict: 'user_id,date',
+          lastError: error instanceof Error ? error.message : 'Failed to upsert daily tracker',
+        });
+        scheduleSyncQueueDrain(1500);
+        return optimistic;
+      }
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['dailyTracker', targetDate], data);

@@ -1,5 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import {
+  getScopedCacheKey,
+  queueMutation,
+  readOfflineCache,
+  scheduleSyncQueueDrain,
+  writeOfflineCache,
+} from '@/lib/offline-sync';
+
+type GoalRow = Record<string, unknown>;
+
+const sortByCreatedDesc = (rows: GoalRow[]) =>
+  [...rows].sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
 
 export const useRamadanGoals = () => {
   const queryClient = useQueryClient();
@@ -8,16 +20,25 @@ export const useRamadanGoals = () => {
     queryKey: ['ramadanGoals'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const cacheKey = getScopedCacheKey('ramadan_goals', user?.id);
+      const cached = readOfflineCache<GoalRow[]>(cacheKey, []);
+      if (!user) return cached;
 
-      const { data, error } = await supabase
-        .from('ramadan_goals')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('ramadan_goals')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        const next = (data as GoalRow[]) ?? [];
+        writeOfflineCache(cacheKey, next);
+        scheduleSyncQueueDrain();
+        return next;
+      } catch {
+        return cached;
+      }
     },
   });
 
@@ -29,18 +50,46 @@ export const useRamadanGoals = () => {
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
+      const cacheKey = getScopedCacheKey('ramadan_goals', user.id);
+      const current = readOfflineCache<GoalRow[]>(cacheKey, []);
+      const optimistic: GoalRow = {
+        id: crypto.randomUUID(),
+        user_id: user.id,
+        ...goal,
+        current: 0,
+        completed: false,
+        created_at: new Date().toISOString(),
+      };
+      const optimisticRows = sortByCreatedDesc([optimistic, ...current]);
+      writeOfflineCache(cacheKey, optimisticRows);
+      queryClient.setQueryData(['ramadanGoals'], optimisticRows);
 
-      const { data, error } = await supabase
-        .from('ramadan_goals')
-        .insert({
-          user_id: user.id,
-          ...goal,
-        })
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('ramadan_goals')
+          .insert(optimistic)
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        const serverRows = sortByCreatedDesc([
+          data as GoalRow,
+          ...optimisticRows.filter((row) => String(row.id) !== String(optimistic.id)),
+        ]);
+        writeOfflineCache(cacheKey, serverRows);
+        scheduleSyncQueueDrain();
+        return data;
+      } catch (error) {
+        queueMutation({
+          userId: user.id,
+          table: 'ramadan_goals',
+          operation: 'insert',
+          payload: optimistic,
+          lastError: error instanceof Error ? error.message : 'Failed to create goal',
+        });
+        scheduleSyncQueueDrain(1500);
+        return optimistic;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ramadanGoals'] });
@@ -49,16 +98,48 @@ export const useRamadanGoals = () => {
 
   const updateGoal = useMutation({
     mutationFn: async (update: { id: string; current?: number; completed?: boolean }) => {
-      const { id, ...updates } = update;
-      const { data, error } = await supabase
-        .from('ramadan_goals')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      const cacheKey = getScopedCacheKey('ramadan_goals', user.id);
+      const current = readOfflineCache<GoalRow[]>(cacheKey, []);
+      const optimisticRows = current.map((row) =>
+        String(row.id) === update.id ? { ...row, ...update } : row,
+      );
+      writeOfflineCache(cacheKey, optimisticRows);
+      queryClient.setQueryData(['ramadanGoals'], optimisticRows);
 
-      if (error) throw error;
-      return data;
+      const payload = {
+        current: update.current,
+        completed: update.completed,
+      };
+
+      try {
+        const { data, error } = await supabase
+          .from('ramadan_goals')
+          .update(payload)
+          .eq('id', update.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        const serverRows = optimisticRows.map((row) =>
+          String(row.id) === update.id ? (data as GoalRow) : row,
+        );
+        writeOfflineCache(cacheKey, serverRows);
+        scheduleSyncQueueDrain();
+        return data;
+      } catch (error) {
+        queueMutation({
+          userId: user.id,
+          table: 'ramadan_goals',
+          operation: 'update',
+          payload,
+          match: { id: update.id },
+          lastError: error instanceof Error ? error.message : 'Failed to update goal',
+        });
+        scheduleSyncQueueDrain(1500);
+        return optimisticRows.find((row) => String(row.id) === update.id) ?? null;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ramadanGoals'] });
@@ -67,12 +148,32 @@ export const useRamadanGoals = () => {
 
   const deleteGoal = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('ramadan_goals')
-        .delete()
-        .eq('id', id);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      const cacheKey = getScopedCacheKey('ramadan_goals', user.id);
+      const current = readOfflineCache<GoalRow[]>(cacheKey, []);
+      const optimisticRows = current.filter((row) => String(row.id) !== id);
+      writeOfflineCache(cacheKey, optimisticRows);
+      queryClient.setQueryData(['ramadanGoals'], optimisticRows);
 
-      if (error) throw error;
+      try {
+        const { error } = await supabase
+          .from('ramadan_goals')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        scheduleSyncQueueDrain();
+      } catch (error) {
+        queueMutation({
+          userId: user.id,
+          table: 'ramadan_goals',
+          operation: 'delete',
+          match: { id },
+          lastError: error instanceof Error ? error.message : 'Failed to delete goal',
+        });
+        scheduleSyncQueueDrain(1500);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ramadanGoals'] });
@@ -89,3 +190,4 @@ export const useRamadanGoals = () => {
     isUpdating: createGoal.isPending || updateGoal.isPending || deleteGoal.isPending,
   };
 };
+
