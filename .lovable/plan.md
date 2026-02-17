@@ -1,44 +1,83 @@
 
 
-## Fix: Dashboard Countdown Ignores User's Custom Ramadan Dates
+## Fitur 1: Push Notification yang Lebih Reliable
 
-### Problem
-The countdown card and greeting on the dashboard always use hardcoded Ramadan dates (Feb 18, 2026) from `src/lib/ramadan-dates.ts`. When a user changes the Ramadan start/end date in Settings, the dashboard does not reflect the change because `getRamadanInfo()` never receives the user's custom dates.
+### Kondisi Saat Ini
+Aplikasi sudah punya sistem reminder di `RemindersBanner.tsx` yang menggunakan `new Notification()` langsung dari halaman. Masalahnya, notifikasi ini **hanya muncul kalau app sedang dibuka di browser**. Kalau user menutup tab, tidak ada notifikasi yang keluar.
 
-### Solution
-Pass the user's custom `ramadanStartDate` and `ramadanEndDate` from their profile into the Ramadan date functions so they take priority over the hardcoded defaults.
+### Yang Akan Ditambahkan
+Meningkatkan notifikasi agar bisa muncul **walaupun app tidak sedang dibuka**, menggunakan Service Worker yang sudah ada (`sw.js`).
 
-### Changes
+**Cara kerja:**
+- Saat user mengaktifkan reminder di Settings, app akan minta izin notifikasi (sudah ada tombolnya)
+- `RemindersBanner.tsx` akan mengirim jadwal notifikasi ke Service Worker via `postMessage`
+- Service Worker akan menampilkan notifikasi menggunakan `self.registration.showNotification()` yang lebih reliable
+- Notifikasi tetap muncul walau tab tertutup (selama browser masih berjalan di background)
 
-**1. `src/lib/ramadan-dates.ts`** - Update `getRamadanInfo()` and `getNextRamadan()` to accept optional custom start/end dates:
-- Add optional parameters: `customStart?: string`, `customEnd?: string`
-- When provided, use these dates instead of the hardcoded `RAMADAN_DATES` array
-- Fall back to hardcoded dates when no custom dates are set
+### Perubahan Teknis
 
-**2. `src/pages/DashboardPage.tsx`** - Pass profile dates to `getRamadanInfo()`:
-- Change `getRamadanInfo()` call to `getRamadanInfo(new Date(), profile.ramadanStartDate, profile.ramadanEndDate)`
-- This ensures the greeting text updates based on the user's custom dates
+**File: `public/sw.js`**
+- Tambahkan listener `message` untuk menerima jadwal reminder dari app
+- Simpan jadwal di variabel dan gunakan `setTimeout` untuk trigger notifikasi
+- Tambahkan handler `notificationclick` agar klik notifikasi membuka app
 
-**3. `src/components/dashboard/CountdownCard.tsx`** - Accept and use custom dates:
-- Add `ramadanStartDate` and `ramadanEndDate` props
-- Pass them through to `getRamadanInfo()` inside the component's `useEffect` interval
+**File: `src/components/dashboard/RemindersBanner.tsx`**
+- Ubah dari `new Notification()` menjadi kirim pesan ke Service Worker
+- Service Worker yang akan menampilkan notifikasi
+- Tambahkan logika untuk mengirim ulang jadwal setiap kali waktu sholat berubah
 
-### Technical Detail
+**File: `src/pages/SettingsPage.tsx`**
+- Perbaiki tombol "Aktifkan Notifikasi" agar juga register Service Worker jika belum
+- Tampilkan status permission saat ini (granted/denied/default)
 
-```text
-Current flow:
-  Settings saves ramadanStartDate -> profile
-  Dashboard reads profile -> ignores ramadanStartDate
-  CountdownCard -> calls getRamadanInfo() with no args -> uses hardcoded Feb 18
+---
 
-Fixed flow:
-  Settings saves ramadanStartDate -> profile
-  Dashboard reads profile -> passes dates to CountdownCard
-  CountdownCard -> calls getRamadanInfo(now, customStart, customEnd) -> uses user's dates
-```
+## Fitur 2: Share Card Progress Ramadan
 
-### Files to modify
-- `src/lib/ramadan-dates.ts` (add custom date parameters)
-- `src/components/dashboard/CountdownCard.tsx` (accept + pass custom dates)
-- `src/pages/DashboardPage.tsx` (pass profile dates to CountdownCard and greeting)
+### Kondisi Saat Ini
+Aplikasi **sudah punya** generator share card Canvas di `src/lib/share-card.ts` dan tombol share di halaman Tracker dan Reflection. Tapi **belum ada** share card yang menampilkan progress harian dari Dashboard (misal: "Hari ke-15, sudah khatam 20 juz").
+
+### Yang Akan Ditambahkan
+Tombol "Share Progress" di halaman **Dashboard** dan **Stats** yang menghasilkan kartu bergambar berisi ringkasan progress Ramadan user.
+
+**Konten share card:**
+- Hari ke-berapa Ramadan
+- Total puasa, tarawih, sedekah
+- Progress Quran (juz ke berapa)
+- Streak aktif
+- Hashtag #MyRamadhan
+
+### Perubahan Teknis
+
+**File: `src/lib/share-card.ts`**
+- Tambahkan fungsi baru `generateDailyProgressCard(stats, lang)` yang membuat kartu format IG Story (1080x1920) dengan info:
+  - "Hari ke-X Ramadan"
+  - Progress puasa, tarawih, sedekah, Quran
+  - Streak
+  - Branding MyRamadhanku
+
+- Tambahkan fungsi `getDailyProgressStats()` yang mengambil:
+  - Hari ke-berapa dari `ramadanStartDate`
+  - Total fasting, tarawih, sedekah dari database
+  - Progress Quran terkini
+  - Streak aktif
+
+**File: `src/pages/DashboardPage.tsx`**
+- Tambahkan tombol "Share Progress" (ikon Share) di header atau di bawah CountdownCard
+- Klik tombol -> generate card -> buka share dialog (atau download)
+
+**File: `src/pages/StatsPage.tsx`**
+- Tambahkan tombol "Share Stats" di halaman statistik
+- Menggunakan `generateWeeklySummaryCard` yang sudah ada
+
+### Ringkasan File yang Diubah
+
+| File | Perubahan |
+|------|-----------|
+| `public/sw.js` | Tambah handler notifikasi via Service Worker |
+| `src/components/dashboard/RemindersBanner.tsx` | Kirim jadwal ke SW, bukan `new Notification()` |
+| `src/pages/SettingsPage.tsx` | Tampilkan status izin notifikasi |
+| `src/lib/share-card.ts` | Tambah `generateDailyProgressCard` dan `getDailyProgressStats` |
+| `src/pages/DashboardPage.tsx` | Tambah tombol Share Progress |
+| `src/pages/StatsPage.tsx` | Tambah tombol Share Stats |
 
