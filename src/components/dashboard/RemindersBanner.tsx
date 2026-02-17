@@ -7,6 +7,7 @@ import {
   PrayerTimes,
   resolveCityMapping,
 } from "@/lib/prayer-times";
+import { sendRemindersToSW, SWReminder } from "@/lib/sw-notifications";
 
 interface RemindersBannerProps {
   lang: "id" | "en";
@@ -191,19 +192,20 @@ const RemindersBanner: React.FC<RemindersBannerProps> = ({
         setNextReminder(null);
       }
 
-      if (upcoming && upcoming.minutesLeft <= 5 && "Notification" in window) {
-        const key = `myramadhanku_notified_${upcoming.id}_${upcoming.time}`;
-        if (
-          !localStorage.getItem(key) &&
-          Notification.permission === "granted" &&
-          !silentMode
-        ) {
-          const body =
-            lang === "id"
-              ? `${upcoming.label} dalam ${upcoming.minutesLeft} menit`
-              : `${upcoming.label} in ${upcoming.minutesLeft} minutes`;
-          new Notification("MyRamadhanku", { body });
-          localStorage.setItem(key, "1");
+      // Send all upcoming reminders to the Service Worker for reliable notifications
+      if ("Notification" in window && Notification.permission === "granted" && !silentMode) {
+        const swReminders: SWReminder[] = candidates
+          .filter((c) => c.minutesLeft > 0 && c.minutesLeft <= 60)
+          .map((c) => ({
+            id: `${c.id}_${c.time}`,
+            body:
+              lang === "id"
+                ? `${c.label} dalam ${c.minutesLeft} menit`
+                : `${c.label} in ${c.minutesLeft} minutes`,
+            minutesLeft: c.minutesLeft,
+          }));
+        if (swReminders.length > 0) {
+          sendRemindersToSW(swReminders);
         }
       }
     };

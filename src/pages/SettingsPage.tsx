@@ -68,9 +68,22 @@ const SettingsPage: React.FC = () => {
     navigate('/onboarding', { replace: true });
   };
 
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>(
+    'Notification' in window ? Notification.permission : 'unsupported',
+  );
+
   const requestNotifications = async () => {
     if (!('Notification' in window)) return;
-    await Notification.requestPermission();
+    const permission = await Notification.requestPermission();
+    setNotifPermission(permission);
+    // Also register the SW so it can receive scheduled reminders
+    if (permission === 'granted' && 'serviceWorker' in navigator) {
+      try {
+        await navigator.serviceWorker.register('/sw.js');
+      } catch (e) {
+        console.error('SW registration failed', e);
+      }
+    }
   };
 
   const handleReset = () => {
@@ -349,12 +362,24 @@ const SettingsPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <button
-            onClick={requestNotifications}
-            className="w-full py-3 rounded-xl border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 transition-colors text-sm"
-          >
-            {dict.settings.enableNotifications}
-          </button>
+          {notifPermission === 'granted' ? (
+            <div className="w-full py-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-sm text-center">
+              ✓ {profile.language === 'id' ? 'Notifikasi aktif' : 'Notifications enabled'}
+            </div>
+          ) : notifPermission === 'denied' ? (
+            <div className="w-full py-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-300 text-sm text-center">
+              {profile.language === 'id'
+                ? 'Notifikasi diblokir. Ubah di pengaturan browser.'
+                : 'Notifications blocked. Change in browser settings.'}
+            </div>
+          ) : (
+            <button
+              onClick={requestNotifications}
+              className="w-full py-3 rounded-xl border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 transition-colors text-sm"
+            >
+              {dict.settings.enableNotifications}
+            </button>
+          )}
         </section>
 
         <section className="rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 space-y-3">

@@ -248,6 +248,144 @@ export const generateWeeklySummaryCard = async (
   });
 };
 
+export interface DailyProgressStats {
+  ramadanDay: number;
+  totalFasting: number;
+  totalTarawih: number;
+  totalSedekah: number;
+  quranJuz: number;
+  streakDays: number;
+}
+
+export const getDailyProgressStats = async (): Promise<DailyProgressStats> => {
+  const { data: authData } = await supabase.auth.getUser();
+  const user = authData.user;
+  if (!user) throw new Error('Not authenticated');
+
+  const profile = getProfile();
+  const ramadanInfo = getRamadanInfo();
+  const ramadanStart =
+    profile.ramadanStartDate ??
+    (ramadanInfo.nextRamadan ? getLocalDateKey(ramadanInfo.nextRamadan.start) : undefined) ??
+    getLocalDateKey(new Date());
+
+  const now = new Date();
+  const ramadanDay = Math.max(
+    1,
+    Math.floor((now.getTime() - new Date(ramadanStart).getTime()) / (1000 * 60 * 60 * 24)) + 1,
+  );
+
+  const [fastingRes, tarawihRes, sedekahRes, readingRes] = await Promise.all([
+    supabase.from('fasting_log').select('status').eq('user_id', user.id),
+    supabase.from('tarawih_log').select('tarawih_done').eq('user_id', user.id),
+    supabase.from('sedekah_log').select('completed').eq('user_id', user.id),
+    supabase
+      .from('reading_progress')
+      .select('juz_number')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const streak = getStreakSummary(profile.ramadanStartDate);
+
+  return {
+    ramadanDay,
+    totalFasting: (fastingRes.data ?? []).filter((l) => l.status === 'full').length,
+    totalTarawih: (tarawihRes.data ?? []).filter((l) => l.tarawih_done).length,
+    totalSedekah: (sedekahRes.data ?? []).filter((l) => l.completed).length,
+    quranJuz: readingRes.data?.juz_number ?? 0,
+    streakDays: streak.currentActiveStreak,
+  };
+};
+
+export const generateDailyProgressCard = async (
+  stats: DailyProgressStats,
+  lang: 'id' | 'en',
+): Promise<Blob> => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas not supported');
+
+  drawGradientBackground(ctx, canvas.width, canvas.height);
+
+  // Border
+  ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
+  ctx.lineWidth = 5;
+  ctx.strokeRect(48, 48, canvas.width - 96, canvas.height - 96);
+
+  // Title
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = '700 72px "Playfair Display", serif';
+  const title =
+    lang === 'id' ? `HARI KE-${stats.ramadanDay}` : `DAY ${stats.ramadanDay}`;
+  ctx.fillText(title, 110, 260);
+
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = '700 48px "Playfair Display", serif';
+  ctx.fillText('RAMADAN', 110, 340);
+
+  // Stats
+  const items = [
+    {
+      emoji: '🌙',
+      label: lang === 'id' ? 'Puasa' : 'Fasting',
+      value: `${stats.totalFasting} ${lang === 'id' ? 'hari' : 'days'}`,
+    },
+    {
+      emoji: '🕌',
+      label: 'Tarawih',
+      value: `${stats.totalTarawih} ${lang === 'id' ? 'malam' : 'nights'}`,
+    },
+    {
+      emoji: '💝',
+      label: lang === 'id' ? 'Sedekah' : 'Charity',
+      value: `${stats.totalSedekah} ${lang === 'id' ? 'kali' : 'times'}`,
+    },
+    {
+      emoji: '📖',
+      label: 'Quran',
+      value: `Juz ${stats.quranJuz}`,
+    },
+    {
+      emoji: '🔥',
+      label: 'Streak',
+      value: `${stats.streakDays} ${lang === 'id' ? 'hari' : 'days'}`,
+    },
+  ];
+
+  let y = 560;
+  items.forEach((item) => {
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '600 52px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(`${item.emoji}  ${item.label}`, 110, y);
+
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '700 52px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(item.value, 110, y + 70);
+
+    y += 200;
+  });
+
+  // Footer
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '500 28px "Plus Jakarta Sans", sans-serif';
+  ctx.fillText('#MyRamadhan  •  MyRamadhanku', 110, 1760);
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) reject(new Error('Failed to create image'));
+        else resolve(blob);
+      },
+      'image/png',
+    );
+  });
+};
+
 export const shareImage = async (blob: Blob, fallbackName: string) => {
   const file = new File([blob], fallbackName, { type: 'image/png' });
   if (navigator.share && navigator.canShare?.({ files: [file] })) {

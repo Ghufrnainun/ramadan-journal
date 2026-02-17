@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Activity, Flame } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Activity, Flame, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   Bar,
   BarChart,
@@ -18,6 +20,7 @@ import { useRamadanGoals } from '@/hooks/useRamadanGoals';
 import { getStreakSummary } from '@/lib/streak';
 import { getProfile } from '@/lib/storage';
 import { getLocalDateKey } from '@/lib/date';
+import { getWeeklySummaryStats, generateWeeklySummaryCard, shareImage } from '@/lib/share-card';
 
 const StatsPage = () => {
   const navigate = useNavigate();
@@ -91,6 +94,22 @@ const StatsPage = () => {
 
   const streak = getStreakSummary(profile.ramadanStartDate);
 
+  const [sharing, setSharing] = useState(false);
+  const handleShareStats = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const stats = await getWeeklySummaryStats();
+      const blob = await generateWeeklySummaryCard(stats, lang);
+      await shareImage(blob, 'ramadan-stats.png');
+    } catch (e) {
+      console.error('Share failed', e);
+      toast.error(lang === 'id' ? 'Gagal membuat share card' : 'Failed to create share card');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
     <ResponsiveLayout className="pb-24">
       <header className="flex items-center justify-between border-b border-slate-800/50 px-6 py-4 md:hidden">
@@ -103,7 +122,15 @@ const StatsPage = () => {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <span className="font-serif text-lg text-white">{t.title}</span>
-        <div className="w-9" />
+        <button
+          type="button"
+          onClick={handleShareStats}
+          disabled={sharing}
+          className="rounded-lg p-2 text-amber-300 hover:bg-amber-500/10 disabled:opacity-50"
+          aria-label="Share stats"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
       </header>
 
       <main className="space-y-6 px-6 py-6 md:px-0 md:py-0">

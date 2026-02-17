@@ -33,6 +33,57 @@ const trimRuntimeCache = async () => {
   await Promise.all(staleEntries.map((entry) => cache.delete(entry)));
 };
 
+// --- Push Notification via Service Worker ---
+// Map of scheduled timer IDs keyed by reminder id to avoid duplicates.
+const scheduledTimers = new Map();
+
+self.addEventListener('message', (event) => {
+  const { type, reminders } = event.data || {};
+
+  if (type === 'SCHEDULE_REMINDERS' && Array.isArray(reminders)) {
+    // Clear previous timers
+    for (const timerId of scheduledTimers.values()) {
+      clearTimeout(timerId);
+    }
+    scheduledTimers.clear();
+
+    reminders.forEach((reminder) => {
+      const delayMs = reminder.minutesLeft * 60 * 1000;
+      if (delayMs < 0 || delayMs > 65 * 60 * 1000) return; // only schedule within ~65 min
+
+      const timerId = setTimeout(() => {
+        self.registration.showNotification('MyRamadhanku', {
+          body: reminder.body,
+          icon: '/icon-192.svg',
+          badge: '/icon-192.svg',
+          tag: `reminder-${reminder.id}`,
+          renotify: true,
+          data: { url: '/' },
+        });
+        scheduledTimers.delete(reminder.id);
+      }, delayMs);
+
+      scheduledTimers.set(reminder.id, timerId);
+    });
+  }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
+    })
+  );
+});
+// --- End Push Notification ---
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
