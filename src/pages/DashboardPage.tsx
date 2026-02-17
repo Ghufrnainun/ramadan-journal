@@ -52,7 +52,7 @@ const DashboardPage: React.FC = () => {
   );
 
   // Get dynamic greeting based on Ramadan status
-  const ramadanInfo = getRamadanInfo();
+  const ramadanInfo = getRamadanInfo(new Date(), profile.ramadanStartDate, profile.ramadanEndDate);
   const greeting = getRamadanGreeting(lang, ramadanInfo.status);
 
   const handleNavigate = (module: string) => {
@@ -137,7 +137,7 @@ const DashboardPage: React.FC = () => {
         )}
 
         {/* Hero Section: Countdown */}
-        <CountdownCard lang={lang} />
+        <CountdownCard lang={lang} ramadanStartDate={profile.ramadanStartDate} ramadanEndDate={profile.ramadanEndDate} />
 
         {/* Quick Actions - Grid Layout for variation */}
         <div>
