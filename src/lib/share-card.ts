@@ -4,6 +4,7 @@ import { getRamadanInfo } from '@/lib/ramadan-dates';
 import { getStreakSummary } from '@/lib/streak';
 import { getLocalDateKey } from '@/lib/date';
 import { getScopedCacheKey, readOfflineCache } from '@/lib/offline-sync';
+import { isTadarusDoneFromItems } from '@/lib/tadarus-tracker';
 
 interface ShareCardOptions {
   title: string;
@@ -17,6 +18,7 @@ export interface WeeklySummaryStats {
   fastingDays: number;
   tarawihNights: number;
   sedekahCount: number;
+  tadarusDays: number;
   quranJuz: number;
   streakDays: number;
 }
@@ -147,15 +149,20 @@ export const getWeeklySummaryStats = async (): Promise<WeeklySummaryStats> => {
     getScopedCacheKey('reading_progress', userId),
     null,
   );
+  const cachedDailyTracker = readOfflineCache<
+    Array<{ date?: string; items?: unknown }>
+  >(getScopedCacheKey(`daily_tracker:${start}:${end}`, userId), []);
 
   let fastingData = cachedFasting;
   let tarawihData = cachedTarawih;
   let sedekahData = cachedSedekah;
   let readingData = cachedReading;
+  let readingWeekData: Array<{ date?: string }> = [];
+  let dailyTrackerData = cachedDailyTracker;
 
   try {
     if (!user) throw new Error('No auth user');
-    const [fastingRes, tarawihRes, sedekahRes, readingRes] = await Promise.all([
+    const [fastingRes, tarawihRes, sedekahRes, readingRes, readingWeekRes, dailyTrackerRes] = await Promise.all([
       supabase
         .from('fasting_log')
         .select('date,status')
@@ -181,17 +188,33 @@ export const getWeeklySummaryStats = async (): Promise<WeeklySummaryStats> => {
         .order('date', { ascending: false })
         .limit(1)
         .maybeSingle(),
+      supabase
+        .from('reading_progress')
+        .select('date')
+        .eq('user_id', userId)
+        .gte('date', start)
+        .lte('date', end),
+      supabase
+        .from('daily_tracker')
+        .select('date,items')
+        .eq('user_id', userId)
+        .gte('date', start)
+        .lte('date', end),
     ]);
 
     if (fastingRes.error) throw fastingRes.error;
     if (tarawihRes.error) throw tarawihRes.error;
     if (sedekahRes.error) throw sedekahRes.error;
     if (readingRes.error) throw readingRes.error;
+    if (readingWeekRes.error) throw readingWeekRes.error;
+    if (dailyTrackerRes.error) throw dailyTrackerRes.error;
 
     fastingData = (fastingRes.data as Array<{ date?: string; status?: string }>) ?? cachedFasting;
     tarawihData = (tarawihRes.data as Array<{ date?: string; tarawih_done?: boolean }>) ?? cachedTarawih;
     sedekahData = (sedekahRes.data as Array<{ date?: string; completed?: boolean }>) ?? cachedSedekah;
     readingData = (readingRes.data as { juz_number?: number } | null) ?? cachedReading;
+    readingWeekData = (readingWeekRes.data as Array<{ date?: string }>) ?? [];
+    dailyTrackerData = (dailyTrackerRes.data as Array<{ date?: string; items?: unknown }>) ?? cachedDailyTracker;
   } catch {
     // Use local cache fallback.
   }
@@ -211,12 +234,22 @@ export const getWeeklySummaryStats = async (): Promise<WeeklySummaryStats> => {
   const weekNumber = Math.max(1, Math.min(4, Math.floor(diffDay / 7) + 1));
 
   const streak = getStreakSummary(profile.ramadanStartDate);
+  const tadarusDates = new Set<string>();
+  (readingWeekData ?? []).forEach((row) => {
+    if (row.date) tadarusDates.add(row.date);
+  });
+  (dailyTrackerData ?? []).forEach((row) => {
+    if (row.date && isTadarusDoneFromItems(row.items)) {
+      tadarusDates.add(row.date);
+    }
+  });
 
   return {
     weekNumber,
     fastingDays: (fastingData ?? []).filter((log) => log.status === 'full').length,
     tarawihNights: (tarawihData ?? []).filter((log) => log.tarawih_done).length,
     sedekahCount: (sedekahData ?? []).filter((log) => log.completed).length,
+    tadarusDays: tadarusDates.size,
     quranJuz: readingData?.juz_number ?? 0,
     streakDays: streak.currentActiveStreak,
   };
@@ -254,6 +287,9 @@ export const generateWeeklySummaryCard = async (
     lang === 'id'
       ? `Sedekah: ${stats.sedekahCount} kali`
       : `Sedekah: ${stats.sedekahCount} times`,
+    lang === 'id'
+      ? `Tadarus: ${stats.tadarusDays}/7 hari`
+      : `Tadarus: ${stats.tadarusDays}/7 days`,
     lang === 'id' ? `Quran: Juz ${stats.quranJuz}` : `Quran: Juz ${stats.quranJuz}`,
     lang === 'id' ? `Streak: ${stats.streakDays} hari` : `Streak: ${stats.streakDays} days`,
   ];

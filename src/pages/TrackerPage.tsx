@@ -8,6 +8,7 @@ import TarawihCard from '@/components/tracker/TarawihCard';
 import SedekahCard from '@/components/tracker/SedekahCard';
 import LailatulQadrCard from '@/components/tracker/LailatulQadrCard';
 import SunnahPrayerCard from '@/components/tracker/SunnahPrayerCard';
+import TadarusCard from '@/components/tracker/TadarusCard';
 import {
   generateWeeklySummaryCard,
   getWeeklySummaryStats,
@@ -106,6 +107,7 @@ const TrackerPage = () => {
         </div>
 
         <FastingCalendar />
+        <TadarusCard />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <TarawihCard />

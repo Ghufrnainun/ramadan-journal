@@ -30,11 +30,19 @@ import { useTarawihLog } from '@/hooks/useTarawihLog';
 import { useSedekahLog } from '@/hooks/useSedekahLog';
 import { supabase } from '@/integrations/supabase/runtime-client';
 import { getScopedCacheKey, readOfflineCache, writeOfflineCache } from '@/lib/offline-sync';
+import { isTadarusDoneFromItems } from '@/lib/tadarus-tracker';
 
 interface DailyStatusCalendarEntry {
   date: string;
   intention: string;
   mood: string | null;
+}
+interface DailyTrackerCalendarEntry {
+  date: string;
+  items: unknown;
+}
+interface ReadingProgressDateEntry {
+  date: string;
 }
 
 const content = {
@@ -55,6 +63,7 @@ const content = {
     fasting: 'Puasa Full',
     tarawih: 'Tarawih',
     sedekah: 'Sedekah',
+    tadarus: 'Tadarus',
   },
   en: {
     tracker: 'Tracker',
@@ -73,6 +82,7 @@ const content = {
     fasting: 'Full Fasting',
     tarawih: 'Tarawih',
     sedekah: 'Charity',
+    tadarus: 'Tadarus',
   },
 };
 
@@ -127,10 +137,64 @@ const CalendarPage = () => {
       }
     },
   });
+  const {
+    data: tadarusMonth = { dailyTrackerRows: [], readingRows: [] },
+    isLoading: tadarusLoading,
+    error: tadarusError,
+  } = useQuery<{
+    dailyTrackerRows: DailyTrackerCalendarEntry[];
+    readingRows: ReadingProgressDateEntry[];
+  }>({
+    queryKey: ['tadarusMonth', monthStart, monthEnd],
+    queryFn: async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const cacheKey = getScopedCacheKey(
+        `tadarus_month:${monthStart}:${monthEnd}`,
+        user?.id,
+      );
+      const cached = readOfflineCache<{
+        dailyTrackerRows: DailyTrackerCalendarEntry[];
+        readingRows: ReadingProgressDateEntry[];
+      }>(cacheKey, { dailyTrackerRows: [], readingRows: [] });
+      if (!user) return cached;
+
+      try {
+        const [dailyTrackerRes, readingRes] = await Promise.all([
+          supabase
+            .from('daily_tracker')
+            .select('date, items')
+            .eq('user_id', user.id)
+            .gte('date', monthStart)
+            .lte('date', monthEnd),
+          supabase
+            .from('reading_progress')
+            .select('date')
+            .eq('user_id', user.id)
+            .gte('date', monthStart)
+            .lte('date', monthEnd),
+        ]);
+        if (dailyTrackerRes.error) throw dailyTrackerRes.error;
+        if (readingRes.error) throw readingRes.error;
+
+        const next = {
+          dailyTrackerRows:
+            (dailyTrackerRes.data as DailyTrackerCalendarEntry[]) ?? [],
+          readingRows: (readingRes.data as ReadingProgressDateEntry[]) ?? [],
+        };
+        writeOfflineCache(cacheKey, next);
+        return next;
+      } catch {
+        return cached;
+      }
+    },
+  });
 
   const isTrackerLoading =
-    fastingLoading || tarawihLoading || sedekahLoading || dailyStatusLoading;
-  const trackerError = fastingError || tarawihError || sedekahError || dailyStatusError;
+    fastingLoading || tarawihLoading || sedekahLoading || dailyStatusLoading || tadarusLoading;
+  const trackerError =
+    fastingError || tarawihError || sedekahError || dailyStatusError || tadarusError;
 
   const t = content[lang];
 
@@ -163,19 +227,27 @@ const CalendarPage = () => {
     const sedekahDone = (sedekahLogs ?? []).some(
       (log) => log.date === dateStr && log.completed,
     );
-    const completedCount = [fastingDone, tarawihDone, sedekahDone].filter(Boolean).length;
-    const totalItems = 3;
+    const tadarusDoneFromTracker = tadarusMonth.dailyTrackerRows.some(
+      (row) => row.date === dateStr && isTadarusDoneFromItems(row.items),
+    );
+    const tadarusDoneFromReading = tadarusMonth.readingRows.some(
+      (row) => row.date === dateStr,
+    );
+    const tadarusDone = tadarusDoneFromTracker || tadarusDoneFromReading;
+    const completedCount = [fastingDone, tarawihDone, sedekahDone, tadarusDone].filter(Boolean).length;
+    const totalItems = 4;
     const progressPercent = (completedCount / totalItems) * 100;
 
     return {
       fastingDone,
       tarawihDone,
       sedekahDone,
+      tadarusDone,
       completedCount,
       totalItems,
       progressPercent,
     };
-  }, [fastingLogs, tarawihLogs, sedekahLogs]);
+  }, [fastingLogs, tarawihLogs, sedekahLogs, tadarusMonth.dailyTrackerRows, tadarusMonth.readingRows]);
 
   const dayContentByDate = useMemo(() => {
     const map = new Map<string, { moodColor: string | null; progressPercent: number }>();
@@ -407,6 +479,7 @@ const CalendarPage = () => {
                   { label: t.fasting, done: summary.fastingDone },
                   { label: t.tarawih, done: summary.tarawihDone },
                   { label: t.sedekah, done: summary.sedekahDone },
+                  { label: t.tadarus, done: summary.tadarusDone },
                 ];
                 const hasAnyData = trackerItems.some((item) => item.done);
 

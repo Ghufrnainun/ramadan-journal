@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Json, Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { getLocalDateKey } from '@/lib/date';
+import { asJsonRecord, withTadarusDoneItems } from '@/lib/tadarus-tracker';
 import {
   getScopedCacheKey,
   queueMutation,
@@ -11,6 +12,10 @@ import {
 } from '@/lib/offline-sync';
 
 type ReadingProgressRow = Tables<'reading_progress'>;
+type DailyTrackerRow = Tables<'daily_tracker'>;
+type ReadingProgressInsert = TablesInsert<'reading_progress'>;
+type ReadingProgressUpdate = TablesUpdate<'reading_progress'>;
+type DailyTrackerInsert = TablesInsert<'daily_tracker'>;
 
 export const useReadingProgress = () => {
   const queryClient = useQueryClient();
@@ -55,10 +60,15 @@ export const useReadingProgress = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('reading_progress', user.id);
+      const targetDate = entry.date || getLocalDateKey();
+      const dailyTrackerCacheKey = getScopedCacheKey(
+        `daily_tracker:${targetDate}`,
+        user.id,
+      );
       const optimistic = {
         id: crypto.randomUUID(),
         user_id: user.id,
-        date: entry.date || getLocalDateKey(),
+        date: targetDate,
         surah_number: entry.surah_number,
         ayah_number: entry.ayah_number,
         page_number: entry.page_number ?? null,
@@ -69,15 +79,89 @@ export const useReadingProgress = () => {
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['readingProgress'], optimistic);
 
+      const syncDailyTrackerFromReading = async () => {
+        const cachedDailyTracker = readOfflineCache<DailyTrackerRow | null>(
+          dailyTrackerCacheKey,
+          null,
+        );
+        const nextItems = withTadarusDoneItems(cachedDailyTracker?.items, {
+          surahNumber: optimistic.surah_number,
+          ayahNumber: optimistic.ayah_number,
+          pageNumber: optimistic.page_number,
+          juzNumber: optimistic.juz_number,
+          lastReadAt: optimistic.created_at,
+        });
+        const optimisticTracker = {
+          ...(cachedDailyTracker ?? {}),
+          user_id: user.id,
+          date: targetDate,
+          items: nextItems,
+          notes: cachedDailyTracker?.notes ?? {},
+        } as DailyTrackerRow;
+        writeOfflineCache(dailyTrackerCacheKey, optimisticTracker);
+        queryClient.setQueryData(['dailyTracker', targetDate], optimisticTracker);
+
+        try {
+          const { data: existingTracker, error: existingError } = await supabase
+            .from('daily_tracker')
+            .select('id, items, notes')
+            .eq('user_id', user.id)
+            .eq('date', targetDate)
+            .maybeSingle();
+          if (existingError) throw existingError;
+
+          const mergedItems = {
+            ...asJsonRecord(existingTracker?.items),
+            ...nextItems,
+          };
+          const payload: DailyTrackerInsert = {
+            id: existingTracker?.id,
+            user_id: user.id,
+            date: targetDate,
+            items: mergedItems,
+            notes: existingTracker?.notes ?? cachedDailyTracker?.notes ?? {},
+          };
+          const { data: trackerData, error: trackerError } = await supabase
+            .from('daily_tracker')
+            .upsert(payload, { onConflict: 'user_id,date' })
+            .select()
+            .single();
+          if (trackerError) throw trackerError;
+
+          writeOfflineCache(dailyTrackerCacheKey, trackerData);
+          queryClient.setQueryData(['dailyTracker', targetDate], trackerData);
+          scheduleSyncQueueDrain();
+        } catch (error) {
+          queueMutation({
+            userId: user.id,
+            table: 'daily_tracker',
+            operation: 'upsert',
+            payload: {
+              user_id: user.id,
+              date: targetDate,
+              items: nextItems,
+              notes: cachedDailyTracker?.notes ?? {},
+            },
+            onConflict: 'user_id,date',
+            lastError:
+              error instanceof Error
+                ? error.message
+                : 'Failed to sync tadarus daily tracker',
+          });
+          scheduleSyncQueueDrain(1500);
+        }
+      };
+
       try {
         const { data, error } = await supabase
           .from('reading_progress')
-          .insert(optimistic as any)
+          .insert(optimistic as ReadingProgressInsert)
           .select()
           .single();
 
         if (error) throw error;
         writeOfflineCache(cacheKey, data);
+        await syncDailyTrackerFromReading();
         scheduleSyncQueueDrain();
         return data;
       } catch (error) {
@@ -85,9 +169,10 @@ export const useReadingProgress = () => {
           userId: user.id,
           table: 'reading_progress',
           operation: 'insert',
-          payload: optimistic as any,
+          payload: optimistic as ReadingProgressInsert,
           lastError: error instanceof Error ? error.message : 'Failed to record reading progress',
         });
+        await syncDailyTrackerFromReading();
         scheduleSyncQueueDrain(1500);
         return optimistic;
       }
@@ -110,7 +195,7 @@ export const useReadingProgress = () => {
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['readingProgress'], optimistic);
 
-      const payload = {
+      const payload: ReadingProgressUpdate = {
         surah_number: update.surah_number,
         ayah_number: update.ayah_number,
         page_number: update.page_number,
