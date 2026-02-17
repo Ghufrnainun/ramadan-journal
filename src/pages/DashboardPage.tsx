@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Moon, Settings, MapPin, Share2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Moon, Settings, MapPin } from 'lucide-react';
+
 import { getProfile, UserProfile } from '@/lib/storage';
 import { getTodayQuote } from '@/data/daily-quotes';
 import { getRamadanInfo, getRamadanGreeting } from '@/lib/ramadan-dates';
@@ -15,14 +15,14 @@ import RemindersBanner from '@/components/dashboard/RemindersBanner';
 import DailyStatusCard from '@/components/dashboard/DailyStatusCard';
 import QuranProgressCard from '@/components/dashboard/QuranProgressCard';
 import RamadanGoalsCard from '@/components/dashboard/RamadanGoalsCard';
-import { getDailyProgressStats, generateDailyProgressCard, shareImage } from '@/lib/share-card';
+
 
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [sharing, setSharing] = useState(false);
+  
 
   useEffect(() => {
     // ProtectedRoute sudah handle redirect auth + onboarding.
@@ -58,20 +58,6 @@ const DashboardPage: React.FC = () => {
   const ramadanInfo = getRamadanInfo(new Date(), profile.ramadanStartDate, profile.ramadanEndDate);
   const greeting = getRamadanGreeting(lang, ramadanInfo.status);
 
-  const handleShareProgress = async () => {
-    if (sharing) return;
-    setSharing(true);
-    try {
-      const stats = await getDailyProgressStats();
-      const blob = await generateDailyProgressCard(stats, lang);
-      await shareImage(blob, 'ramadan-progress.png');
-    } catch (e) {
-      console.error('Share failed', e);
-      toast.error(lang === 'id' ? 'Gagal membuat share card' : 'Failed to create share card');
-    } finally {
-      setSharing(false);
-    }
-  };
 
   const handleNavigate = (module: string) => {
     const routes: Record<string, string> = {
@@ -154,21 +140,8 @@ const DashboardPage: React.FC = () => {
           />
         )}
 
-        {/* Hero Section: Countdown + Share */}
-        <div className="flex items-start gap-3">
-          <div className="flex-1">
-            <CountdownCard lang={lang} ramadanStartDate={profile.ramadanStartDate} ramadanEndDate={profile.ramadanEndDate} />
-          </div>
-          <button
-            type="button"
-            onClick={handleShareProgress}
-            disabled={sharing}
-            className="mt-1 shrink-0 w-11 h-11 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-center text-amber-300 hover:bg-amber-500/20 transition-colors disabled:opacity-50"
-            aria-label="Share progress"
-          >
-            <Share2 className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Hero Section: Countdown */}
+        <CountdownCard lang={lang} ramadanStartDate={profile.ramadanStartDate} ramadanEndDate={profile.ramadanEndDate} />
 
         {/* Quick Actions - Grid Layout for variation */}
         <div>
