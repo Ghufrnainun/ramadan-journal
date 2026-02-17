@@ -22,7 +22,7 @@ import { isBookmarked, toggleBookmark } from '@/lib/bookmarks';
 import { markActiveDay } from '@/lib/streak';
 import { getLocalDateKey } from '@/lib/date';
 import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+// ScrollArea removed — using native overflow for better mobile scroll
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 
 const content = {
@@ -271,7 +271,7 @@ const DoaPage: React.FC = () => {
 
         {mode === 'read' ? (
           // Read Mode
-          <ScrollArea className="flex-1 px-6 py-4">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
             <div className="space-y-6 pb-24">
               {/* Arabic Text */}
               <div className="text-center">
@@ -298,7 +298,7 @@ const DoaPage: React.FC = () => {
                 </p>
               </div>
             </div>
-          </ScrollArea>
+          </div>
         ) : (
           // Counter Mode
           <div className="flex-1 flex flex-col items-center justify-center px-6">
@@ -430,9 +430,9 @@ const DoaPage: React.FC = () => {
 
   // List View
   return (
-    <ResponsiveLayout className="pb-24">
+    <ResponsiveLayout className="flex flex-col h-dvh">
       {/* Header - Mobile Only */}
-      <header className="md:hidden flex items-center justify-between px-6 py-4 border-b border-slate-800/50">
+      <header className="md:hidden flex items-center justify-between px-6 py-4 border-b border-slate-800/50 flex-shrink-0">
         <button
           type="button"
           aria-label="Back to dashboard"
@@ -449,7 +449,7 @@ const DoaPage: React.FC = () => {
       </header>
 
       {/* Desktop Header */}
-      <div className="hidden md:flex items-center justify-between mb-8">
+      <div className="hidden md:flex items-center justify-between mb-8 flex-shrink-0">
         <div>
           <h1 className="font-serif text-3xl text-white">{t.title}</h1>
           <p className="text-slate-400 mt-1">{t.subtitle}</p>
@@ -458,7 +458,7 @@ const DoaPage: React.FC = () => {
 
       {/* Today's Progress */}
       {sessions.length > 0 && (
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 flex-shrink-0">
           <h3 className="text-sm text-slate-500 mb-3">{t.todayProgress}</h3>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {sessions.map((session) => {
@@ -490,7 +490,7 @@ const DoaPage: React.FC = () => {
       )}
 
       {/* Doa List */}
-      <ScrollArea className="h-[calc(100dvh-180px)]">
+      <div className="flex-1 min-h-0 overflow-y-auto pb-24">
         <div className="px-6 py-4 space-y-3">
           {doaList.map((doa, i) => {
             const session = sessions.find((s) => s.doaId === doa.id);
@@ -511,8 +511,8 @@ const DoaPage: React.FC = () => {
                   }`}
                   onClick={() => handleSelectDoa(doa)}
                 >
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-medium text-sm">
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-medium text-sm flex-shrink-0">
                       {doa.id}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -523,7 +523,7 @@ const DoaPage: React.FC = () => {
                         {doa.idn.slice(0, 50)}...
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {session && (
                         <span
                           className={`text-sm ${isComplete ? 'text-green-400' : 'text-slate-400'}`}
@@ -539,7 +539,7 @@ const DoaPage: React.FC = () => {
             );
           })}
         </div>
-      </ScrollArea>
+      </div>
     </ResponsiveLayout>
   );
 };
