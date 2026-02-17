@@ -10,6 +10,8 @@ import {
 
 interface CountdownCardProps {
   lang: 'id' | 'en';
+  ramadanStartDate?: string | null;
+  ramadanEndDate?: string | null;
 }
 
 const content = {
@@ -37,18 +39,19 @@ const content = {
   },
 };
 
-const CountdownCard: React.FC<CountdownCardProps> = ({ lang }) => {
+const CountdownCard: React.FC<CountdownCardProps> = ({ lang, ramadanStartDate, ramadanEndDate }) => {
   const t = content[lang];
   const [ramadanInfo, setRamadanInfo] = useState<RamadanInfo>(() =>
-    getRamadanInfo(),
+    getRamadanInfo(new Date(), ramadanStartDate, ramadanEndDate),
   );
 
   useEffect(() => {
+    setRamadanInfo(getRamadanInfo(new Date(), ramadanStartDate, ramadanEndDate));
     const interval = setInterval(() => {
-      setRamadanInfo(getRamadanInfo());
+      setRamadanInfo(getRamadanInfo(new Date(), ramadanStartDate, ramadanEndDate));
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [ramadanStartDate, ramadanEndDate]);
 
   // Eid Mubarak state (within 7 days after Ramadan)
   if (ramadanInfo.status === 'after-eid') {

@@ -32,7 +32,17 @@ export interface RamadanInfo {
  */
 export const getNextRamadan = (
   from: Date = new Date(),
+  customStart?: string | null,
+  customEnd?: string | null,
 ): { start: Date; end: Date } | null => {
+  // If user provided custom dates, use those
+  if (customStart && customEnd) {
+    return {
+      start: new Date(customStart),
+      end: new Date(customEnd),
+    };
+  }
+
   for (const ramadan of RAMADAN_DATES) {
     const endDate = new Date(ramadan.end);
     // Add grace period for Eid
@@ -51,8 +61,12 @@ export const getNextRamadan = (
 /**
  * Get current Ramadan info based on date
  */
-export const getRamadanInfo = (now: Date = new Date()): RamadanInfo => {
-  const ramadan = getNextRamadan(now);
+export const getRamadanInfo = (
+  now: Date = new Date(),
+  customStart?: string | null,
+  customEnd?: string | null,
+): RamadanInfo => {
+  const ramadan = getNextRamadan(now, customStart, customEnd);
 
   if (!ramadan) {
     return { status: 'normal' };
