@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import type { Tables } from '@/integrations/supabase/types';
 import { getLocalDateKey } from '@/lib/date';
 import {
   getScopedCacheKey,
@@ -9,10 +10,7 @@ import {
   writeOfflineCache,
 } from '@/lib/offline-sync';
 
-type ReadingProgressRow = Record<string, unknown>;
-
-const sortByDateDesc = (rows: ReadingProgressRow[]) =>
-  [...rows].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')));
+type ReadingProgressRow = Tables<'reading_progress'>;
 
 export const useReadingProgress = () => {
   const queryClient = useQueryClient();
@@ -57,23 +55,24 @@ export const useReadingProgress = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('reading_progress', user.id);
-      const optimistic: ReadingProgressRow = {
+      const optimistic = {
         id: crypto.randomUUID(),
         user_id: user.id,
         date: entry.date || getLocalDateKey(),
         surah_number: entry.surah_number,
         ayah_number: entry.ayah_number,
-        page_number: entry.page_number,
-        juz_number: entry.juz_number,
-        daily_target_pages: entry.daily_target_pages,
-      };
+        page_number: entry.page_number ?? null,
+        juz_number: entry.juz_number ?? null,
+        daily_target_pages: entry.daily_target_pages ?? null,
+        created_at: new Date().toISOString(),
+      } as ReadingProgressRow;
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['readingProgress'], optimistic);
 
       try {
         const { data, error } = await supabase
           .from('reading_progress')
-          .insert(optimistic)
+          .insert(optimistic as any)
           .select()
           .single();
 
@@ -86,7 +85,7 @@ export const useReadingProgress = () => {
           userId: user.id,
           table: 'reading_progress',
           operation: 'insert',
-          payload: optimistic,
+          payload: optimistic as any,
           lastError: error instanceof Error ? error.message : 'Failed to record reading progress',
         });
         scheduleSyncQueueDrain(1500);
@@ -104,10 +103,10 @@ export const useReadingProgress = () => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('reading_progress', user.id);
       const current = readOfflineCache<ReadingProgressRow | null>(cacheKey, null);
-      const optimistic: ReadingProgressRow = {
+      const optimistic = {
         ...(current ?? { id: update.id, user_id: user.id }),
         ...update,
-      };
+      } as ReadingProgressRow;
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['readingProgress'], optimistic);
 
@@ -157,4 +156,3 @@ export const useReadingProgress = () => {
     isUpdating: recordProgress.isPending || updateProgress.isPending,
   };
 };
-

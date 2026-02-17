@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import type { Tables } from '@/integrations/supabase/types';
 import type { Json } from '@/integrations/supabase/types';
 import { getLocalDateKey } from '@/lib/date';
 import {
@@ -10,11 +11,11 @@ import {
   writeOfflineCache,
 } from '@/lib/offline-sync';
 
-type ReflectionRow = Record<string, unknown>;
+type ReflectionRow = Tables<'reflections'>;
 
 const mergeById = (rows: ReflectionRow[], next: ReflectionRow): ReflectionRow[] => {
-  const id = String(next.id ?? '');
-  const index = rows.findIndex((row) => String(row.id ?? '') === id);
+  const id = next.id;
+  const index = rows.findIndex((row) => row.id === id);
   if (index < 0) return [next, ...rows];
   const copy = [...rows];
   copy[index] = next;
@@ -42,7 +43,7 @@ export const useReflections = (date?: string) => {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        const next = (data as ReflectionRow[]) ?? [];
+        const next = (data ?? []) as ReflectionRow[];
         writeOfflineCache(cacheKey, next);
         scheduleSyncQueueDrain();
         return next;
@@ -64,13 +65,16 @@ export const useReflections = (date?: string) => {
 
       const cacheKey = getScopedCacheKey(`reflections:${targetDate}`, user.id);
       const current = readOfflineCache<ReflectionRow[]>(cacheKey, []);
-      const optimistic: ReflectionRow = {
+      const optimistic = {
         id: crypto.randomUUID(),
         user_id: user.id,
         date: targetDate,
         ...reflection,
+        completed: null,
+        mood: reflection.mood ?? null,
         created_at: new Date().toISOString(),
-      };
+        updated_at: new Date().toISOString(),
+      } as ReflectionRow;
       const optimisticRows = mergeById(current, optimistic);
       writeOfflineCache(cacheKey, optimisticRows);
       queryClient.setQueryData(['reflections', targetDate], optimisticRows);
@@ -78,7 +82,7 @@ export const useReflections = (date?: string) => {
       try {
         const { data, error } = await supabase
           .from('reflections')
-          .insert(optimistic)
+          .insert(optimistic as any)
           .select()
           .single();
 
@@ -92,7 +96,7 @@ export const useReflections = (date?: string) => {
           userId: user.id,
           table: 'reflections',
           operation: 'insert',
-          payload: optimistic,
+          payload: optimistic as any,
           lastError: error instanceof Error ? error.message : 'Failed to create reflection',
         });
         scheduleSyncQueueDrain(1500);
@@ -113,9 +117,9 @@ export const useReflections = (date?: string) => {
       const optimistic = mergeById(
         current,
         {
-          ...(current.find((row) => String(row.id) === update.id) ?? {}),
+          ...(current.find((row) => row.id === update.id) ?? {} as ReflectionRow),
           ...update,
-        },
+        } as ReflectionRow,
       );
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['reflections', targetDate], optimistic);
@@ -123,7 +127,7 @@ export const useReflections = (date?: string) => {
       try {
         const { data, error } = await supabase
           .from('reflections')
-          .update({ ...update, id: undefined })
+          .update({ ...update, id: undefined } as any)
           .eq('id', update.id)
           .select()
           .single();
@@ -143,7 +147,7 @@ export const useReflections = (date?: string) => {
           lastError: error instanceof Error ? error.message : 'Failed to update reflection',
         });
         scheduleSyncQueueDrain(1500);
-        return optimistic.find((row) => String(row.id) === update.id) ?? null;
+        return optimistic.find((row) => row.id === update.id) ?? null;
       }
     },
     onSuccess: () => {
@@ -157,7 +161,7 @@ export const useReflections = (date?: string) => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey(`reflections:${targetDate}`, user.id);
       const current = readOfflineCache<ReflectionRow[]>(cacheKey, []);
-      const optimistic = current.filter((row) => String(row.id) !== id);
+      const optimistic = current.filter((row) => row.id !== id);
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['reflections', targetDate], optimistic);
 
@@ -199,13 +203,13 @@ export const useReflections = (date?: string) => {
       const cacheKey = getScopedCacheKey(`reflections:${targetDate}`, user.id);
       const current = readOfflineCache<ReflectionRow[]>(cacheKey, []);
       const existing = current[0] ?? {};
-      const optimistic: ReflectionRow = {
+      const optimistic = {
         ...existing,
         user_id: user.id,
         date: targetDate,
         ...reflection,
-        id: existing.id ?? crypto.randomUUID(),
-      };
+        id: (existing as ReflectionRow).id ?? crypto.randomUUID(),
+      } as ReflectionRow;
       const optimisticRows = [optimistic];
       writeOfflineCache(cacheKey, optimisticRows);
       queryClient.setQueryData(['reflections', targetDate], optimisticRows);
@@ -213,12 +217,7 @@ export const useReflections = (date?: string) => {
       try {
         const { data, error } = await supabase
           .from('reflections')
-          .upsert(
-            {
-              ...optimistic,
-            },
-            { onConflict: 'user_id,date' },
-          )
+          .upsert(optimistic as any, { onConflict: 'user_id,date' })
           .select()
           .single();
 
@@ -232,7 +231,7 @@ export const useReflections = (date?: string) => {
           userId: user.id,
           table: 'reflections',
           operation: 'upsert',
-          payload: optimistic,
+          payload: optimistic as any,
           onConflict: 'user_id,date',
           lastError: error instanceof Error ? error.message : 'Failed to upsert reflection',
         });
@@ -260,4 +259,3 @@ export const useReflections = (date?: string) => {
       upsertReflection.isPending,
   };
 };
-

@@ -101,34 +101,35 @@ const applyMatch = (
   if (!match) return query;
   let cursor: unknown = query;
   for (const [column, value] of Object.entries(match)) {
-    if (isObject(cursor) && typeof cursor.eq === 'function') {
-      cursor = cursor.eq(column, value);
+    if (isObject(cursor) && typeof (cursor as any).eq === 'function') {
+      cursor = (cursor as any).eq(column, value);
     }
   }
   return cursor;
 };
 
 const executeMutation = async (task: QueuedMutation): Promise<void> => {
+  const table = task.table as any;
   switch (task.operation) {
     case 'insert': {
       const { error } = await supabase
-        .from(task.table)
-        .insert(task.payload ?? {});
+        .from(table)
+        .insert(task.payload as any);
       if (error) throw error;
       return;
     }
     case 'upsert': {
       const { error } = await supabase
-        .from(task.table)
-        .upsert(task.payload ?? {}, {
+        .from(table)
+        .upsert(task.payload as any, {
           onConflict: task.onConflict,
         });
       if (error) throw error;
       return;
     }
     case 'update': {
-      const query = supabase.from(task.table).update(task.payload ?? {});
-      const scoped = applyMatch(query, task.match) as {
+      const query = supabase.from(table).update(task.payload as any);
+      const scoped = applyMatch(query as any, task.match) as {
         then: PromiseLike<unknown>['then'];
       };
       const { error } = (await scoped) as { error: unknown };
@@ -136,8 +137,8 @@ const executeMutation = async (task: QueuedMutation): Promise<void> => {
       return;
     }
     case 'delete': {
-      const query = supabase.from(task.table).delete();
-      const scoped = applyMatch(query, task.match) as {
+      const query = supabase.from(table).delete();
+      const scoped = applyMatch(query as any, task.match) as {
         then: PromiseLike<unknown>['then'];
       };
       const { error } = (await scoped) as { error: unknown };
@@ -197,4 +198,3 @@ export const scheduleSyncQueueDrain = (delayMs = 700): void => {
     void drainSyncQueue();
   }, delayMs);
 };
-
