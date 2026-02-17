@@ -154,6 +154,7 @@ export type Database = {
           reminders_prayer: boolean | null
           reminders_reflection: boolean | null
           reminders_sahur: boolean | null
+          setup_completed_at: string | null
           silent_mode: boolean | null
           updated_at: string
           user_id: string
@@ -174,6 +175,7 @@ export type Database = {
           reminders_prayer?: boolean | null
           reminders_reflection?: boolean | null
           reminders_sahur?: boolean | null
+          setup_completed_at?: string | null
           silent_mode?: boolean | null
           updated_at?: string
           user_id: string
@@ -194,6 +196,7 @@ export type Database = {
           reminders_prayer?: boolean | null
           reminders_reflection?: boolean | null
           reminders_sahur?: boolean | null
+          setup_completed_at?: string | null
           silent_mode?: boolean | null
           updated_at?: string
           user_id?: string
