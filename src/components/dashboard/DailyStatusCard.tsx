@@ -41,8 +41,8 @@ const DailyStatusCard: React.FC<DailyStatusCardProps> = ({ lang }) => {
 
   useEffect(() => {
     if (isLoading || isHydrated) return;
-    setIntention(status?.intention || '');
-    setMood(status?.mood || null);
+    setIntention(String(status?.intention ?? ''));
+    setMood(status?.mood ?? null);
     setIsHydrated(true);
   }, [isLoading, isHydrated, status]);
 

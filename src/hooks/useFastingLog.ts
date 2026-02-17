@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import type { Tables } from '@/integrations/supabase/types';
 import {
   getScopedCacheKey,
   queueMutation,
@@ -8,7 +9,7 @@ import {
   writeOfflineCache,
 } from '@/lib/offline-sync';
 
-type FastingRow = Record<string, unknown>;
+type FastingRow = Tables<'fasting_log'>;
 
 const sortByDateDesc = (rows: FastingRow[]) =>
   [...rows].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')));
@@ -32,7 +33,7 @@ export const useFastingLog = () => {
           .order('date', { ascending: false });
 
         if (error) throw error;
-        const next = (data as FastingRow[]) ?? [];
+        const next = (data ?? []) as FastingRow[];
         writeOfflineCache(cacheKey, next);
         scheduleSyncQueueDrain();
         return next;
@@ -48,16 +49,16 @@ export const useFastingLog = () => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('fasting_log', user.id);
       const current = readOfflineCache<FastingRow[]>(cacheKey, []);
-      const existing = current.find((row) => String(row.date) === entry.date);
-      const optimistic: FastingRow = {
+      const existing = current.find((row) => row.date === entry.date);
+      const optimistic = {
         ...(existing ?? {}),
         id: existing?.id ?? crypto.randomUUID(),
         user_id: user.id,
         ...entry,
-      };
+      } as FastingRow;
       const optimisticRows = sortByDateDesc([
         optimistic,
-        ...current.filter((row) => String(row.date) !== entry.date),
+        ...current.filter((row) => row.date !== entry.date),
       ]);
       writeOfflineCache(cacheKey, optimisticRows);
       queryClient.setQueryData(['fastingLog'], optimisticRows);
@@ -65,16 +66,14 @@ export const useFastingLog = () => {
       try {
         const { data, error } = await supabase
           .from('fasting_log')
-          .upsert({
-            ...optimistic,
-          }, { onConflict: 'user_id,date' })
+          .upsert(optimistic as any, { onConflict: 'user_id,date' })
           .select()
           .single();
 
         if (error) throw error;
         const serverRows = sortByDateDesc([
           data as FastingRow,
-          ...optimisticRows.filter((row) => String(row.date) !== entry.date),
+          ...optimisticRows.filter((row) => row.date !== entry.date),
         ]);
         writeOfflineCache(cacheKey, serverRows);
         scheduleSyncQueueDrain();
@@ -84,7 +83,7 @@ export const useFastingLog = () => {
           userId: user.id,
           table: 'fasting_log',
           operation: 'upsert',
-          payload: optimistic,
+          payload: optimistic as any,
           onConflict: 'user_id,date',
           lastError: error instanceof Error ? error.message : 'Failed to upsert fasting log',
         });
@@ -103,7 +102,7 @@ export const useFastingLog = () => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('fasting_log', user.id);
       const current = readOfflineCache<FastingRow[]>(cacheKey, []);
-      const optimistic = current.filter((row) => String(row.id) !== id);
+      const optimistic = current.filter((row) => row.id !== id);
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['fastingLog'], optimistic);
 
@@ -140,4 +139,3 @@ export const useFastingLog = () => {
     isUpdating: upsertFastingLog.isPending || deleteFastingLog.isPending,
   };
 };
-

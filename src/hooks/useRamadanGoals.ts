@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import type { Tables } from '@/integrations/supabase/types';
 import {
   getScopedCacheKey,
   queueMutation,
@@ -8,7 +9,7 @@ import {
   writeOfflineCache,
 } from '@/lib/offline-sync';
 
-type GoalRow = Record<string, unknown>;
+type GoalRow = Tables<'ramadan_goals'>;
 
 const sortByCreatedDesc = (rows: GoalRow[]) =>
   [...rows].sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
@@ -32,7 +33,7 @@ export const useRamadanGoals = () => {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        const next = (data as GoalRow[]) ?? [];
+        const next = (data ?? []) as GoalRow[];
         writeOfflineCache(cacheKey, next);
         scheduleSyncQueueDrain();
         return next;
@@ -52,14 +53,15 @@ export const useRamadanGoals = () => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('ramadan_goals', user.id);
       const current = readOfflineCache<GoalRow[]>(cacheKey, []);
-      const optimistic: GoalRow = {
+      const optimistic = {
         id: crypto.randomUUID(),
         user_id: user.id,
         ...goal,
         current: 0,
         completed: false,
         created_at: new Date().toISOString(),
-      };
+        updated_at: new Date().toISOString(),
+      } as GoalRow;
       const optimisticRows = sortByCreatedDesc([optimistic, ...current]);
       writeOfflineCache(cacheKey, optimisticRows);
       queryClient.setQueryData(['ramadanGoals'], optimisticRows);
@@ -67,14 +69,14 @@ export const useRamadanGoals = () => {
       try {
         const { data, error } = await supabase
           .from('ramadan_goals')
-          .insert(optimistic)
+          .insert(optimistic as any)
           .select()
           .single();
 
         if (error) throw error;
         const serverRows = sortByCreatedDesc([
           data as GoalRow,
-          ...optimisticRows.filter((row) => String(row.id) !== String(optimistic.id)),
+          ...optimisticRows.filter((row) => row.id !== optimistic.id),
         ]);
         writeOfflineCache(cacheKey, serverRows);
         scheduleSyncQueueDrain();
@@ -84,7 +86,7 @@ export const useRamadanGoals = () => {
           userId: user.id,
           table: 'ramadan_goals',
           operation: 'insert',
-          payload: optimistic,
+          payload: optimistic as any,
           lastError: error instanceof Error ? error.message : 'Failed to create goal',
         });
         scheduleSyncQueueDrain(1500);
@@ -103,7 +105,7 @@ export const useRamadanGoals = () => {
       const cacheKey = getScopedCacheKey('ramadan_goals', user.id);
       const current = readOfflineCache<GoalRow[]>(cacheKey, []);
       const optimisticRows = current.map((row) =>
-        String(row.id) === update.id ? { ...row, ...update } : row,
+        row.id === update.id ? { ...row, ...update } : row,
       );
       writeOfflineCache(cacheKey, optimisticRows);
       queryClient.setQueryData(['ramadanGoals'], optimisticRows);
@@ -123,7 +125,7 @@ export const useRamadanGoals = () => {
 
         if (error) throw error;
         const serverRows = optimisticRows.map((row) =>
-          String(row.id) === update.id ? (data as GoalRow) : row,
+          row.id === update.id ? (data as GoalRow) : row,
         );
         writeOfflineCache(cacheKey, serverRows);
         scheduleSyncQueueDrain();
@@ -138,7 +140,7 @@ export const useRamadanGoals = () => {
           lastError: error instanceof Error ? error.message : 'Failed to update goal',
         });
         scheduleSyncQueueDrain(1500);
-        return optimisticRows.find((row) => String(row.id) === update.id) ?? null;
+        return optimisticRows.find((row) => row.id === update.id) ?? null;
       }
     },
     onSuccess: () => {
@@ -152,7 +154,7 @@ export const useRamadanGoals = () => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('ramadan_goals', user.id);
       const current = readOfflineCache<GoalRow[]>(cacheKey, []);
-      const optimisticRows = current.filter((row) => String(row.id) !== id);
+      const optimisticRows = current.filter((row) => row.id !== id);
       writeOfflineCache(cacheKey, optimisticRows);
       queryClient.setQueryData(['ramadanGoals'], optimisticRows);
 
@@ -190,4 +192,3 @@ export const useRamadanGoals = () => {
     isUpdating: createGoal.isPending || updateGoal.isPending || deleteGoal.isPending,
   };
 };
-

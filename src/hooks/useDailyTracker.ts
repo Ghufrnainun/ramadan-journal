@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import type { Tables } from '@/integrations/supabase/types';
 import type { Json } from '@/integrations/supabase/types';
 import { getLocalDateKey } from '@/lib/date';
 import {
@@ -10,6 +11,8 @@ import {
   writeOfflineCache,
 } from '@/lib/offline-sync';
 
+type DailyTrackerRow = Tables<'daily_tracker'>;
+
 export const useDailyTracker = (date?: string) => {
   const queryClient = useQueryClient();
   const targetDate = date || getLocalDateKey();
@@ -19,7 +22,7 @@ export const useDailyTracker = (date?: string) => {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       const cacheKey = getScopedCacheKey(`daily_tracker:${targetDate}`, user?.id);
-      const cached = readOfflineCache<Record<string, unknown> | null>(cacheKey, null);
+      const cached = readOfflineCache<DailyTrackerRow | null>(cacheKey, null);
       if (!user) return cached;
 
       try {
@@ -31,7 +34,7 @@ export const useDailyTracker = (date?: string) => {
           .maybeSingle();
 
         if (error) throw error;
-        const next = data ?? null;
+        const next = (data as DailyTrackerRow) ?? null;
         writeOfflineCache(cacheKey, next);
         scheduleSyncQueueDrain();
         return next;
@@ -49,12 +52,13 @@ export const useDailyTracker = (date?: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey(`daily_tracker:${targetDate}`, user.id);
+      const cached = readOfflineCache<DailyTrackerRow | null>(cacheKey, null);
       const optimistic = {
-        ...(readOfflineCache<Record<string, unknown> | null>(cacheKey, null) ?? {}),
+        ...(cached ?? {}),
         user_id: user.id,
         date: targetDate,
         ...update,
-      };
+      } as DailyTrackerRow;
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['dailyTracker', targetDate], optimistic);
 

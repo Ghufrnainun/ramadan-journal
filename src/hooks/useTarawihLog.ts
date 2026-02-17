@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import type { Tables } from '@/integrations/supabase/types';
 import {
   getScopedCacheKey,
   queueMutation,
@@ -8,7 +9,7 @@ import {
   writeOfflineCache,
 } from '@/lib/offline-sync';
 
-type TarawihRow = Record<string, unknown>;
+type TarawihRow = Tables<'tarawih_log'>;
 
 const sortByDateDesc = (rows: TarawihRow[]) =>
   [...rows].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')));
@@ -32,7 +33,7 @@ export const useTarawihLog = () => {
           .order('date', { ascending: false });
 
         if (error) throw error;
-        const next = (data as TarawihRow[]) ?? [];
+        const next = (data ?? []) as TarawihRow[];
         writeOfflineCache(cacheKey, next);
         scheduleSyncQueueDrain();
         return next;
@@ -55,16 +56,16 @@ export const useTarawihLog = () => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('tarawih_log', user.id);
       const current = readOfflineCache<TarawihRow[]>(cacheKey, []);
-      const existing = current.find((row) => String(row.date) === entry.date);
-      const optimistic: TarawihRow = {
+      const existing = current.find((row) => row.date === entry.date);
+      const optimistic = {
         ...(existing ?? {}),
         id: existing?.id ?? crypto.randomUUID(),
         user_id: user.id,
         ...entry,
-      };
+      } as TarawihRow;
       const optimisticRows = sortByDateDesc([
         optimistic,
-        ...current.filter((row) => String(row.date) !== entry.date),
+        ...current.filter((row) => row.date !== entry.date),
       ]);
       writeOfflineCache(cacheKey, optimisticRows);
       queryClient.setQueryData(['tarawihLog'], optimisticRows);
@@ -72,16 +73,14 @@ export const useTarawihLog = () => {
       try {
         const { data, error } = await supabase
           .from('tarawih_log')
-          .upsert({
-            ...optimistic,
-          }, { onConflict: 'user_id,date' })
+          .upsert(optimistic as any, { onConflict: 'user_id,date' })
           .select()
           .single();
 
         if (error) throw error;
         const serverRows = sortByDateDesc([
           data as TarawihRow,
-          ...optimisticRows.filter((row) => String(row.date) !== entry.date),
+          ...optimisticRows.filter((row) => row.date !== entry.date),
         ]);
         writeOfflineCache(cacheKey, serverRows);
         scheduleSyncQueueDrain();
@@ -91,7 +90,7 @@ export const useTarawihLog = () => {
           userId: user.id,
           table: 'tarawih_log',
           operation: 'upsert',
-          payload: optimistic,
+          payload: optimistic as any,
           onConflict: 'user_id,date',
           lastError: error instanceof Error ? error.message : 'Failed to upsert tarawih log',
         });
@@ -110,7 +109,7 @@ export const useTarawihLog = () => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey('tarawih_log', user.id);
       const current = readOfflineCache<TarawihRow[]>(cacheKey, []);
-      const optimistic = current.filter((row) => String(row.id) !== id);
+      const optimistic = current.filter((row) => row.id !== id);
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['tarawihLog'], optimistic);
 
@@ -147,4 +146,3 @@ export const useTarawihLog = () => {
     isUpdating: upsertTarawihLog.isPending || deleteTarawihLog.isPending,
   };
 };
-

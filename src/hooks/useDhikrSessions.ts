@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/runtime-client';
+import type { Tables } from '@/integrations/supabase/types';
 import { getLocalDateKey } from '@/lib/date';
 import {
   getScopedCacheKey,
@@ -9,7 +10,7 @@ import {
   writeOfflineCache,
 } from '@/lib/offline-sync';
 
-type DhikrSessionRow = Record<string, unknown>;
+type DhikrSessionRow = Tables<'dhikr_sessions'>;
 
 const sortByCreatedDesc = (rows: DhikrSessionRow[]) =>
   [...rows].sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
@@ -35,7 +36,7 @@ export const useDhikrSessions = (date?: string) => {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        const next = (data as DhikrSessionRow[]) ?? [];
+        const next = (data ?? []) as DhikrSessionRow[];
         writeOfflineCache(cacheKey, next);
         scheduleSyncQueueDrain();
         return next;
@@ -55,17 +56,17 @@ export const useDhikrSessions = (date?: string) => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey(`dhikr_sessions:${targetDate}`, user.id);
       const current = readOfflineCache<DhikrSessionRow[]>(cacheKey, []);
-      const existing = current.find((row) => String(row.preset_id) === session.preset_id);
-      const optimistic: DhikrSessionRow = {
+      const existing = current.find((row) => row.preset_id === session.preset_id);
+      const optimistic = {
         ...(existing ?? {}),
         id: existing?.id ?? crypto.randomUUID(),
         user_id: user.id,
         date: targetDate,
         ...session,
-      };
+      } as DhikrSessionRow;
       const optimisticRows = sortByCreatedDesc([
         optimistic,
-        ...current.filter((row) => String(row.preset_id) !== session.preset_id),
+        ...current.filter((row) => row.preset_id !== session.preset_id),
       ]);
       writeOfflineCache(cacheKey, optimisticRows);
       queryClient.setQueryData(['dhikrSessions', targetDate], optimisticRows);
@@ -73,16 +74,14 @@ export const useDhikrSessions = (date?: string) => {
       try {
         const { data, error } = await supabase
           .from('dhikr_sessions')
-          .upsert({
-            ...optimistic,
-          }, { onConflict: 'user_id,preset_id,date' })
+          .upsert(optimistic as any, { onConflict: 'user_id,preset_id,date' })
           .select()
           .single();
 
         if (error) throw error;
         const serverRows = sortByCreatedDesc([
           data as DhikrSessionRow,
-          ...optimisticRows.filter((row) => String(row.preset_id) !== session.preset_id),
+          ...optimisticRows.filter((row) => row.preset_id !== session.preset_id),
         ]);
         writeOfflineCache(cacheKey, serverRows);
         scheduleSyncQueueDrain();
@@ -92,7 +91,7 @@ export const useDhikrSessions = (date?: string) => {
           userId: user.id,
           table: 'dhikr_sessions',
           operation: 'upsert',
-          payload: optimistic,
+          payload: optimistic as any,
           onConflict: 'user_id,preset_id,date',
           lastError: error instanceof Error ? error.message : 'Failed to upsert dhikr session',
         });
@@ -111,7 +110,7 @@ export const useDhikrSessions = (date?: string) => {
       if (!user) throw new Error('Not authenticated');
       const cacheKey = getScopedCacheKey(`dhikr_sessions:${targetDate}`, user.id);
       const current = readOfflineCache<DhikrSessionRow[]>(cacheKey, []);
-      const optimistic = current.filter((row) => String(row.id) !== id);
+      const optimistic = current.filter((row) => row.id !== id);
       writeOfflineCache(cacheKey, optimistic);
       queryClient.setQueryData(['dhikrSessions', targetDate], optimistic);
 
@@ -148,4 +147,3 @@ export const useDhikrSessions = (date?: string) => {
     isUpdating: upsertDhikrSession.isPending || deleteDhikrSession.isPending,
   };
 };
-
