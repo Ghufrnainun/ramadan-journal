@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Sunrise, Moon, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { equranApi, ImsakiyahItem } from '@/lib/api/equran';
-import { resolveCityMapping } from '@/lib/prayer-times';
+import { getCityMapping, resolveCityMapping } from '@/lib/prayer-times';
 import { getLocalDateKey } from '@/lib/date';
 
 interface ImsakiyahCardProps {
@@ -46,7 +46,27 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+    const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+      return await new Promise<T>((resolve, reject) => {
+        const timeoutId = window.setTimeout(() => {
+          reject(new Error('Request timed out'));
+        }, ms);
+
+        promise
+          .then((value) => {
+            window.clearTimeout(timeoutId);
+            resolve(value);
+          })
+          .catch((err) => {
+            window.clearTimeout(timeoutId);
+            reject(err);
+          });
+      });
+    };
+
     const loadImsakiyah = async () => {
+      if (!isMounted) return;
       setIsLoading(true);
       setError(null);
 
@@ -54,15 +74,19 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
         const now = new Date();
         const tahun = now.getFullYear();
 
-        // Use mapping to ensure correct city name for API
-        const mapping = await resolveCityMapping(kabkota, provinsi);
-
-        // Fetch Ramadan schedule for the current year
-        const schedule = await equranApi.getJadwalImsakiyah(
-          mapping.provinsi,
-          mapping.kabkota,
-          tahun,
+        // Resolve mapping with timeout to avoid indefinite loading on network stalls
+        const fallbackMapping = getCityMapping(kabkota, provinsi);
+        const mapping = await withTimeout(
+          resolveCityMapping(kabkota, provinsi).catch(() => fallbackMapping),
+          8000,
         );
+
+        // Fetch Ramadan schedule for the current year with timeout
+        const schedule = await withTimeout(
+          equranApi.getJadwalImsakiyah(mapping.provinsi, mapping.kabkota, tahun),
+          10000,
+        );
+        if (!isMounted) return;
 
         if (!schedule || schedule.length === 0) {
           setError('noData');
@@ -81,15 +105,20 @@ const ImsakiyahCard: React.FC<ImsakiyahCardProps> = ({
         }
       } catch (error) {
         console.error('Failed to load imsakiyah schedule:', error);
+        if (!isMounted) return;
         setError('noData');
       } finally {
+        if (!isMounted) return;
         setIsLoading(false);
       }
     };
 
-    loadImsakiyah();
+    void loadImsakiyah();
     // Note: 'lang' is intentionally not in deps as it only affects display text, not data fetching
     // Year is calculated at fetch time, so location change triggers new fetch with current year
+    return () => {
+      isMounted = false;
+    };
   }, [provinsi, kabkota]);
 
   if (isLoading) {
