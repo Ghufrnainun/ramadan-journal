@@ -67,6 +67,7 @@ const DashboardPage: React.FC = () => {
       tracker: '/tracker',
       reflection: '/reflection',
       calendar: '/calendar',
+      hafalan: '/hafalan',
       goals: '/goals',
       stats: '/stats',
     };

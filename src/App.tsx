@@ -20,6 +20,7 @@ const DhikrPage = lazy(() => import('./pages/DhikrPage'));
 const DoaPage = lazy(() => import('./pages/DoaPage'));
 const TrackerPage = lazy(() => import('./pages/TrackerPage'));
 const QuranPage = lazy(() => import('./pages/QuranPage'));
+const HafalanPage = lazy(() => import('./pages/HafalanPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const ReflectionPage = lazy(() => import('./pages/ReflectionPage'));
 const BookmarksPage = lazy(() => import('./pages/BookmarksPage'));
@@ -111,6 +112,14 @@ const App = () => (
                   element={
                     <AppGate requireAuth requireSetup>
                       <QuranPage />
+                    </AppGate>
+                  }
+                />
+                <Route
+                  path="/hafalan"
+                  element={
+                    <AppGate requireAuth requireSetup>
+                      <HafalanPage />
                     </AppGate>
                   }
                 />

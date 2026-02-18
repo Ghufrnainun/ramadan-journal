@@ -7,6 +7,7 @@ import {
   PenLine,
   BookHeart,
   Calendar,
+  BookCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +25,7 @@ const content = {
     tracker: 'Tracker',
     reflection: 'Refleksi',
     calendar: 'Kalender',
+    hafalan: 'Hafalan',
   },
   en: {
     quran: 'Quran',
@@ -32,6 +34,7 @@ const content = {
     tracker: 'Tracker',
     reflection: 'Reflection',
     calendar: 'Calendar',
+    hafalan: 'Memorization',
   },
 };
 
@@ -42,6 +45,7 @@ const moduleIcons: Record<string, React.ReactNode> = {
   tracker: <CheckSquare className="w-6 h-6" />,
   reflection: <PenLine className="w-6 h-6" />,
   calendar: <Calendar className="w-6 h-6" />,
+  hafalan: <BookCheck className="w-6 h-6" />,
 };
 
 const moduleColors: Record<string, string> = {
@@ -51,6 +55,7 @@ const moduleColors: Record<string, string> = {
   tracker: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
   reflection: 'bg-violet-500/10 border-violet-500/30 text-violet-400',
   calendar: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400',
+  hafalan: 'bg-teal-500/10 border-teal-500/30 text-teal-400',
 };
 
 const QuickActions: React.FC<QuickActionsProps> = ({
@@ -68,10 +73,12 @@ const QuickActions: React.FC<QuickActionsProps> = ({
     'tracker',
     'reflection',
     'calendar',
+    'hafalan',
   ];
   const visibleModules = allModules.filter((m) => {
     if (m === 'doa') return focusModules.includes('dhikr'); // Show doa if dhikr is selected
     if (m === 'calendar') return true; // Always show calendar
+    if (m === 'hafalan') return true;
     return focusModules.includes(m);
   });
 

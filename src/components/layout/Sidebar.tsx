@@ -12,6 +12,7 @@ import {
   Book,
   Target,
   BarChart3,
+  BookCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getProfile } from '@/lib/storage';
@@ -35,6 +36,7 @@ const Sidebar = () => {
       guest: 'Tamu',
       dashboard: 'Beranda',
       quran: 'Quran',
+      hafalan: 'Hafalan',
     },
     en: {
       hadith: 'Hadith',
@@ -51,12 +53,14 @@ const Sidebar = () => {
       guest: 'Guest',
       dashboard: 'Dashboard',
       quran: 'Quran',
+      hafalan: 'Memorization',
     },
   }[lang];
 
   const navItems = [
     { icon: LayoutDashboard, label: t.dashboard, path: '/dashboard' },
     { icon: BookOpen, label: t.quran, path: '/quran' },
+    { icon: BookCheck, label: t.hafalan, path: '/hafalan' },
     { icon: Book, label: t.hadith, path: '/hadith' },
     { icon: Calendar, label: t.schedule, path: '/calendar' },
     { icon: CheckSquare, label: t.tracker, path: '/tracker' },
