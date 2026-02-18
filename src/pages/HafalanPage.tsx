@@ -85,6 +85,9 @@ const HafalanPage = () => {
     setProgress(markMemorizationReviewedToday(surahNumber));
   };
 
+  const getQuranSurahUrl = (surahNumber: number) =>
+    `https://myramadhanku.web.id/quran?surah=${surahNumber}`;
+
   return (
     <ResponsiveLayout className="pb-24">
       <header className="sticky top-0 z-20 border-b border-slate-800/50 bg-[#020617]/95 px-6 py-4 backdrop-blur">
@@ -176,7 +179,12 @@ const HafalanPage = () => {
                     <p className="text-xs text-slate-500">
                       {t.surah} {surah.number}
                     </p>
-                    <p className="text-base font-semibold text-white">{surah.latinName}</p>
+                    <a
+                      href={getQuranSurahUrl(surah.number)}
+                      className="text-base font-semibold text-white underline-offset-4 hover:text-emerald-300 hover:underline"
+                    >
+                      {surah.latinName}
+                    </a>
                     <p className="text-sm text-emerald-300">{surah.arabicName}</p>
                     <p className="text-xs text-slate-400">
                       {surah.verses} {t.ayah}
